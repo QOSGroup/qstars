@@ -1,0 +1,90 @@
+syntax = "proto3";
+package rpc;
+
+//import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+//import "github.com/tendermint/tendermint/abci/types/types.proto";
+
+//----------------------------------------
+// Message types
+
+//----------------------------------------
+// Request types
+
+
+// The request message containing the user's name.
+message KVSetRequest {
+    string addr = 1;
+    string key = 2;
+    string value = 3;
+}
+
+// The response message containing the greetings
+message KVGetReply {
+    string addr = 1;
+    string key = 2;
+    string value = 3;
+    string resultCode = 4;
+    string reason = 5;
+}
+
+// The response message containing the greetings
+message GeneralReply {
+    string resultCode = 1;
+    string reason = 2;
+}
+
+
+// The request message containing the user's name.
+message QueryRequest {
+    string addr = 1;
+    string key = 2;
+    string value = 3;
+}
+
+
+// The request message containing the user's name.
+message QueryResponse {
+    string addr = 1;
+    int64 qosmount = 2;
+    int64 xymount = 3;
+}
+
+// The request message containing the user's name.
+message MintRequest {
+    string addr = 1;
+    string publickey = 2;
+    string privatekey = 3;
+    int64 xymount= 4;
+    int64 maxfee= 5;
+
+}
+
+// The request message containing the user's name.
+message CoinTransferRequest {
+    string addr = 1;
+    string publickey = 2;
+    string privatekey = 3;
+    int64 QOSmount = 4;
+    int64 xymount = 5;
+    int64 maxfee = 6;
+
+}
+
+
+// The greeting service definition.
+service QSCAppInterface {
+    //set key-value
+    rpc QSCKVStoreSet(KVSetRequest) returns (GeneralReply) {}
+    //get key-value
+    rpc QSCKVStoreGet(KVSetRequest) returns (KVGetReply) {}
+    //query account
+    rpc QSCQueryAccount(QueryRequest) returns (QueryRequest) {}
+    //mint coin
+    rpc QSCMintCoin(MintRequest) returns (GeneralReply) {}
+    // QSC transfer
+    rpc QSCtransfer(CoinTransferRequest) returns (GeneralReply) {}
+    // QOS to QSC transfer
+    rpc QOStoQSCtransfer(CoinTransferRequest) returns (GeneralReply) {}
+    // QSC to QOS transfer
+    rpc QSCtoQOStransfer(CoinTransferRequest) returns (GeneralReply) {}
+}
