@@ -11,7 +11,7 @@ func TestAccountCreateStr(t *testing.T) {
 }
 
 func TestQSCQueryAccountGet(t *testing.T) {
-	url := "http://localhost:1317/accounts/cosmosaccaddr1nskqcg35k8du3ydhntkcqjxtk254qv8me943mv"
-	out := QSCQueryAccountGet(url)
-	require.NotNil(t, out)
+	//url := "http://localhost:1317/accounts/cosmosaccaddr1nskqcg35k8du3ydhntkcqjxtk254qv8me943mv"
+	//out := QSCQueryAccountGet(url)
+	//require.NotNil(t, out)
 }
