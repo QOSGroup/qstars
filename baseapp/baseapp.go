@@ -1,18 +1,14 @@
 package baseapp
 
 import (
-	"os"
-	"path/filepath"
 	"fmt"
 	"github.com/QOSGroup/qbase/baseabci"
-	"github.com/QOSGroup/qbase/account"
-		dbm "github.com/tendermint/tendermint/libs/db"
-		"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/libs/log"
+	"os"
 )
 
-func NewAPP() QstarsBaseApp{
+func NewAPP(rootDir string) QstarsBaseApp{
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
-	rootDir := ""
 	qstarts:=QstarsBaseApp{
 		Logger:logger,
 		RootDir:rootDir,
@@ -43,18 +39,7 @@ func (base *QstarsBaseApp) loadX(){
 
 
 func (base *QstarsBaseApp) Start() {
-	db, err := dbm.NewGoLevelDB("kvstore", filepath.Join(base.RootDir, "data"))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 
-	base.Baseapp = baseabci.NewBaseApp("kvstore", base.Logger, db, nil)
-
-
-	base.Baseapp.RegisterAccount(func() account.Account {
-		return &account.BaseAccount{}
-	})
 	base.loadX()
 
 

@@ -44,7 +44,13 @@ func (ctx CLIContext) QueryQOSAccount(key cmn.HexBytes, storeName string) (res [
 
 }
 
+// QueryStore performs a query from a Tendermint node with the provided key and
+// store name.
+func (ctx CLIContext) QueryKV(key cmn.HexBytes) (res []byte, err error) {
+	path := "/store/kv/key"
+	return ctx.query(path, key)
 
+}
 
 // GetAccount queries for an account given an address and a block height. An
 // error is returned if the query or decoding fails.
@@ -53,13 +59,16 @@ func (ctx CLIContext) GetAccount(address []byte) (auth.QAccount, error) {
 		return nil, errors.New("account decoder required but not provided")
 	}
 
-	res, err := ctx.QueryQOSAccount(auth.AddressStoreKey(address), ctx.AccountStore)
+	//res, err := ctx.QueryQOSAccount(auth.AddressStoreKey(address), ctx.AccountStore)
+	//if err != nil {
+	//	return nil, err
+	//} else if len(res) == 0 {
+	//	return nil, err
+	//}
+	res,err := ctx.Codec.MarshalBinary(genNewAccount())
 	if err != nil {
 		return nil, err
-	} else if len(res) == 0 {
-		return nil, err
 	}
-
 	account, err := ctx.AccDecoder(res)
 	if err != nil {
 		return nil, err

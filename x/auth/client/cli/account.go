@@ -2,15 +2,16 @@ package cli
 
 import (
 	"fmt"
-
-	"github.com/spf13/cobra"
-
+	"github.com/QOSGroup/qbase/account"
+	qos "github.com/QOSGroup/qos/account"
 	"github.com/QOSGroup/qstars/client/context"
+	qstarstypes "github.com/QOSGroup/qstars/types"
 	sdk "github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/auth"
-	qos "github.com/QOSGroup/qos/account"
-	qstarstypes "github.com/QOSGroup/qstars/types"
+	"github.com/spf13/cobra"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 
@@ -56,6 +57,11 @@ func GetAccountCmd(storeName string, cdc *wire.Codec,decoder auth.AccountDecoder
 			cliCtx := context.NewCLIContext().
 				WithCodec(cdc).
 				WithAccountDecoder(decoder)
+
+			cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
+			cdc.RegisterConcrete(&ed25519.PubKeyEd25519{}, "ed25519.PubKeyEd25519", nil)
+			cdc.RegisterInterface((*account.Account)(nil), nil)
+			cdc.RegisterConcrete(&qos.QOSAccount{}, "qbase/account/QOSAccount", nil)
 
 			// in qstars, we don't need to ensure it
 			//if err := cliCtx.EnsureAccountExistsFromAddr(key); err != nil {

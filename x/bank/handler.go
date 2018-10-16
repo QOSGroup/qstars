@@ -36,7 +36,7 @@ func (kv KvstoreTx) StartX(base *baseapp.QstarsBaseApp) {
 
 	var mainStore = store.NewKVStoreKey("kv")
 	var kvMapper = kvstore.NewKvMapper(mainStore)
-	base.Baseapp.RegisterSeedMapper(kvMapper)
+	base.Baseapp.RegisterMapper(kvMapper)
 
 	if err := base.Baseapp.LoadLatestVersion(); err != nil {
 		fmt.Println(err)
