@@ -10,3 +10,10 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+.idea
+.vscode
+
+cmd/qstarscli/qstarscli
+cmd/qstarsd/qstarsd
+cmd/qstarsd/data
