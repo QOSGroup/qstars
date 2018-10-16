@@ -2,8 +2,8 @@ module github.com/QOSGroup/qstars
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/QOSGroup/qbase v0.0.0-20181012065522-bd749f6b1c45
-	github.com/QOSGroup/qos v0.0.0-20181010063456-29aff7923f71
+	github.com/QOSGroup/qbase v0.0.1
+	github.com/QOSGroup/qos v0.0.0-20181015092406-97fcfa08ee4c
 	github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/brejski/hid v0.0.0-20180408220029-06112dcfcc50 // indirect
