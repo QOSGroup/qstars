@@ -2,13 +2,11 @@ package kvstore
 
 import "github.com/QOSGroup/qbase/types"
 
-
-
 import (
-"github.com/QOSGroup/qbase/account"
-"github.com/QOSGroup/qbase/context"
-"github.com/QOSGroup/qbase/qcp"
-"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qbase/account"
+	"github.com/QOSGroup/qbase/context"
+	"github.com/QOSGroup/qbase/qcp"
+	"github.com/QOSGroup/qbase/txs"
 )
 
 type KvstoreTx struct {
@@ -25,10 +23,8 @@ func NewKvstoreTx(key []byte, value []byte) KvstoreTx {
 }
 
 func NewKvstoreTxHandler() KvstoreTx {
-	return KvstoreTx{
-	}
+	return KvstoreTx{}
 }
-
 
 func (kv KvstoreTx) ValidateData() bool {
 	if len(kv.Key) < 0 {
@@ -91,4 +87,3 @@ func (kv KvstoreTx) GetSignData() []byte {
 
 	return signData
 }
-

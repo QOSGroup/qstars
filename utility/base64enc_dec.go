@@ -3,12 +3,14 @@ package utility
 import "C"
 import (
 	"encoding/base64"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-		"github.com/tendermint/tendermint/libs/bech32"
 	"fmt"
-		"github.com/tendermint/go-amino"
-	)
+	"github.com/tendermint/go-amino"
+	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/libs/bech32"
+)
+
 var cdc = amino.NewCodec()
+
 const (
 	// expected address length
 	//AddrLen = 20
@@ -16,7 +18,6 @@ const (
 	// Bech32 prefixes
 	Bech32PrefixAccAddr = "cosmosaccaddr"
 	Bech32PrefixAccPub  = "cosmosaccpub"
-
 )
 
 func Encbase64(input []byte) string {
@@ -29,12 +30,10 @@ func Decbase64(input string) []byte {
 
 }
 
-
-
-func PubAddrRetrieval(s string) (string, string){
+func PubAddrRetrieval(s string) (string, string) {
 	bz := Decbase64(s)
 	var key ed25519.PrivKeyEd25519
-	copy(key[:],bz)
+	copy(key[:], bz)
 	pub := key.PubKey().Bytes()
 	addr := key.PubKey().Address()
 	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
@@ -43,8 +42,6 @@ func PubAddrRetrieval(s string) (string, string){
 	fmt.Println(bech32Addr)
 	return bech32Pub, bech32Addr
 }
-
-
 
 //func main() {
 //	s := "9Rg9mNEXVh9aUsxJ74Ogqe8O6wrBw8EeMhyK/GgHcfUsGprPgC7YXH6YEwGM+eXmc7oV1ci7ivlxo7k6amd3Lg=="

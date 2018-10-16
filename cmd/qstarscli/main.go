@@ -1,19 +1,18 @@
 package main
 
 import (
-	"os"
+	"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qstars/client"
+	"github.com/QOSGroup/qstars/client/lcd"
+	"github.com/QOSGroup/qstars/client/rpc"
+	"github.com/QOSGroup/qstars/client/tx"
+	"github.com/QOSGroup/qstars/star"
 	authcmd "github.com/QOSGroup/qstars/x/auth/client/cli"
 	bankcmd "github.com/QOSGroup/qstars/x/bank"
+	"github.com/QOSGroup/qstars/x/kvstore"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/QOSGroup/qstars/client"
-	"github.com/QOSGroup/qstars/client/tx"
-	"github.com/QOSGroup/qstars/client/rpc"
-	"github.com/QOSGroup/qstars/x/kvstore"
-	"github.com/QOSGroup/qstars/client/lcd"
-	"github.com/QOSGroup/qstars/star"
-	"github.com/QOSGroup/qbase/txs"
-
+	"os"
 )
 
 // rootCmd is the entry point for this binary

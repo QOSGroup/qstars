@@ -56,6 +56,30 @@ func NewCLIContext() CLIContext {
 	}
 }
 
+// NewCLIContext returns a new initialized CLIContext with parameters from the
+// command line using Viper.
+func NewOQSCLIContext() CLIContext {
+	var rpc rpcclient.Client
+
+	nodeURI := viper.GetString(client.FlagQOSNode)
+	if nodeURI != "" {
+		rpc = rpcclient.NewHTTP(nodeURI, "/websocket")
+	}
+
+	return CLIContext{
+		Client:          rpc,
+		NodeURI:         nodeURI,
+		AccountStore:    ctxAccStoreName,
+		FromAddressName: viper.GetString(client.FlagFrom),
+		Height:          viper.GetInt64(client.FlagHeight),
+		TrustNode:       viper.GetBool(client.FlagTrustNode),
+		UseLedger:       viper.GetBool(client.FlagUseLedger),
+		Async:           viper.GetBool(client.FlagAsync),
+		JSON:            viper.GetBool(client.FlagJson),
+		PrintResponse:   viper.GetBool(client.FlagPrintResponse),
+	}
+}
+
 // WithCodec returns a copy of the context with an updated codec.
 func (ctx CLIContext) WithCodec(cdc *wire.Codec) CLIContext {
 	ctx.Codec = cdc

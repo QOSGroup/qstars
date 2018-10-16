@@ -7,14 +7,13 @@ import (
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/wire"
 
+	"fmt"
+	"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"fmt"
-	"github.com/QOSGroup/qbase/txs"
-	"github.com/QOSGroup/qbase/types"
-
 )
 
 const (
@@ -46,11 +45,9 @@ func SendKVCmd(cdc *wire.Codec) *cobra.Command {
 			copy(priv[:], bz)
 			//_, addrben32 := utility.PubAddrRetrieval(privatekey)
 
-			txStd := wrapToStdTx(key, value,"chainid")
+			txStd := wrapToStdTx(key, value, "chainid")
 
-
-
-			response,err := utils.SendTx( cliCtx,cdc,txStd,priv)
+			response, err := utils.SendTx(cliCtx, cdc, txStd, priv)
 			fmt.Println(response)
 			return err
 		},

@@ -13,7 +13,6 @@ import (
 	"github.com/QOSGroup/qstars/client"
 
 	sdk "github.com/QOSGroup/qstars/types"
-
 )
 
 // KeyDBName is the directory under root where we store the keys

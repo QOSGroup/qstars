@@ -1,9 +1,10 @@
 package bank
 
 import (
-	sdk "github.com/QOSGroup/qstars/types"
 	"encoding/json"
+	sdk "github.com/QOSGroup/qstars/types"
 )
+
 //----------------------------------------
 // Input
 

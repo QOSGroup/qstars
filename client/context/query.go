@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-		"github.com/QOSGroup/qstars/x/auth"
+	"github.com/QOSGroup/qstars/x/auth"
 
 	"github.com/pkg/errors"
 
@@ -39,8 +39,7 @@ func (ctx CLIContext) QueryStore(key cmn.HexBytes, storeName string) (res []byte
 // store name.
 func (ctx CLIContext) QueryQOSAccount(key cmn.HexBytes, storeName string) (res []byte, err error) {
 
-	path := fmt.Sprintf("/qstaracc/%s/key", storeName, key)
-	return ctx.query(path, key)
+	return ctx.query("/store/acc/key", key)
 
 }
 
@@ -59,16 +58,19 @@ func (ctx CLIContext) GetAccount(address []byte) (auth.QAccount, error) {
 		return nil, errors.New("account decoder required but not provided")
 	}
 
-	//res, err := ctx.QueryQOSAccount(auth.AddressStoreKey(address), ctx.AccountStore)
-	//if err != nil {
-	//	return nil, err
-	//} else if len(res) == 0 {
-	//	return nil, err
-	//}
-	res,err := ctx.Codec.MarshalBinary(genNewAccount())
+	res, err := ctx.QueryQOSAccount(auth.AddressStoreKey(address), ctx.AccountStore)
 	if err != nil {
 		return nil, err
+	} else if len(res) == 0 {
+		return nil, err
 	}
+
+	//res,err = ctx.Codec.MarshalBinary(res) //genNewAccount())
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	res, err = ctx.Codec.MarshalBinary(genNewAccount())
 	account, err := ctx.AccDecoder(res)
 	if err != nil {
 		return nil, err
@@ -76,30 +78,6 @@ func (ctx CLIContext) GetAccount(address []byte) (auth.QAccount, error) {
 
 	return account, nil
 }
-
-
-
-//// GetAccountNumber returns the next account number for the given account
-//// address.
-//func (ctx CLIContext) GetAccountNumber(address []byte) (int64, error) {
-//	account, err := ctx.GetAccount(address)
-//	if err != nil {
-//		return 0, err
-//	}
-//
-//	return account.GetAccountNumber(), nil
-//}
-//
-//// GetAccountSequence returns the sequence number for the given account
-//// address.
-//func (ctx CLIContext) GetAccountSequence(address []byte) (int64, error) {
-//	account, err := ctx.GetAccount(address)
-//	if err != nil {
-//		return 0, err
-//	}
-//
-//	return account.GetSequence(), nil
-//}
 
 // BroadcastTx broadcasts transaction bytes to a Tendermint node.
 func (ctx CLIContext) BroadcastTx(tx []byte) (*ctypes.ResultBroadcastTxCommit, error) {
@@ -144,16 +122,14 @@ func (ctx CLIContext) BroadcastTxAsync(tx []byte) (*ctypes.ResultBroadcastTx, er
 	return res, err
 }
 
-
-
 // EnsureBroadcastTx broadcasts a transactions either synchronously or
 // asynchronously based on the context parameters. The result of the broadcast
 // is parsed into an intermediate structure which is logged if the context has
 // a logger defined.
 func (ctx CLIContext) EnsureBroadcastTx(txBytes []byte) (*ctypes.ResultBroadcastTxCommit, error) {
 	if ctx.Async {
-		_,err := ctx.ensureBroadcastTxAsync(txBytes)
-		return nil,err
+		_, err := ctx.ensureBroadcastTxAsync(txBytes)
+		return nil, err
 	}
 
 	return ctx.ensureBroadcastTx(txBytes)
@@ -162,7 +138,7 @@ func (ctx CLIContext) EnsureBroadcastTx(txBytes []byte) (*ctypes.ResultBroadcast
 func (ctx CLIContext) ensureBroadcastTxAsync(txBytes []byte) (*ctypes.ResultBroadcastTx, error) {
 	res, err := ctx.BroadcastTxAsync(txBytes)
 	if err != nil {
-		return res,err
+		return res, err
 	}
 
 	if ctx.JSON {
@@ -174,7 +150,7 @@ func (ctx CLIContext) ensureBroadcastTxAsync(txBytes []byte) (*ctypes.ResultBroa
 			resJSON := toJSON{res.Hash.String()}
 			bz, err := ctx.Codec.MarshalJSON(resJSON)
 			if err != nil {
-				return res,err
+				return res, err
 			}
 
 			ctx.Logger.Write(bz)
@@ -186,13 +162,13 @@ func (ctx CLIContext) ensureBroadcastTxAsync(txBytes []byte) (*ctypes.ResultBroa
 		}
 	}
 
-	return res,nil
+	return res, nil
 }
 
 func (ctx CLIContext) ensureBroadcastTx(txBytes []byte) (*ctypes.ResultBroadcastTxCommit, error) {
 	res, err := ctx.BroadcastTx(txBytes)
 	if err != nil {
-		return res,err
+		return res, err
 	}
 
 	if ctx.JSON {
@@ -208,14 +184,14 @@ func (ctx CLIContext) ensureBroadcastTx(txBytes []byte) (*ctypes.ResultBroadcast
 			resJSON := toJSON{res.Height, res.Hash.String(), fmt.Sprintf("%+v", res.DeliverTx)}
 			bz, err := ctx.Codec.MarshalJSON(resJSON)
 			if err != nil {
-				return res,err
+				return res, err
 			}
 
 			ctx.Logger.Write(bz)
 			io.WriteString(ctx.Logger, "\n")
 		}
 
-		return res,nil
+		return res, nil
 	}
 
 	if ctx.Logger != nil {
@@ -230,7 +206,7 @@ func (ctx CLIContext) ensureBroadcastTx(txBytes []byte) (*ctypes.ResultBroadcast
 		io.WriteString(ctx.Logger, resStr)
 	}
 
-	return res,nil
+	return res, nil
 }
 
 // query performs a query from a Tendermint node with the provided store name

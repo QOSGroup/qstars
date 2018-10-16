@@ -2,11 +2,11 @@ package context
 
 import (
 	"github.com/QOSGroup/qbase/account"
-	"github.com/QOSGroup/qos/types"
+	btypes "github.com/QOSGroup/qbase/types"
 	qosacc "github.com/QOSGroup/qos/account"
+	"github.com/QOSGroup/qos/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	btypes "github.com/QOSGroup/qbase/types"
 )
 
 func keyPubAddr() (crypto.PrivKey, crypto.PubKey, btypes.Address) {
@@ -16,7 +16,7 @@ func keyPubAddr() (crypto.PrivKey, crypto.PubKey, btypes.Address) {
 	return key, pub, addr
 }
 
-func genNewAccount() (qosAccount qosacc.QOSAccount){
+func genNewAccount() (qosAccount qosacc.QOSAccount) {
 	_, pub, addr := keyPubAddr()
 	coinList := []*types.QSC{
 		types.NewQSC("QSC1", btypes.NewInt(1234)),

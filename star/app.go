@@ -11,7 +11,7 @@ import (
 )
 
 func NewApp(logger log.Logger, storeTracer io.Writer, rootDir string) abci.Application {
-	app:= baseapp.NewAPP(rootDir)
+	app := baseapp.NewAPP(rootDir)
 	app.Register(kvstore.NewKVStub())
 
 	app.Start()

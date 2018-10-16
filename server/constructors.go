@@ -23,7 +23,7 @@ type (
 
 	// AppCreatorInit reflects a function that performs initialization of an
 	// AppCreator.
-	AppCreatorInit func(log.Logger, io.Writer,  string) abci.Application
+	AppCreatorInit func(log.Logger, io.Writer, string) abci.Application
 
 	// AppExporterInit reflects a function that performs initialization of an
 	// AppExporter.

@@ -1,14 +1,15 @@
 package rest
 
 import (
-	"github.com/QOSGroup/qstars/client/context"
-	"github.com/gorilla/mux"
-	"github.com/QOSGroup/qstars/wire"
-		"net/http"
-		"github.com/tendermint/tendermint/libs/common"
 	"fmt"
-			"io/ioutil"
-		)
+	"github.com/QOSGroup/qstars/client/context"
+	"github.com/QOSGroup/qstars/wire"
+	"github.com/gorilla/mux"
+	"github.com/tendermint/tendermint/libs/common"
+	"io/ioutil"
+	"net/http"
+)
+
 type SendKVBody struct {
 	Key        string `json:"key"`
 	Value      string `json:"value"`
@@ -26,12 +27,12 @@ func init() {
 func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *wire.Codec, storeName string) {
 	r.HandleFunc(
 		"/kv/{key}",
-		QueryKRequestHandlerFnGet(storeName, cdc,  cliCtx),
+		QueryKRequestHandlerFnGet(storeName, cdc, cliCtx),
 	).Methods("GET")
 
 	r.HandleFunc(
 		"/kv",
-		QueryKVRequestHandlerFnSet(storeName, cdc,  cliCtx),
+		QueryKVRequestHandlerFnSet(storeName, cdc, cliCtx),
 	).Methods("POST")
 }
 
@@ -47,7 +48,7 @@ func QueryKRequestHandlerFnGet(
 		cliCtx := context.NewCLIContext().
 			WithCodec(cdc)
 
-		res, err := cliCtx.QueryStore(common.HexBytes(key),storeName)
+		res, err := cliCtx.QueryStore(common.HexBytes(key), storeName)
 		//res, err := clictx.Query(path)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -70,7 +71,6 @@ func QueryKVRequestHandlerFnSet(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-
 		var m SendKVBody
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -79,9 +79,9 @@ func QueryKVRequestHandlerFnSet(
 			return
 		}
 		fmt.Println(string(body))
-		m.Key="key"
+		m.Key = "key"
 		m.Value = "value"
-		o,err := msgCdc.MarshalJSON(m)
+		o, err := msgCdc.MarshalJSON(m)
 		fmt.Println(string(o))
 		err = msgCdc.UnmarshalJSON(body, &m)
 		if err != nil {
@@ -114,4 +114,3 @@ func QueryKVRequestHandlerFnSet(
 		//w.Write([]byte(response))
 	}
 }
-
