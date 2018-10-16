@@ -23,7 +23,7 @@ type (
 
 	// AppCreatorInit reflects a function that performs initialization of an
 	// AppCreator.
-	AppCreatorInit func(log.Logger, dbm.DB, io.Writer) abci.Application
+	AppCreatorInit func(log.Logger, io.Writer,  string) abci.Application
 
 	// AppExporterInit reflects a function that performs initialization of an
 	// AppExporter.
@@ -33,13 +33,8 @@ type (
 // ConstructAppCreator returns an application generation function.
 func ConstructAppCreator(appFn AppCreatorInit, name string) AppCreator {
 	return func(rootDir string, logger log.Logger, traceStore string) (abci.Application, error) {
-		dataDir := filepath.Join(rootDir, "data")
 
-		db, err := dbm.NewGoLevelDB(name, dataDir)
-		if err != nil {
-			return nil, err
-		}
-
+		var err error
 		var traceStoreWriter io.Writer
 		if traceStore != "" {
 			traceStoreWriter, err = os.OpenFile(
@@ -52,7 +47,7 @@ func ConstructAppCreator(appFn AppCreatorInit, name string) AppCreator {
 			}
 		}
 
-		app := appFn(logger, db, traceStoreWriter)
+		app := appFn(logger, traceStoreWriter, rootDir)
 		return app, nil
 	}
 }

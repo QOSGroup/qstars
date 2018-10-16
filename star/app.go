@@ -1,18 +1,17 @@
 package star
 
 import (
-	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/baseapp"
+	"github.com/QOSGroup/qstars/wire"
 
 	"github.com/QOSGroup/qstars/x/kvstore"
-	dbm "github.com/tendermint/tendermint/libs/db"
-	"github.com/tendermint/tendermint/libs/log"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
 	"io"
 )
 
-func NewApp(logger log.Logger, db dbm.DB, storeTracer io.Writer) abci.Application {
-	app:= baseapp.NewAPP()
+func NewApp(logger log.Logger, storeTracer io.Writer, rootDir string) abci.Application {
+	app:= baseapp.NewAPP(rootDir)
 	app.Register(kvstore.NewKVStub())
 
 	app.Start()

@@ -74,12 +74,14 @@ func GetKVCmd(cdc *wire.Codec) *cobra.Command {
 		Use:   "kvget",
 		Short: "Create and sign a send set kv tx",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//cliCtx := context.NewCLIContext().
-			//	WithCodec(cdc).
-			//	WithLogger(os.Stdout)
+			cliCtx := context.NewCLIContext().
+				WithCodec(cdc).
+				WithLogger(os.Stdout)
+			key := viper.GetString(flagKey)
+			result, err := cliCtx.QueryKV([]byte(key))
 
-
-			return nil
+			fmt.Println(string(result))
+			return err
 		},
 	}
 

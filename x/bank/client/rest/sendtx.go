@@ -10,11 +10,11 @@ import (
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/bank"
 
+	"fmt"
+	"github.com/QOSGroup/qstars/utility"
 	authcmd "github.com/QOSGroup/qstars/x/auth/client/cli"
 	"github.com/gorilla/mux"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/QOSGroup/qstars/utility"
-	"fmt"
 )
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
@@ -111,16 +111,9 @@ func SendRequestHandlerFn(cdc *wire.Codec, kb keys.Keybase, cliCtx context.CLICo
 		}
 
 		fmt.Println(to.String())
-		//txCtx := authctx.TxContext{
-		//	Codec:         cdc,
-		//	Gas:           m.Gas,
-		//	ChainID:       m.ChainID,
-		//	AccountNumber: m.AccountNumber,
-		//	Sequence:      m.Sequence,
-		//}
-		//
+
 		//msg := client.BuildMsg(from, to, coins)
-		//
+
 		//response,err := utils.SendTx(txCtx, cliCtx, []sdk.Msg{msg},priv)
 
 		//if err == nil{
