@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/QOSGroup/qstars/server"
-	"github.com/spf13/cobra"
-	"os"
-	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/QOSGroup/qstars/star"
-	)
+	"github.com/spf13/cobra"
+	"github.com/tendermint/tendermint/libs/cli"
+	"os"
+)
 
 func main() {
 
@@ -43,4 +43,3 @@ func main() {
 
 	return
 }
-

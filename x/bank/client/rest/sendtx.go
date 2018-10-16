@@ -25,12 +25,12 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *wire.Codec, k
 type sendBody struct {
 	// fees is not used currently
 	// Fees             sdk.Coin  `json="fees"`
-	Amount           string `json:"amount"`
-	PirvateKey string    `json:"privatekey"`
-	ChainID          string    `json:"chain_id"`
-	AccountNumber    int64     `json:"account_number"`
-	Sequence         int64     `json:"sequence"`
-	Gas              int64     `json:"gas"`
+	Amount        string `json:"amount"`
+	PirvateKey    string `json:"privatekey"`
+	ChainID       string `json:"chain_id"`
+	AccountNumber int64  `json:"account_number"`
+	Sequence      int64  `json:"sequence"`
+	Gas           int64  `json:"gas"`
 }
 
 //send --from=GEPPkslt1Duwnb4B4W8OT1h311LYpo9GuJygHCE6mhH6iq1A17jIzMEzf6NiXUi6iGjDyoj9/GAhzSeyZqIzWg== --amount=3QSC1 --to=cosmosaccaddr120ws5500u0q8q75k70uetqp2xnysus5t4x9ug9 --sequence=1 --chain-id=test-chain-AE4XQo
@@ -77,7 +77,7 @@ func SendRequestHandlerFn(cdc *wire.Codec, kb keys.Keybase, cliCtx context.CLICo
 		//---------------------------------------------------------
 		var priv ed25519.PrivKeyEd25519
 		bz := utility.Decbase64(fromstr)
-		copy(priv[:],bz)
+		copy(priv[:], bz)
 		//Teddy changes
 		_, addrben32 := utility.PubAddrRetrieval(fromstr)
 
@@ -95,7 +95,7 @@ func SendRequestHandlerFn(cdc *wire.Codec, kb keys.Keybase, cliCtx context.CLICo
 			return
 		}
 
-		amount:= m.Amount
+		amount := m.Amount
 		coins, err := sdk.ParseCoins(amount)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)

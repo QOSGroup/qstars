@@ -1,8 +1,8 @@
 package auth
 
 import (
-			qos "github.com/QOSGroup/qos/account"
-	 types "github.com/QOSGroup/qstars/types"
+	qos "github.com/QOSGroup/qos/account"
+	types "github.com/QOSGroup/qstars/types"
 )
 
 // Account is a standard account using a sequence number for replay protection
@@ -20,13 +20,13 @@ type AccountDecoder func(accountBytes []byte) (QAccount, error)
 
 type QStarsAccount struct {
 	QosAccount qos.QOSAccount
-	QCoins types.Coins
+	QCoins     types.Coins
 }
 
-func (acc QStarsAccount) GetQOSAccount() qos.QOSAccount{
+func (acc QStarsAccount) GetQOSAccount() qos.QOSAccount {
 	return acc.QosAccount
 }
 
-func (acc QStarsAccount) GetCoins() types.Coins{
+func (acc QStarsAccount) GetCoins() types.Coins {
 	return acc.QCoins
 }

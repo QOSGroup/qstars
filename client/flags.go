@@ -7,6 +7,7 @@ const (
 	FlagUseLedger     = "ledger"
 	FlagChainID       = "chain-id"
 	FlagNode          = "node"
+	FlagQOSNode       = "qosnode"
 	FlagHeight        = "height"
 	FlagGas           = "gas"
 	FlagTrustNode     = "trust-node"

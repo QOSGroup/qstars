@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -62,10 +61,8 @@ func queryTx(cdc *wire.Codec, cliCtx context.CLIContext, hashHexStr string, trus
 		return nil, err
 	}
 
-
 	return wire.MarshalJSONIndent(cdc, nil)
 }
-
 
 // REST
 

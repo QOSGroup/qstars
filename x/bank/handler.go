@@ -2,20 +2,18 @@ package bank
 
 import "github.com/QOSGroup/qbase/types"
 
-
-
 import (
+	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/qcp"
+	"github.com/QOSGroup/qbase/store"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/baseapp"
-	"github.com/QOSGroup/qbase/store"
-	"fmt"
 	"os"
 
-	go_amino "github.com/tendermint/go-amino"
 	"github.com/QOSGroup/qstars/x/kvstore"
+	go_amino "github.com/tendermint/go-amino"
 )
 
 type KvstoreTx struct {
@@ -44,7 +42,7 @@ func (kv KvstoreTx) StartX(base *baseapp.QstarsBaseApp) {
 	}
 }
 
-func (kv KvstoreTx) RegisterKVCdc(cdc *go_amino.Codec){
+func (kv KvstoreTx) RegisterKVCdc(cdc *go_amino.Codec) {
 
 	txs.RegisterCodec(cdc)
 	cdc.RegisterConcrete(&kvstore.KvstoreTx{}, "kvstore/main/kvstoretx", nil)
@@ -110,4 +108,3 @@ func (kv KvstoreTx) GetSignData() []byte {
 
 	return signData
 }
-

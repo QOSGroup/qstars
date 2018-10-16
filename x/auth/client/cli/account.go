@@ -12,13 +12,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+
+	"github.com/QOSGroup/qstars/client"
 )
-
-
 
 //GetAccountDecoder gets the account decoder for auth.DefaultAccount.
 func GetAccountDecoder(cdc *wire.Codec) auth.AccountDecoder {
-	return func(accBytes []byte) ( auth.QAccount,  error) {
+	return func(accBytes []byte) (auth.QAccount, error) {
 		qacc := qos.QOSAccount{}
 		var err = cdc.UnmarshalBinary(accBytes, &qacc)
 		if err != nil {
@@ -27,11 +27,11 @@ func GetAccountDecoder(cdc *wire.Codec) auth.AccountDecoder {
 
 		//var coins [len(qacc.QscList)]qstarstypes.Coin
 		var coins qstarstypes.Coins
-		for _, qsc := range qacc.QscList{
+		for _, qsc := range qacc.QscList {
 			amount := qsc.Amount
-			coins = append(coins, qstarstypes.NewCoin(qsc.Name,qstarstypes.NewInt(amount.Int64())))
+			coins = append(coins, qstarstypes.NewCoin(qsc.Name, qstarstypes.NewInt(amount.Int64())))
 		}
-		acct := auth.QStarsAccount{QosAccount:qacc,QCoins:coins}
+		acct := auth.QStarsAccount{QosAccount: qacc, QCoins: coins}
 
 		return acct, err
 	}
@@ -40,8 +40,8 @@ func GetAccountDecoder(cdc *wire.Codec) auth.AccountDecoder {
 // GetAccountCmd returns a query account that will display the state of the
 // account at a given address.
 //, decoder auth.AccountDecoder
-func GetAccountCmd(storeName string, cdc *wire.Codec,decoder auth.AccountDecoder) *cobra.Command {
-	return &cobra.Command{
+func GetAccountCmd(storeName string, cdc *wire.Codec, decoder auth.AccountDecoder) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "account [address]",
 		Short: "Query account balance",
 		Args:  cobra.ExactArgs(1),
@@ -54,7 +54,7 @@ func GetAccountCmd(storeName string, cdc *wire.Codec,decoder auth.AccountDecoder
 				return err
 			}
 
-			cliCtx := context.NewCLIContext().
+			cliCtx := context.NewOQSCLIContext().
 				WithCodec(cdc).
 				WithAccountDecoder(decoder)
 
@@ -82,4 +82,7 @@ func GetAccountCmd(storeName string, cdc *wire.Codec,decoder auth.AccountDecoder
 			return nil
 		},
 	}
+
+	cmd.Flags().String(client.FlagQOSNode, "", "URL of QOS")
+	return cmd
 }

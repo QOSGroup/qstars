@@ -468,5 +468,3 @@ func GenerateCoinKey() (sdk.AccAddress, string, error) {
 	addr := info.GetPubKey().Address()
 	return sdk.AccAddress(addr), secret, nil
 }
-
-

@@ -1,9 +1,11 @@
-package main 
+package main
+
 import "C"
 import (
 	"fmt"
-		"github.com/QOSGroup/qstars/stub"
+	"github.com/QOSGroup/qstars/stub"
 )
+
 // ----------------------------------------------------------------------------
 // source code for so file generation with command, e.g. go build go build -o awesome.so -buildmode=c-shared awesome.go
 // ----------------------------------------------------------------------------
@@ -13,7 +15,6 @@ import (
 //
 //}
 
-
 //export AccountCreate
 func AccountCreate() *C.char {
 	output := stub.AccountCreateStr()
@@ -21,8 +22,8 @@ func AccountCreate() *C.char {
 }
 
 //export QSCKVStoreSet
-func QSCKVStoreSet(k,v,privkey,chain *C.char) int {
-	output := stub.QSCKVStoreSetPost(C.GoString(k),C.GoString(v),C.GoString(privkey),C.GoString(chain))
+func QSCKVStoreSet(k, v, privkey, chain *C.char) int {
+	output := stub.QSCKVStoreSetPost(C.GoString(k), C.GoString(v), C.GoString(privkey), C.GoString(chain))
 	return output
 }
 
@@ -44,8 +45,8 @@ func QSCMintCoin() {
 }
 
 //export QSCtransfer
-func QSCtransfer(ul,a,privkey,chain,ac,seq,g *C.char) *C.char {
-	output := stub.QSCtransferPost(C.GoString(ul),C.GoString(a),C.GoString(privkey),C.GoString(chain),C.GoString(ac),C.GoString(seq),C.GoString(g))
+func QSCtransfer(ul, a, privkey, chain, ac, seq, g *C.char) *C.char {
+	output := stub.QSCtransferPost(C.GoString(ul), C.GoString(a), C.GoString(privkey), C.GoString(chain), C.GoString(ac), C.GoString(seq), C.GoString(g))
 	return C.CString(output)
 }
 
@@ -61,7 +62,6 @@ func QSCtoQOStransfer() {
 
 func main() {
 	//AccountCreate()
-//	out := QSCQueryAccount("http://localhost:1317/accounts/cosmosaccaddr1nskqcg35k8du3ydhntkcqjxtk254qv8me943mv")
-//	fmt.Println(out)
+	//	out := QSCQueryAccount("http://localhost:1317/accounts/cosmosaccaddr1nskqcg35k8du3ydhntkcqjxtk254qv8me943mv")
+	//	fmt.Println(out)
 }
-

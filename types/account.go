@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
+	"github.com/QOSGroup/qbase/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
 
@@ -18,8 +18,7 @@ const (
 	AddrLen = 20
 
 	// Bech32 prefixes
-	Bech32PrefixAccAddr = "cosmosaccaddr"
-	Bech32PrefixAccPub  = "cosmosaccpub"
+	Bech32PrefixAccPub  = "pub"
 	Bech32PrefixValAddr = "cosmosvaladdr"
 	Bech32PrefixValPub  = "cosmosvalpub"
 )
@@ -44,7 +43,7 @@ func AccAddressFromHex(address string) (addr AccAddress, err error) {
 
 // create an AccAddress from a bech32 string
 func AccAddressFromBech32(address string) (addr AccAddress, err error) {
-	bz, err := GetFromBech32(address, Bech32PrefixAccAddr)
+	bz, err := GetFromBech32(address, types.PREF_ADD)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +88,7 @@ func (bz AccAddress) Bytes() []byte {
 }
 
 func (bz AccAddress) String() string {
-	bech32Addr, err := bech32.ConvertAndEncode(Bech32PrefixAccAddr, bz.Bytes())
+	bech32Addr, err := bech32.ConvertAndEncode(types.PREF_ADD, bz.Bytes())
 	if err != nil {
 		panic(err)
 	}

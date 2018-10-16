@@ -1,15 +1,13 @@
 package cli
 
 import (
-"fmt"
+	"fmt"
 
-"github.com/spf13/cobra"
+	"github.com/spf13/cobra"
 
-"github.com/QOSGroup/qstars/wire"
-"github.com/QOSGroup/qstars/stub"
+	"github.com/QOSGroup/qstars/stub"
+	"github.com/QOSGroup/qstars/wire"
 )
-
-
 
 // GetAccountCmd returns a query account that will display the state of the
 // account at a given address.
@@ -27,4 +25,3 @@ func CreateAccountCmd(cdc *wire.Codec) *cobra.Command {
 		},
 	}
 }
-

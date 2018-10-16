@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"github.com/QOSGroup/qstars/client/context"
-				"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 // SendTx implements a auxiliary handler that facilitates sending a series of
@@ -12,10 +12,7 @@ import (
 // ensures that the account exists, has a proper number and sequence set. In
 // addition, it builds and signs a transaction with the supplied messages.
 // Finally, it broadcasts the signed transaction to a node.
-func SendTx( cliCtx context.CLIContext, cdc *wire.Codec, txStd *txs.TxStd ,priv ed25519.PrivKeyEd25519) (string,error) {
-
-
-
+func SendTx(cliCtx context.CLIContext, cdc *wire.Codec, txStd *txs.TxStd, priv ed25519.PrivKeyEd25519) (string, error) {
 
 	txBytes, err := cdc.MarshalBinaryBare(txStd)
 	if err != nil {
@@ -23,10 +20,10 @@ func SendTx( cliCtx context.CLIContext, cdc *wire.Codec, txStd *txs.TxStd ,priv 
 	}
 
 	// broadcast to a Tendermint node
-	resJSON,err := cliCtx.EnsureBroadcastTx(txBytes)
+	resJSON, err := cliCtx.EnsureBroadcastTx(txBytes)
 
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	return resJSON.Hash.String(),err
+	return resJSON.Hash.String(), err
 }

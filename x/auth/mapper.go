@@ -2,7 +2,7 @@ package auth
 
 import (
 	sdk "github.com/QOSGroup/qstars/types"
-		)
+)
 
 var globalAccountNumberKey = []byte("globalAccountNumber")
 
@@ -10,4 +10,3 @@ var globalAccountNumberKey = []byte("globalAccountNumber")
 func AddressStoreKey(addr sdk.AccAddress) []byte {
 	return append([]byte("account:"), addr.Bytes()...)
 }
-

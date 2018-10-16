@@ -10,8 +10,8 @@ import (
 	"github.com/QOSGroup/qstars/x/auth"
 	authcmd "github.com/QOSGroup/qstars/x/auth/client/cli"
 
-	"github.com/gorilla/mux"
 	"github.com/QOSGroup/qstars/stub"
+	"github.com/gorilla/mux"
 )
 
 // register REST routes
@@ -60,7 +60,6 @@ func QueryAccountRequestHandlerFn(
 
 		res, err := cliCtx.QueryQOSAccount(auth.AddressStoreKey(address), cliCtx.AccountStore)
 
-
 		//res, err := cliCtx.QueryStore(auth.AddressStoreKey(addr), storeName)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -76,7 +75,6 @@ func QueryAccountRequestHandlerFn(
 
 		// decode the value
 
-
 		account, err := cliCtx.AccDecoder(res)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -85,7 +83,7 @@ func QueryAccountRequestHandlerFn(
 		}
 
 		// print out whole account
-		output, err := wire.MarshalJSONIndent(cdc,account)
+		output, err := wire.MarshalJSONIndent(cdc, account)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(fmt.Sprintf("couldn't marshall query result. Error: %s", err.Error())))

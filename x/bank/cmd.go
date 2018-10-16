@@ -15,10 +15,10 @@ import (
 	"os"
 
 	qbasetxs "github.com/QOSGroup/qbase/txs"
-	txs "github.com/QOSGroup/qos/txs"
 	qos "github.com/QOSGroup/qos/account"
-	authcmd "github.com/QOSGroup/qstars/x/auth/client/cli"
+	txs "github.com/QOSGroup/qos/txs"
 	sdk "github.com/QOSGroup/qstars/types"
+	authcmd "github.com/QOSGroup/qstars/x/auth/client/cli"
 
 	qbtype "github.com/QOSGroup/qbase/types"
 )
@@ -26,7 +26,7 @@ import (
 const (
 	flagTo     = "to"
 	flagAmount = "amount"
-	flagFrom = "from"
+	flagFrom   = "from"
 )
 
 // SendTxCmd will create a send tx and sign it with the given key.
@@ -62,7 +62,7 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 
 			var priv ed25519.PrivKeyEd25519
 			bz := utility.Decbase64(fromstr)
-			copy(priv[:],bz)
+			copy(priv[:], bz)
 			_, addrben32 := utility.PubAddrRetrieval(fromstr)
 
 			from, err := sdk.AccAddressFromBech32(addrben32)
@@ -93,9 +93,9 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 			}
 
 			// build and sign the transaction, then broadcast to Tendermint
-			msg := BuildMsg(from, to, coins,cdc)
+			msg := BuildMsg(from, to, coins, cdc)
 
-			response,err := utils.SendTx(cliCtx, cdc, msg, priv)
+			response, err := utils.SendTx(cliCtx, cdc, msg, priv)
 			fmt.Println(response)
 			return nil
 		},
@@ -107,9 +107,9 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 	return cmd
 }
 
-func BuildMsg(from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins,cdc *wire.Codec) *qbasetxs.TxStd {
+func BuildMsg(from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins, cdc *wire.Codec) *qbasetxs.TxStd {
 
-	tx:= txs.TxTransform{}
+	tx := txs.TxTransform{}
 	receiver := txs.AddrTrans{}
 	receiver.Amount = qbtype.NewInt(coins[0].Amount.Int64())
 	receiver.QscName = coins[0].Denom
@@ -122,7 +122,7 @@ func BuildMsg(from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins,cdc *wire.
 	tx.Senders[0] = sender
 
 	stdTx := qbasetxs.TxStd{}
-//	stdTx.ITx = tx
+	//	stdTx.ITx = tx
 	stdTx.ChainID = "chainid"
 
 	return &stdTx
