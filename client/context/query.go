@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/QOSGroup/qstars/x/auth"
-
 	"github.com/pkg/errors"
 
+	qosacc "github.com/QOSGroup/qos/account"
 	"github.com/tendermint/tendermint/libs/common"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
@@ -53,30 +52,21 @@ func (ctx CLIContext) QueryKV(key cmn.HexBytes) (res []byte, err error) {
 
 // GetAccount queries for an account given an address and a block height. An
 // error is returned if the query or decoding fails.
-func (ctx CLIContext) GetAccount(address []byte) (auth.QAccount, error) {
-	if ctx.AccDecoder == nil {
-		return nil, errors.New("account decoder required but not provided")
-	}
+func (ctx CLIContext) GetAccount(address []byte) (*qosacc.QOSAccount, error) {
 
-	res, err := ctx.QueryQOSAccount(auth.AddressStoreKey(address), ctx.AccountStore)
-	if err != nil {
-		return nil, err
-	} else if len(res) == 0 {
-		return nil, err
-	}
-
-	//res,err = ctx.Codec.MarshalBinary(res) //genNewAccount())
+	//res, err := ctx.QueryQOSAccount(address, ctx.AccountStore)
 	//if err != nil {
+	//	return nil, err
+	//} else if len(res) == 0 {
 	//	return nil, err
 	//}
 
-	res, err = ctx.Codec.MarshalBinary(genNewAccount())
-	account, err := ctx.AccDecoder(res)
+	_, err := ctx.Codec.MarshalBinary(genNewAccount())
 	if err != nil {
 		return nil, err
 	}
-
-	return account, nil
+	account := genNewAccount()
+	return &account, nil
 }
 
 // BroadcastTx broadcasts transaction bytes to a Tendermint node.

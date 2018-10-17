@@ -7,7 +7,7 @@ import (
 	client "github.com/QOSGroup/qstars/client"
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/wire"
-	auth "github.com/QOSGroup/qstars/x/auth/client/rest"
+	auth "github.com/QOSGroup/qstars/x/auth"
 	bank "github.com/QOSGroup/qstars/x/bank/client/rest"
 	kvstore "github.com/QOSGroup/qstars/x/kvstore/rest"
 	"github.com/gorilla/mux"
@@ -72,7 +72,7 @@ func createHandler(cdc *wire.Codec) http.Handler {
 	CLIVersionRegisterRoutes(cliCtx, r)
 	NodeVersionRegisterRoutes(cliCtx, r)
 
-	auth.RegisterRoutes(cliCtx, r, cdc, "acc")
+	auth.RegisterRoutes(cdc, r)
 	bank.RegisterRoutes(cliCtx, r, cdc, nil)
 	kvstore.RegisterRoutes(cliCtx, r, cdc, "main")
 	//ibc.RegisterRoutes(cliCtx, r, cdc, kb)

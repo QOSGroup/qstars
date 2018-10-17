@@ -5,7 +5,6 @@ import (
 
 	"github.com/QOSGroup/qstars/client"
 	"github.com/QOSGroup/qstars/wire"
-	"github.com/QOSGroup/qstars/x/auth"
 
 	"github.com/spf13/viper"
 
@@ -18,7 +17,6 @@ const ctxAccStoreName = "qosaccount"
 // transaction handling and queries.
 type CLIContext struct {
 	Codec           *wire.Codec
-	AccDecoder      auth.AccountDecoder
 	Client          rpcclient.Client
 	Logger          io.Writer
 	Height          int64
@@ -83,13 +81,6 @@ func NewOQSCLIContext() CLIContext {
 // WithCodec returns a copy of the context with an updated codec.
 func (ctx CLIContext) WithCodec(cdc *wire.Codec) CLIContext {
 	ctx.Codec = cdc
-	return ctx
-}
-
-// WithAccountDecoder returns a copy of the context with an updated account
-// decoder.
-func (ctx CLIContext) WithAccountDecoder(decoder auth.AccountDecoder) CLIContext {
-	ctx.AccDecoder = decoder
 	return ctx
 }
 

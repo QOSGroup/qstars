@@ -1,16 +1,17 @@
 package main
 
 import (
+	"os"
+
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client"
 	"github.com/QOSGroup/qstars/client/lcd"
 	"github.com/QOSGroup/qstars/star"
-	authcmd "github.com/QOSGroup/qstars/x/auth/client/cli"
+	authcmd "github.com/QOSGroup/qstars/x/auth"
 	bankcmd "github.com/QOSGroup/qstars/x/bank"
 	"github.com/QOSGroup/qstars/x/kvstore"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"
-	"os"
 )
 
 // rootCmd is the entry point for this binary
@@ -32,12 +33,11 @@ func main() {
 	// the below functions and eliminate global vars, like we do
 	// with the cdc.
 
-
 	// add query/post commands (custom to binary)
 	rootCmd.AddCommand(
 		client.GetCommands(
 
-			authcmd.GetAccountCmd("acc", cdc, authcmd.GetAccountDecoder(cdc)),
+			authcmd.GetAccountCmd(cdc),
 			authcmd.CreateAccountCmd(cdc),
 		)...)
 	//
