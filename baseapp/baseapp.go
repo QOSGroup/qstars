@@ -55,24 +55,4 @@ func (base *QstarsBaseApp) Start() {
 	})
 
 	base.loadX()
-
-	// Start the ABCI server
-	//srv, err := server.NewServer("0.0.0.0:26658", "socket", base.Baseapp)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	os.Exit(1)
-	//}
-	//err = srv.Start()
-	//if err != nil {
-	//	cmn.Exit(err.Error())
-	//}
-
-	// Wait forever
-	//cmn.TrapSignal(func() {
-	//	// Cleanup
-	//	err = srv.Stop()
-	//	if err != nil {
-	//		cmn.Exit(err.Error())
-	//	}
-	//})
 }
