@@ -6,9 +6,6 @@ import (
 
 	client "github.com/QOSGroup/qstars/client"
 	"github.com/QOSGroup/qstars/client/context"
-	keys "github.com/QOSGroup/qstars/client/keys"
-	rpc "github.com/QOSGroup/qstars/client/rpc"
-	tx "github.com/QOSGroup/qstars/client/tx"
 	"github.com/QOSGroup/qstars/wire"
 	auth "github.com/QOSGroup/qstars/x/auth/client/rest"
 	bank "github.com/QOSGroup/qstars/x/bank/client/rest"
@@ -70,10 +67,6 @@ func ServeCommand(cdc *wire.Codec) *cobra.Command {
 func createHandler(cdc *wire.Codec) http.Handler {
 	r := mux.NewRouter()
 
-	kb, err := keys.GetKeyBase() //XXX
-	if err != nil {
-		panic(err)
-	}
 
 	cliCtx := context.NewCLIContext().WithCodec(cdc).WithLogger(os.Stdout)
 
@@ -81,11 +74,9 @@ func createHandler(cdc *wire.Codec) http.Handler {
 	r.HandleFunc("/version", CLIVersionRequestHandler).Methods("GET")
 	r.HandleFunc("/node_version", NodeVersionRequestHandler(cliCtx)).Methods("GET")
 
-	keys.RegisterRoutes(r)
-	rpc.RegisterRoutes(cliCtx, r)
-	tx.RegisterRoutes(cliCtx, r, cdc)
+
 	auth.RegisterRoutes(cliCtx, r, cdc, "acc")
-	bank.RegisterRoutes(cliCtx, r, cdc, kb)
+	bank.RegisterRoutes(cliCtx, r, cdc, nil)
 	kvstore.RegisterRoutes(cliCtx, r, cdc, "main")
 	//ibc.RegisterRoutes(cliCtx, r, cdc, kb)
 	//stake.RegisterRoutes(cliCtx, r, cdc, kb)
