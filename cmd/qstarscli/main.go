@@ -4,8 +4,6 @@ import (
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client"
 	"github.com/QOSGroup/qstars/client/lcd"
-	"github.com/QOSGroup/qstars/client/rpc"
-	"github.com/QOSGroup/qstars/client/tx"
 	"github.com/QOSGroup/qstars/star"
 	authcmd "github.com/QOSGroup/qstars/x/auth/client/cli"
 	bankcmd "github.com/QOSGroup/qstars/x/bank"
@@ -34,11 +32,6 @@ func main() {
 	// the below functions and eliminate global vars, like we do
 	// with the cdc.
 
-	// add standard rpc, and tx commands
-	rpc.AddCommands(rootCmd)
-	rootCmd.AddCommand(client.LineBreak)
-	tx.AddCommands(rootCmd, cdc)
-	rootCmd.AddCommand(client.LineBreak)
 
 	// add query/post commands (custom to binary)
 	rootCmd.AddCommand(
