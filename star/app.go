@@ -8,9 +8,14 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	"io"
+	"os"
+	dbm "github.com/tendermint/tendermint/libs/db"
 )
 
-func NewApp(logger log.Logger, storeTracer io.Writer, rootDir string) abci.Application {
+func NewApp(log.Logger, dbm.DB, io.Writer) abci.Application {
+	//cfg := ctx.Config
+	//rootDir := cfg.RootDir
+	rootDir := os.ExpandEnv("$HOME/.qstarsd")
 	app := baseapp.NewAPP(rootDir)
 	app.Register(kvstore.NewKVStub())
 
