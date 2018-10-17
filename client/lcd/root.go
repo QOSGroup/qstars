@@ -67,13 +67,10 @@ func ServeCommand(cdc *wire.Codec) *cobra.Command {
 func createHandler(cdc *wire.Codec) http.Handler {
 	r := mux.NewRouter()
 
-
 	cliCtx := context.NewCLIContext().WithCodec(cdc).WithLogger(os.Stdout)
 
-	// TODO: make more functional? aka r = keys.RegisterRoutes(r)
-	r.HandleFunc("/version", CLIVersionRequestHandler).Methods("GET")
-	r.HandleFunc("/node_version", NodeVersionRequestHandler(cliCtx)).Methods("GET")
-
+	CLIVersionRegisterRoutes(cliCtx, r)
+	NodeVersionRegisterRoutes(cliCtx, r)
 
 	auth.RegisterRoutes(cliCtx, r, cdc, "acc")
 	bank.RegisterRoutes(cliCtx, r, cdc, nil)
@@ -84,4 +81,9 @@ func createHandler(cdc *wire.Codec) http.Handler {
 	//gov.RegisterRoutes(cliCtx, r, cdc)
 
 	return r
+}
+
+type HTTPHandler interface {
+	RouterRegister(r *mux.Route)
+	ParseRequest(req *http.Request) (interface{}, error)
 }

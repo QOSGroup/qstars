@@ -9,6 +9,7 @@ require (
 	github.com/brejski/hid v0.0.0-20180408220029-06112dcfcc50 // indirect
 	github.com/btcsuite/btcd v0.0.0-20180924021209-2a560b2036be
 	github.com/cosmos/cosmos-sdk v0.24.2
+	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835 // indirect
 	github.com/gogo/protobuf v1.1.1
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.6.2
