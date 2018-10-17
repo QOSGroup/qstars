@@ -2,9 +2,12 @@ package bank
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/utils"
+	qstarstypes "github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/pkg/errors"
@@ -12,15 +15,12 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"os"
 
 	qbasetxs "github.com/QOSGroup/qbase/txs"
+	qbtype "github.com/QOSGroup/qbase/types"
 	qos "github.com/QOSGroup/qos/account"
 	txs "github.com/QOSGroup/qos/txs"
 	sdk "github.com/QOSGroup/qstars/types"
-	authcmd "github.com/QOSGroup/qstars/x/auth/client/cli"
-
-	qbtype "github.com/QOSGroup/qbase/types"
 )
 
 const (
@@ -38,8 +38,7 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 
 			cliCtx := context.NewCLIContext().
 				WithCodec(cdc).
-				WithLogger(os.Stdout).
-				WithAccountDecoder(authcmd.GetAccountDecoder(cdc))
+				WithLogger(os.Stdout)
 
 			//if err := cliCtx.EnsureAccountExists(); err != nil {
 			//	return err
@@ -88,7 +87,14 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 			}
 
 			// ensure account has enough coins
-			if !account.GetCoins().IsGTE(coins) {
+			// ensure account has enough coins
+			var qcoins qstarstypes.Coins
+			for _, qsc := range account.QscList {
+				amount := qsc.Amount
+				qcoins = append(qcoins, qstarstypes.NewCoin(qsc.Name, qstarstypes.NewInt(amount.Int64())))
+			}
+
+			if !qcoins.IsGTE(coins) {
 				return errors.Errorf("Address %s doesn't have enough coins to pay for this transaction.", from)
 			}
 

@@ -1,16 +1,17 @@
 package stub
 
-import "C"
 import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/libs/bech32"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/QOSGroup/qbase/types"
+	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/libs/bech32"
 )
 
 // url for different modules, e.g kv, accounts, .etc
@@ -20,20 +21,38 @@ var (
 	KVurl      = HostIP + "/kv"
 )
 
-func AccountCreateStr() string {
+type ResultCreateAccount struct {
+	PubKey  string `json:"pubKey"`
+	PrivKey string `json:"privKey"`
+	Addr    string `json:"addr"`
+	Seed    string `json:"seed"`
+}
+
+func AccountCreate() *ResultCreateAccount {
 	const (
 		// Bech32 prefixes
-		Bech32PrefixAccAddr = "cosmosaccaddr"
-		Bech32PrefixAccPub  = "cosmosaccpub"
+		Bech32PrefixAccPub = "cosmosaccpub"
 	)
+	fmt.Printf("++++++++++++++++\n")
 	key := ed25519.GenPrivKey()
 	pub := key.PubKey().Bytes()
 	addr := key.PubKey().Address()
 	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
-	bech32Addr, _ := bech32.ConvertAndEncode(Bech32PrefixAccAddr, addr.Bytes())
-	//privkey:= fmt.Sprintf("%x",key[:])
+	bech32Addr, _ := bech32.ConvertAndEncode(types.PREF_ADD, addr.Bytes())
 	privkeybase64 := base64.StdEncoding.EncodeToString(key[:])
-	output := privkeybase64 + "#" + bech32Pub + "#" + bech32Addr
+
+	result := &ResultCreateAccount{}
+	result.PubKey = bech32Pub
+	result.PrivKey = privkeybase64
+	result.Addr = bech32Addr
+	result.Seed = ""
+
+	return result
+}
+
+func AccountCreateStr() string {
+	acc := AccountCreate()
+	output := acc.PrivKey + "#" + acc.PrivKey + "#" + acc.Addr
 	fmt.Println(output)
 	return output
 }

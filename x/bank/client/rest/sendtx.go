@@ -6,13 +6,14 @@ import (
 
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/crypto/keys"
+	qstarstypes "github.com/QOSGroup/qstars/types"
 	sdk "github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/bank"
 
 	"fmt"
+
 	"github.com/QOSGroup/qstars/utility"
-	authcmd "github.com/QOSGroup/qstars/x/auth/client/cli"
 	"github.com/gorilla/mux"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 )
@@ -48,9 +49,6 @@ func SendRequestHandlerFn(cdc *wire.Codec, kb keys.Keybase, cliCtx context.CLICo
 		// collect data
 		vars := mux.Vars(r)
 		bech32addr := vars["address"]
-
-		cliCtx.AccDecoder = authcmd.GetAccountDecoder(cdc)
-
 		to, err := sdk.AccAddressFromBech32(bech32addr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -104,7 +102,13 @@ func SendRequestHandlerFn(cdc *wire.Codec, kb keys.Keybase, cliCtx context.CLICo
 		}
 
 		// ensure account has enough coins
-		if !account.GetCoins().IsGTE(coins) {
+		var qcoins qstarstypes.Coins
+		for _, qsc := range account.QscList {
+			amount := qsc.Amount
+			qcoins = append(qcoins, qstarstypes.NewCoin(qsc.Name, qstarstypes.NewInt(amount.Int64())))
+		}
+
+		if !qcoins.IsGTE(coins) {
 			w.WriteHeader(http.StatusInsufficientStorage)
 			w.Write([]byte("Not enough money"))
 			return
