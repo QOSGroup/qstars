@@ -1,29 +1,62 @@
 package lcd
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/QOSGroup/qstars/client/context"
+	"github.com/QOSGroup/qstars/client/lcd/lib"
 	"github.com/QOSGroup/qstars/version"
+	"github.com/gorilla/mux"
 )
 
-// cli version REST handler endpoint
-func CLIVersionRequestHandler(w http.ResponseWriter, r *http.Request) {
+type ResultCLIVersion struct {
+	Version string `json:"version"`
+}
+
+func CLIVersionRegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
+	r.HandleFunc("/version",
+		func(w http.ResponseWriter, r *http.Request) {
+			result, err := CLIVersion()
+			lib.HttpResponseWrapper(w, cliCtx.Codec, result, err)
+		}).Methods("GET")
+}
+
+func CLIVersion() (*ResultCLIVersion, error) {
 	v := version.GetVersion()
-	w.Write([]byte(v))
+
+	result := &ResultCLIVersion{Version: string(v)}
+
+	return result, nil
 }
 
 // connected node version REST handler endpoint
-func NodeVersionRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		version, err := cliCtx.Query("/app/version")
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(fmt.Sprintf("Could't query version. Error: %s", err.Error())))
-			return
-		}
+func NodeVersionRegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
+	r.HandleFunc("/node_version",
+		func(w http.ResponseWriter, r *http.Request) {
+			result, err := NodeVersion(NewReqNodeVersion(r))
+			lib.HttpResponseWrapper(w, cliCtx.Codec, result, err)
+		}).Methods("GET")
+}
 
-		w.Write(version)
+type ReqNodeVersion struct {
+	CliCtx context.CLIContext
+}
+
+type ResultNodeVersion struct {
+	Version string `json:"version"`
+}
+
+func NewReqNodeVersion(r *http.Request) *ReqNodeVersion {
+	return &ReqNodeVersion{}
+}
+
+func NodeVersion(rnv *ReqNodeVersion) (*ResultNodeVersion, error) {
+	v, err := rnv.CliCtx.Query("/app/version")
+	if err != nil {
+		return nil, err
 	}
+
+	result := &ResultNodeVersion{Version: string(v)}
+
+	return result, nil
 }
