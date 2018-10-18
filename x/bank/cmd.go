@@ -85,7 +85,11 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
+			var coins qstarstypes.Coins
+			for _, qsc := range qacc.QscList {
+				amount := qsc.Amount
+				coins = append(coins, qstarstypes.NewCoin(qsc.Name, qstarstypes.NewInt(amount.Int64())))
+			}
 			// ensure account has enough coins
 			// ensure account has enough coins
 			var qcoins qstarstypes.Coins
