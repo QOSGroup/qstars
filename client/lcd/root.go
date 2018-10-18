@@ -8,7 +8,7 @@ import (
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/wire"
 	auth "github.com/QOSGroup/qstars/x/auth"
-	bank "github.com/QOSGroup/qstars/x/bank/client/rest"
+	bank "github.com/QOSGroup/qstars/x/bank"
 	kvstore "github.com/QOSGroup/qstars/x/kvstore/rest"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
