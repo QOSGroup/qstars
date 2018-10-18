@@ -5,7 +5,6 @@ import (
 	"github.com/QOSGroup/qbase/store"
 	"github.com/QOSGroup/qstars/baseapp"
 	go_amino "github.com/tendermint/go-amino"
-	"os"
 )
 
 type KVStub struct {

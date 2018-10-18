@@ -46,28 +46,10 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-<<<<<<< HEAD
 
 			output, err := wire.MarshalJSONIndent(cdc, result)
 			if err != nil {
 				return err
-=======
-			var coins qstarstypes.Coins
-			for _, qsc := range qacc.QscList {
-				amount := qsc.Amount
-				coins = append(coins, qstarstypes.NewCoin(qsc.Name, qstarstypes.NewInt(amount.Int64())))
-			}
-			// ensure account has enough coins
-			// ensure account has enough coins
-			var qcoins qstarstypes.Coins
-			for _, qsc := range account.QscList {
-				amount := qsc.Amount
-				qcoins = append(qcoins, qstarstypes.NewCoin(qsc.Name, qstarstypes.NewInt(amount.Int64())))
-			}
-
-			if !qcoins.IsGTE(coins) {
-				return errors.Errorf("Address %s doesn't have enough coins to pay for this transaction.", from)
->>>>>>> 6349ec1facc865da3650726de6ea7512a3620082
 			}
 
 			fmt.Println(string(output))
