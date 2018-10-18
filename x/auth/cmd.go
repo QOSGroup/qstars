@@ -1,4 +1,4 @@
-// Copyright 2018 The HSB Authors
+// Copyright 2018 The QOS Authors
 
 package auth
 
