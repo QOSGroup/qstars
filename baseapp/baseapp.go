@@ -32,20 +32,24 @@ func (base *QstarsBaseApp) Register(basecontract BaseContract) {
 	base.ContractList = append(base.ContractList, basecontract)
 }
 
-func (base *QstarsBaseApp) loadX() {
+func (base *QstarsBaseApp) loadX() error{
 	for index, c := range base.ContractList {
 		fmt.Printf("arr[%d]=%d \n", index, c)
 		c.RegisterKVCdc(base.Baseapp.GetCdc())
-		c.StartX(base)
+		err:=c.StartX(base)
+		if err!=nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (base *QstarsBaseApp) Start() {
+func (base *QstarsBaseApp) Start() error{
 
 	db, err := dbm.NewGoLevelDB("kvstore", filepath.Join(base.RootDir, "data"))
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 
 	base.Baseapp = baseabci.NewBaseApp("kvstore", base.Logger, db, nil)
@@ -54,5 +58,5 @@ func (base *QstarsBaseApp) Start() {
 		return &account.BaseAccount{}
 	})
 
-	base.loadX()
+	return base.loadX()
 }
