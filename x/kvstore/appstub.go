@@ -5,7 +5,6 @@ import (
 	"github.com/QOSGroup/qbase/store"
 	"github.com/QOSGroup/qstars/baseapp"
 	go_amino "github.com/tendermint/go-amino"
-	"os"
 )
 
 type KVStub struct {
@@ -17,7 +16,7 @@ func NewKVStub() KVStub {
 	return KVStub{}
 }
 
-func (kv KVStub) StartX(base *baseapp.QstarsBaseApp) {
+func (kv KVStub) StartX(base *baseapp.QstarsBaseApp) error{
 
 	var mainStore = store.NewKVStoreKey("kv")
 	var kvMapper = NewKvMapper(mainStore)
@@ -25,8 +24,9 @@ func (kv KVStub) StartX(base *baseapp.QstarsBaseApp) {
 
 	if err := base.Baseapp.LoadLatestVersion(); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
+	return nil
 }
 
 func (kv KVStub) RegisterKVCdc(cdc *go_amino.Codec) {

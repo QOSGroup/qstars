@@ -8,5 +8,5 @@ import (
 type BaseContract interface {
 	mapper.IMapper
 	RegisterKVCdc(cdc *go_amino.Codec)
-	StartX(base *QstarsBaseApp)
+	StartX(base *QstarsBaseApp) error
 }
