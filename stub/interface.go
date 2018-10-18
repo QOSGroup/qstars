@@ -52,7 +52,7 @@ func AccountCreate() *ResultCreateAccount {
 
 func AccountCreateStr() string {
 	acc := AccountCreate()
-	output := acc.PrivKey + "#" + acc.PrivKey + "#" + acc.Addr
+	output := acc.PrivKey + "#" + acc.PubKey + "#" + acc.Addr
 	fmt.Println(output)
 	return output
 }

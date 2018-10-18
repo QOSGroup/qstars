@@ -9,7 +9,7 @@ import (
 	"github.com/QOSGroup/qstars/wire"
 	auth "github.com/QOSGroup/qstars/x/auth"
 	bank "github.com/QOSGroup/qstars/x/bank"
-	kvstore "github.com/QOSGroup/qstars/x/kvstore/rest"
+	kvstore "github.com/QOSGroup/qstars/x/kvstore"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
