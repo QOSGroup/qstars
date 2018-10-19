@@ -17,3 +17,4 @@
 cmd/qstarscli/qstarscli
 cmd/qstarsd/qstarsd
 cmd/qstarsd/data
+go.sum
