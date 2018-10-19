@@ -10,8 +10,6 @@ import (
 	"github.com/QOSGroup/qbase/store"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/baseapp"
-	"os"
-
 	"github.com/QOSGroup/qstars/x/kvstore"
 	go_amino "github.com/tendermint/go-amino"
 )
@@ -30,7 +28,7 @@ func NewKvstoreTx(key []byte, value []byte) KvstoreTx {
 	}
 }
 
-func (kv KvstoreTx) StartX(base *baseapp.QstarsBaseApp) {
+func (kv KvstoreTx) StartX(base *baseapp.QstarsBaseApp) error{
 
 	var mainStore = store.NewKVStoreKey("kv")
 	var kvMapper = kvstore.NewKvMapper(mainStore)
@@ -38,8 +36,9 @@ func (kv KvstoreTx) StartX(base *baseapp.QstarsBaseApp) {
 
 	if err := base.Baseapp.LoadLatestVersion(); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
+	return nil
 }
 
 func (kv KvstoreTx) RegisterKVCdc(cdc *go_amino.Codec) {
