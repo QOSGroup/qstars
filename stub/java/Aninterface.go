@@ -9,11 +9,6 @@ import (
 // ----------------------------------------------------------------------------
 // source code for so file generation with command, e.g. go build go build -o awesome.so -buildmode=c-shared awesome.go
 // ----------------------------------------------------------------------------
-// init func for the query the IP of the seeds node in qsatrs
-//export init
-//func init() {
-//
-//}
 
 //export AccountCreate
 func AccountCreate() *C.char {
@@ -60,8 +55,14 @@ func QSCtoQOStransfer() {
 	fmt.Println("this is QSCtoQOStransfer function interface")
 }
 
+func AccountRecover(mncode string) string {
+	output := stub.AccountRecoverStr(mncode)
+	return output
+}
+
 func main() {
 	//AccountCreate()
 	//	out := QSCQueryAccount("http://localhost:1317/accounts/cosmosaccaddr1nskqcg35k8du3ydhntkcqjxtk254qv8me943mv")
 	//	fmt.Println(out)
+	//AccountRecover("clean axis column history legend mosquito worry magic exotic beef layer glue cannon craft worry decide slice soft hockey tennis lottery spatial segment minute")
 }
