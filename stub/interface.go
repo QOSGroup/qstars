@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/bartekn/go-bip39"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -22,37 +23,51 @@ var (
 )
 
 type ResultCreateAccount struct {
-	PubKey  string `json:"pubKey"`
-	PrivKey string `json:"privKey"`
-	Addr    string `json:"addr"`
-	Seed    string `json:"seed"`
+	PubKey   string `json:"pubKey"`
+	PrivKey  string `json:"privKey"`
+	Addr     string `json:"addr"`
+	Mnemonic string `json:"mnemonic"`
+	Type string `json:"type"`
 }
 
 func AccountCreate() *ResultCreateAccount {
 	const (
 		// Bech32 prefixes
 		Bech32PrefixAccPub = "cosmosaccpub"
+		AccountResultType = "local"
 	)
-	fmt.Printf("++++++++++++++++\n")
-	key := ed25519.GenPrivKey()
+	fmt.Printf("Please write down your mnemonic words BELOW for further account recovery purpose:\n")
+
+	entropy, _ := bip39.NewEntropy(256)
+	mnemonic, _ := bip39.NewMnemonic(entropy)
+	//fmt.Println(mnemonic)
+	seedo := bip39.NewSeed(mnemonic, "qstars")
+	//seedh := hex.EncodeToString(seedo)
+
+	key := ed25519.GenPrivKeyFromSecret(seedo)
 	pub := key.PubKey().Bytes()
 	addr := key.PubKey().Address()
 	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
 	bech32Addr, _ := bech32.ConvertAndEncode(types.PREF_ADD, addr.Bytes())
 	privkeybase64 := base64.StdEncoding.EncodeToString(key[:])
 
+	//Type field for future use
+	Type := AccountResultType
+	//fmt.Println(Type)
+
 	result := &ResultCreateAccount{}
 	result.PubKey = bech32Pub
 	result.PrivKey = privkeybase64
 	result.Addr = bech32Addr
-	result.Seed = ""
+	result.Mnemonic = mnemonic
+	result.Type = Type
 
 	return result
 }
 
 func AccountCreateStr() string {
 	acc := AccountCreate()
-	output := acc.PrivKey + "#" + acc.PubKey + "#" + acc.Addr
+	output := acc.PrivKey + "#" + acc.PubKey + "#" + acc.Addr + "#" + acc.Mnemonic + "#" + acc.Type
 	fmt.Println(output)
 	return output
 }
@@ -140,6 +155,20 @@ func QSCtransferPost(ul, a, privkey, chain, ac, seq, g string) string {
 	defer resp.Body.Close()
 	output := string(body)
 	//	fmt.Println(output)
+	return output
+
+}
+
+func AccountRecoverStr(mncode string) string {
+	seed := bip39.NewSeed(mncode, "qstars")
+	key := ed25519.GenPrivKeyFromSecret(seed)
+	pub := key.PubKey().Bytes()
+	addr := key.PubKey().Address()
+	bech32Pub, _ := bech32.ConvertAndEncode("cosmosaccpub", pub)
+	bech32Addr, _ := bech32.ConvertAndEncode(types.PREF_ADD, addr.Bytes())
+	privkeybase64 := base64.StdEncoding.EncodeToString(key[:])
+	output := privkeybase64 + "#" + bech32Pub + "#" + bech32Addr
+	fmt.Println(output)
 	return output
 
 }
