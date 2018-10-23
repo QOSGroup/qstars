@@ -73,11 +73,13 @@ func QSCtoQOStransfer() {
 	fmt.Println("this is QSCtoQOStransfer function interface")
 }
 
+//export AccountRecover
 func AccountRecover(mncode *C.char) *C.char {
 	output := stub.AccountRecoverStr(mncode)
 	return C.CString(output)
 }
 
+//export GetIPfromInput
 func GetIPfromInput(ip *C.char) {
 //	fmt.Println("Please input host including IP and port for initialization on Qstar deamon:")
 	stub.GetIPfrom(ip)
