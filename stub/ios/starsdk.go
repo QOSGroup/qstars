@@ -3,7 +3,7 @@ package starsdk
 import "C"
 import (
 	"github.com/QOSGroup/qstars/stub"
-)
+	)
 
 //package starsdk is for ios app generation
 //for Account Create
@@ -35,5 +35,17 @@ func QSCQueryAccount(ul string) string {
 func QSCtransfer(ul, a, privkey, chain, ac, seq, g string) string {
 	output := stub.QSCtransferPost(ul,a,privkey,chain,ac,seq,g)
 	return output
+}
+
+//for AccountRecovery
+func AccountRecover(mncode string) string {
+	output := stub.AccountRecoverStr(mncode)
+	return output
+}
+
+//for IP input
+func GetIPfromInput(ip string) {
+	//	fmt.Println("Please input host including IP and port for initialization on Qstar deamon:")
+	stub.GetIPfrom(ip)
 }
 

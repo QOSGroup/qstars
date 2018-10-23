@@ -15,12 +15,22 @@ import (
 	"github.com/tendermint/tendermint/libs/bech32"
 )
 
-// url for different modules, e.g kv, accounts, .etc
+// IP initialization
 var (
-	HostIP     = "http://localhost:1317"
-	Accounturl = HostIP + "/accounts/"
-	KVurl      = HostIP + "/kv"
+	HostIP string
+	Accounturl string
+	KVurl string
 )
+func GetIPfrom(host string) {
+	HostIP = host
+	Accounturl = "http://" + HostIP + "/accounts/"
+	KVurl      = "http://" + HostIP + "/kv"
+}
+
+func init() {
+	var h string
+	GetIPfrom(h)
+}
 
 type ResultCreateAccount struct {
 	PubKey   string `json:"pubKey"`
@@ -36,8 +46,7 @@ func AccountCreate() *ResultCreateAccount {
 		Bech32PrefixAccPub = "cosmosaccpub"
 		AccountResultType = "local"
 	)
-	fmt.Printf("Please write down your mnemonic words BELOW for further account recovery purpose:\n")
-
+//	fmt.Printf("Please write down your mnemonic words BELOW for further account recovery purpose:\n")
 	entropy, _ := bip39.NewEntropy(256)
 	mnemonic, _ := bip39.NewMnemonic(entropy)
 	//fmt.Println(mnemonic)
@@ -53,7 +62,6 @@ func AccountCreate() *ResultCreateAccount {
 
 	//Type field for future use
 	Type := AccountResultType
-	//fmt.Println(Type)
 
 	result := &ResultCreateAccount{}
 	result.PubKey = bech32Pub
@@ -114,6 +122,7 @@ func QSCKVStoreSetPost(k, v, privkey, chain string) (result int) {
 func QSCKVStoreGetQuery(ul string) string {
 	kvurl := KVurl + "/" + ul
 	resp, _ := http.Get(kvurl)
+//	fmt.Println(KVurl)
 	if resp.StatusCode == http.StatusOK {
 		bresp, err := ioutil.ReadAll(resp.Body)
 		var body []byte
