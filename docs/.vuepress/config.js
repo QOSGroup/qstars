@@ -34,6 +34,14 @@ module.exports = {
                     "/sdk/qstarsclirestful.md",
                 ]
             }
+            ,
+            {
+                title: "library",
+                collapsable: false,
+                children: [
+                    "/library/introduction.md",
+                ]
+            }
             // {
             //     title: "QStars Code",
             //     collapsable: false,
