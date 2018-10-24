@@ -19,21 +19,21 @@ func QSCKVStoreSet(k, v, privkey, chain string) int {
 }
 
 //for QSCKVStoreGet
-func QSCKVStoreGet(ul string) string {
-	output := stub.QSCKVStoreGetQuery(ul)
+func QSCKVStoreGet(k string) string {
+	output := stub.QSCKVStoreGetQuery(k)
 	return output
 }
 
 //for QSCQueryAccount
-func QSCQueryAccount(ul string) string {
-	output := stub.QSCQueryAccountGet(ul)
+func QSCQueryAccount(addr string) string {
+	output := stub.QSCQueryAccountGet(addr)
 	return output
 }
 
 
 //for QSCtransfer
-func QSCtransfer(ul, a, privkey, chain, ac, seq, g string) string {
-	output := stub.QSCtransferPost(ul,a,privkey,chain,ac,seq,g)
+func QSCtransfer(addr, amount, privkey, chain, accountnumber, seq, gas string) string {
+	output := stub.QSCtransferPost(addr, amount, privkey, chain, accountnumber, seq, gas )
 	return output
 }
 
@@ -49,3 +49,9 @@ func GetIPfromInput(ip string) {
 	stub.GetIPfrom(ip)
 }
 
+//for PubAddrRetrieval
+func PubAddrRetrieval(priv string) string {
+	//	fmt.Println("Please input host including IP and port for initialization on Qstar deamon:")
+	output := stub.PubAddrRetrievalStr(priv)
+	return output
+}

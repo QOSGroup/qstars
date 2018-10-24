@@ -7,7 +7,7 @@ import (
 )
 
 // ----------------------------------------------------------------------------
-// source code for so file generation with command, e.g. go build go build -o awesome.so -buildmode=c-shared awesome.go
+// source code for so file generation with "go build " command, e.g.go build -o awesome.so -buildmode=c-shared awesome.go
 // ----------------------------------------------------------------------------
 
 //export AccountCreate
@@ -22,35 +22,19 @@ func QSCKVStoreSet(k, v, privkey, chain *C.char) int {
 	return output
 }
 
-//normal function for Golang testing
-//func QSCKVStoreSet(k, v, privkey, chain string) int {
-//	output := stub.QSCKVStoreSetPost(k, v, privkey, chain)
-//	return output
-//}
 
 //export QSCKVStoreGet
-func QSCKVStoreGet(ul *C.char) *C.char {
-	output := stub.QSCKVStoreGetQuery(C.GoString(ul))
+func QSCKVStoreGet(k *C.char) *C.char {
+	output := stub.QSCKVStoreGetQuery(C.GoString(k))
 	return C.CString(output)
 }
-
-//normal function for Golang testing
-//func QSCKVStoreGet(ul string) string {
-//	output := stub.QSCKVStoreGetQuery(ul)
-//	return output
-//}
 
 //export QSCQueryAccount
-func QSCQueryAccount(ul *C.char) *C.char {
-	output := stub.QSCQueryAccountGet(C.GoString(ul))
+func QSCQueryAccount(addr *C.char) *C.char {
+	output := stub.QSCQueryAccountGet(C.GoString(addr))
 	return C.CString(output)
 }
 
-//normal function for testing
-//func QSCQueryAccount(ul string) string {
-//	output := stub.QSCQueryAccountGet(ul)
-//	return output
-//}
 
 //export QSCMintCoin
 func QSCMintCoin() {
@@ -58,8 +42,8 @@ func QSCMintCoin() {
 }
 
 //export QSCtransfer
-func QSCtransfer(ul, a, privkey, chain, ac, seq, g *C.char) *C.char {
-	output := stub.QSCtransferPost(C.GoString(ul), C.GoString(a), C.GoString(privkey), C.GoString(chain), C.GoString(ac), C.GoString(seq), C.GoString(g))
+func QSCtransfer(addr, amount, privkey, chain, accountnumber, seq, gas *C.char) *C.char {
+	output := stub.QSCtransferPost(C.GoString(addr), C.GoString(amount), C.GoString(privkey), C.GoString(chain), C.GoString(accountnumber), C.GoString(seq), C.GoString(gas))
 	return C.CString(output)
 }
 
@@ -81,8 +65,13 @@ func AccountRecover(mncode *C.char) *C.char {
 
 //export GetIPfromInput
 func GetIPfromInput(ip *C.char) {
-//	fmt.Println("Please input host including IP and port for initialization on Qstar deamon:")
 	stub.GetIPfrom(C.GoString(ip))
+}
+
+//export PubAddrRetrieval
+func PubAddrRetrieval(priv *C.char) *C.char {
+	output := stub.PubAddrRetrievalStr(C.GoString(priv))
+	return C.CString(output)
 }
 
 func main() {
@@ -93,5 +82,7 @@ func main() {
 //	QSCKVStoreSet("2", "Bob", "lEMsVbO4nCbAdQkr9hyTG15IaGvBIq1BFcNt4XeSeF9uo80srafrM25SVpfS1naE8G7MpYhcoQ9Wu1yFIl3ZEw", "test-chain-Ky10Zg")
 //	kvout := QSCKVStoreGet("2")
 //	fmt.Println(kvout)
-	//AccountRecover("clean axis column history legend mosquito worry magic exotic beef layer glue cannon craft worry decide slice soft hockey tennis lottery spatial segment minute")
+//	AccountRecover("clean axis column history legend mosquito worry magic exotic beef layer glue cannon craft worry decide slice soft hockey tennis lottery spatial segment minute")
+//	puba:= PubAddrRetrieval("lEMsVbO4nCbAdQkr9hyTG15IaGvBIq1BFcNt4XeSeF9uo80srafrM25SVpfS1naE8G7MpYhcoQ9Wu1yFIl3ZEw")
+//	fmt.Println(puba)
 }
