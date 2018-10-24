@@ -1,4 +1,5 @@
-# How to use Gomobile for library development for ios and Android
+# SDK development for ios and Android
+How to use Gomobile for library development for ios and Android
 
 ## Environment prerequisites:
 * OSX
@@ -44,6 +45,17 @@ So, if the type is not supported by gomobile bind command, you’ll see the simi
 panic: unsupported basic seqType: uint64
 ```
 It’s obvious that the set of supported types is very limited, but this is enough for the SDK implementation.
+
+## Fetch the source Go code from Github repository
+The source code is based on Golang and the repository for the project is <https://github.com/QOSGroup/qstars>. 
+It could be git cloned and downloaded to your local repo at first via:
+ ```
+ git clone https://github.com/QOSGroup/qstars.git
+ ```
+The source code is under the folder `qstars/stub/ios/` with name of `starsdk.go`
+
+Note: It is importtant to fetch the repository and corresponding packages this project, i.e. `qstars` depends. Otherwise, the gomobile would encounter buid failure.
+
 
 ## Building and import to Java/Objective-C/Swift
 Gobind generates target language (Java, Objective-C or Swift) bindings for each exported symbol in a Go package.
