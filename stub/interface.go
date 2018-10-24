@@ -40,12 +40,13 @@ type ResultCreateAccount struct {
 	Type string `json:"type"`
 }
 
+const (
+	// Bech32 prefixes
+	Bech32PrefixAccPub = "cosmosaccpub"
+	AccountResultType = "local"
+)
+
 func AccountCreate() *ResultCreateAccount {
-	const (
-		// Bech32 prefixes
-		Bech32PrefixAccPub = "cosmosaccpub"
-		AccountResultType = "local"
-	)
 //	fmt.Printf("Please write down your mnemonic words BELOW for further account recovery purpose:\n")
 	entropy, _ := bip39.NewEntropy(256)
 	mnemonic, _ := bip39.NewMnemonic(entropy)
@@ -72,16 +73,17 @@ func AccountCreate() *ResultCreateAccount {
 
 	return result
 }
-
+//convert the output to json string format
 func AccountCreateStr() string {
 	acc := AccountCreate()
-	output := acc.PrivKey + "#" + acc.PubKey + "#" + acc.Addr + "#" + acc.Mnemonic + "#" + acc.Type
-	fmt.Println(output)
-	return output
+	output, _ := json.Marshal(acc)
+	out := string(output)
+	fmt.Println(out)
+	return out
 }
 
-func QSCQueryAccountGet(ul string) string {
-	aurl := Accounturl + ul
+func QSCQueryAccountGet(addr string) string {
+	aurl := Accounturl + addr
 	resp, _ := http.Get(aurl)
 	if resp.StatusCode == http.StatusOK {
 		bresp, err := ioutil.ReadAll(resp.Body)
@@ -119,8 +121,8 @@ func QSCKVStoreSetPost(k, v, privkey, chain string) (result int) {
 
 }
 
-func QSCKVStoreGetQuery(ul string) string {
-	kvurl := KVurl + "/" + ul
+func QSCKVStoreGetQuery(k string) string {
+	kvurl := KVurl + "/" + k
 	resp, _ := http.Get(kvurl)
 //	fmt.Println(KVurl)
 	if resp.StatusCode == http.StatusOK {
@@ -141,9 +143,10 @@ func QSCKVStoreGetQuery(ul string) string {
 	return "nil"
 }
 
-func QSCtransferPost(ul, a, privkey, chain, ac, seq, g string) string {
-	aurl := Accounturl + ul + "/send"
-	payload := map[string]interface{}{"amount": a, "privatekey": privkey, "chain_id": chain, "account_number": ac, "sequence": seq, "gas": g}
+//input spelling adjusted to human readable
+func QSCtransferPost(addr, amount, privkey, chain, accountnumber, seq, gas string) string {
+	aurl := Accounturl + addr + "/send"
+	payload := map[string]interface{}{"amount": amount, "privatekey": privkey, "chain_id": chain, "account_number": accountnumber, "sequence": seq, "gas": gas}
 	jsonpayload, _ := json.Marshal(payload)
 	data := bytes.NewBuffer(jsonpayload)
 	req, _ := http.NewRequest("POST", aurl, data)
@@ -176,12 +179,42 @@ func AccountRecoverStr(mncode string) string {
 	bech32Pub, _ := bech32.ConvertAndEncode("cosmosaccpub", pub)
 	bech32Addr, _ := bech32.ConvertAndEncode(types.PREF_ADD, addr.Bytes())
 	privkeybase64 := base64.StdEncoding.EncodeToString(key[:])
-	output := privkeybase64 + "#" + bech32Pub + "#" + bech32Addr
-	fmt.Println(output)
-	return output
+
+	Type := AccountResultType
+	result := &ResultCreateAccount{}
+	result.PubKey = bech32Pub
+	result.PrivKey = privkeybase64
+	result.Addr = bech32Addr
+	result.Mnemonic = mncode
+	result.Type = Type
+
+	output, _ := json.Marshal(result)
+//	fmt.Println(string(output))
+	return string(output)
 
 }
 
+type PubAddrRetrieval struct {
+	PubKey   string `json:"pubKey"`
+	Addr     string `json:"addr"`
+}
+
+func PubAddrRetrievalStr(s string) string {
+	bz,_ :=base64.StdEncoding.DecodeString(s)
+	var key ed25519.PrivKeyEd25519
+	copy(key[:], bz)
+	pub := key.PubKey().Bytes()
+	addr := key.PubKey().Address()
+	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
+	bech32Addr, _ := bech32.ConvertAndEncode(types.PREF_ADD, addr.Bytes())
+
+	result := &PubAddrRetrieval{}
+	result.PubKey = bech32Pub
+	result.Addr = bech32Addr
+	output, _ := json.Marshal(result)
+//	fmt.Println(string(output))
+	return string(output)
+}
 /*
 func AccountCreatePostGet(ul,input string) string {
 	payload := map[string]interface{}{"name":input}
