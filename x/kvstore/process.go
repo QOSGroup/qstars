@@ -5,8 +5,8 @@ package kvstore
 import (
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/utils"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -64,7 +64,9 @@ func wrapToStdTx(key string, value string, chainid string) *txs.TxStd {
 }
 
 // SendKV process of set kv
-func SendKV(cliCtx context.CLIContext, cdc *wire.Codec, privateKey, key, value string, option *SendKVOption) (*ResultSendKV, error) {
+func SendKV(cdc *wire.Codec, privateKey, key, value string, option *SendKVOption) (*ResultSendKV, error) {
+
+	cliCtx:= *config.GetCLIContext().QSCCliContext
 	//get addr from private key
 	var priv ed25519.PrivKeyEd25519
 	bz := utility.Decbase64(privateKey)
@@ -121,7 +123,9 @@ func GetKVOptionChainID(chainID string) SetGetKVOption {
 }
 
 // GetKV process of get kv
-func GetKV(cliCtx context.CLIContext, cdc *wire.Codec, key string, opt *GetKVOption) (*ResultGetKV, error) {
+func GetKV(cdc *wire.Codec, key string, opt *GetKVOption) (*ResultGetKV, error) {
+
+	cliCtx:= *config.GetCLIContext().QSCCliContext
 	value, err := cliCtx.QueryKV([]byte(key))
 	if err != nil {
 		return nil, err

@@ -8,6 +8,7 @@ import (
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/lcd/lib"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/gorilla/mux"
 	"github.com/tendermint/tendermint/libs/common"
 )
@@ -19,7 +20,7 @@ func init() {
 }
 
 // register REST routes
-func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *wire.Codec, storeName string) {
+func RegisterRoutes(r *mux.Router, cdc *wire.Codec, storeName string) {
 	r.HandleFunc(
 		"/kv/{key}",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +28,7 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *wire.Codec, s
 			if err != nil {
 				lib.HttpResponseWrapper(w, cdc, nil, err)
 			}
-			result, err := skr.GetKV(storeName, cdc, cliCtx)
+			result, err := skr.GetKV(storeName, cdc)
 			lib.HttpResponseWrapper(w, cdc, result, err)
 		}).Methods("GET")
 
@@ -36,7 +37,7 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *wire.Codec, s
 		if err != nil {
 			lib.HttpResponseWrapper(w, cdc, nil, err)
 		}
-		result, err := skr.SendKV(storeName, cdc, cliCtx)
+		result, err := skr.SendKV(storeName, cdc)
 		lib.HttpResponseWrapper(w, cdc, result, err)
 	}).Methods("POST")
 }
@@ -62,7 +63,7 @@ func NewSendKVReq(r *http.Request) (*sendKVReq, error) {
 	return skr, nil
 }
 
-func (skr *sendKVReq) SendKV(storeName string, cdc *wire.Codec, cliCtx context.CLIContext) (*ResultSendKV, error) {
+func (skr *sendKVReq) SendKV(storeName string, cdc *wire.Codec) (*ResultSendKV, error) {
 	opts, err := NewSendKVOption(
 		SendKVOptionChainID(skr.ChainID),
 	)
@@ -70,7 +71,7 @@ func (skr *sendKVReq) SendKV(storeName string, cdc *wire.Codec, cliCtx context.C
 		return nil, err
 	}
 
-	result, err := SendKV(cliCtx, cdc, skr.PrivateKey, skr.Key, skr.Value, opts)
+	result, err := SendKV( cdc, skr.PrivateKey, skr.Key, skr.Value, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -90,8 +91,8 @@ func NewGetKVReq(r *http.Request) (*getKVReq, error) {
 	return skr, nil
 }
 
-func (skr *getKVReq) GetKV(storeName string, cdc *wire.Codec, cliCtx context.CLIContext) (*ResultGetKV, error) {
-	result, err := GetKV(cliCtx, cdc, skr.Key, nil)
+func (skr *getKVReq) GetKV(storeName string, cdc *wire.Codec) (*ResultGetKV, error) {
+	result, err := GetKV(cdc, skr.Key, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -108,8 +109,7 @@ func QueryKRequestHandlerFnGet(
 		vars := mux.Vars(r)
 		key := vars["key"]
 
-		cliCtx := context.NewCLIContext().
-			WithCodec(cdc)
+		cliCtx := config.GetCLIContext().QSCCliContext
 
 		res, err := cliCtx.QueryStore(common.HexBytes(key), storeName)
 		//res, err := clictx.Query(path)

@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"os"
 
-	client "github.com/QOSGroup/qstars/client"
-	"github.com/QOSGroup/qstars/client/context"
+	"github.com/QOSGroup/qstars/client"
+
 	"github.com/QOSGroup/qstars/wire"
-	auth "github.com/QOSGroup/qstars/x/auth"
-	bank "github.com/QOSGroup/qstars/x/bank"
-	kvstore "github.com/QOSGroup/qstars/x/kvstore"
+	"github.com/QOSGroup/qstars/x/auth"
+	"github.com/QOSGroup/qstars/x/bank"
+	"github.com/QOSGroup/qstars/x/kvstore"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -67,14 +67,13 @@ func ServeCommand(cdc *wire.Codec) *cobra.Command {
 func createHandler(cdc *wire.Codec) http.Handler {
 	r := mux.NewRouter()
 
-	cliCtx := context.NewCLIContext().WithCodec(cdc).WithLogger(os.Stdout)
 
-	CLIVersionRegisterRoutes(cliCtx, r)
-	NodeVersionRegisterRoutes(cliCtx, r)
+	CLIVersionRegisterRoutes( cdc,r)
+	NodeVersionRegisterRoutes( cdc,r)
 
 	auth.RegisterRoutes(cdc, r)
-	bank.RegisterRoutes(cliCtx, r, cdc, nil)
-	kvstore.RegisterRoutes(cliCtx, r, cdc, "main")
+	bank.RegisterRoutes( r, cdc, nil)
+	kvstore.RegisterRoutes( r, cdc, "main")
 	//ibc.RegisterRoutes(cliCtx, r, cdc, kb)
 	//stake.RegisterRoutes(cliCtx, r, cdc, kb)
 	//slashing.RegisterRoutes(cliCtx, r, cdc, kb)

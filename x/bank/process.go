@@ -3,12 +3,10 @@
 package bank
 
 import (
-	"os"
-
 	qbaseaccount "github.com/QOSGroup/qbase/account"
 	qosaccount "github.com/QOSGroup/qos/account"
-	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/utils"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
@@ -57,10 +55,7 @@ func Send(cdc *wire.Codec, fromstr string, to types.AccAddress, coins types.Coin
 	if err != nil {
 		return nil, err
 	}
-
-	cliCtx := context.NewCLIContext().
-		WithCodec(cdc).
-		WithLogger(os.Stdout)
+	cliCtx:= *config.GetCLIContext().QSCCliContext
 
 	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
 	cdc.RegisterConcrete(&ed25519.PubKeyEd25519{}, "ed25519.PubKeyEd25519", nil)
@@ -72,8 +67,6 @@ func Send(cdc *wire.Codec, fromstr string, to types.AccAddress, coins types.Coin
 		return nil, err
 	}
 
-	// ensure account has enough coins
-	// ensure account has enough coins
 	var qcoins types.Coins
 	for _, qsc := range account.QscList {
 		amount := qsc.Amount
