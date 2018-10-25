@@ -7,6 +7,7 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/bech32"
+	"github.com/QOSGroup/qbase/types"
 )
 
 var cdc = amino.NewCodec()
@@ -16,7 +17,7 @@ const (
 	//AddrLen = 20
 
 	// Bech32 prefixes
-	Bech32PrefixAccAddr = "cosmosaccaddr"
+	Bech32PrefixAccAddr = types.PREF_ADD
 	Bech32PrefixAccPub  = "cosmosaccpub"
 )
 
