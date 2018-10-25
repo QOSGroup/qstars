@@ -4,7 +4,7 @@ package auth
 
 import (
 	qosacc "github.com/QOSGroup/qos/account"
-	"github.com/QOSGroup/qstars/client/context"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/wire"
 )
@@ -16,7 +16,7 @@ func QueryAccount(cdc *wire.Codec, addr string) (*qosacc.QOSAccount, error) {
 		return nil, err
 	}
 
-	cliCtx := context.NewOQSCLIContext().WithCodec(cdc)
+	cliCtx := config.GetCLIContext().QOSCliContext
 
 	acc, err := cliCtx.GetAccount(key)
 	if err != nil {

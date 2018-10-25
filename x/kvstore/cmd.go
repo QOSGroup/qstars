@@ -1,9 +1,6 @@
 package kvstore
 
 import (
-	"os"
-
-	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/wire"
 
 	"fmt"
@@ -26,9 +23,6 @@ func SendKVCmd(cdc *wire.Codec) *cobra.Command {
 		Use:   "kvset",
 		Short: "Create and sign a send set kv tx",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().
-				WithCodec(cdc).
-				WithLogger(os.Stdout)
 
 			privatekey := viper.GetString(flagPrivateKey)
 			key := viper.GetString(flagKey)
@@ -42,7 +36,7 @@ func SendKVCmd(cdc *wire.Codec) *cobra.Command {
 				return err
 			}
 
-			result, err := SendKV(cliCtx, cdc, privatekey, key, value, opts)
+			result, err := SendKV(cdc, privatekey, key, value, opts)
 			if err != nil {
 				return err
 			}
@@ -71,12 +65,10 @@ func GetKVCmd(cdc *wire.Codec) *cobra.Command {
 		Use:   "kvget",
 		Short: "Create and sign a send set kv tx",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().
-				WithCodec(cdc).
-				WithLogger(os.Stdout)
+
 			key := viper.GetString(flagKey)
 
-			result, err := GetKV(cliCtx, cdc, key, nil)
+			result, err := GetKV( cdc, key, nil)
 			if err != nil {
 				return err
 			}

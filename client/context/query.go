@@ -60,11 +60,11 @@ func (ctx CLIContext) GetAccount(address []byte) (*qosacc.QOSAccount, error) {
 	//} else if len(res) == 0 {
 	//	return nil, err
 	//}
-
-	_, err := ctx.Codec.MarshalBinary(genNewAccount())
-	if err != nil {
-		return nil, err
-	}
+	//
+	//_, err := ctx.Codec.MarshalBinary(genNewAccount())
+	//if err != nil {
+	//	return nil, err
+	//}
 	account := genNewAccount()
 	return &account, nil
 }

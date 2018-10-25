@@ -3,15 +3,18 @@ package main
 import (
 	"os"
 
+
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client"
 	"github.com/QOSGroup/qstars/client/lcd"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/star"
 	authcmd "github.com/QOSGroup/qstars/x/auth"
 	bankcmd "github.com/QOSGroup/qstars/x/bank"
 	"github.com/QOSGroup/qstars/x/kvstore"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"
+	"github.com/QOSGroup/qbase/version"
 )
 
 // rootCmd is the entry point for this binary
@@ -28,6 +31,22 @@ func main() {
 
 	// get the codec
 	cdc := star.MakeCodec()
+
+	rootCmd := &cobra.Command{
+		Use:   "cmd",
+		Short: "qstars Command Line Interface(command)",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if cmd.Name() == version.VersionCmd.Name() {
+				return nil
+			}
+			cfg, err := config.InterceptLoadConfig()
+			if err != nil {
+				return err
+			}
+			config.CreateCLIContextTwo(cdc,cfg)
+			return nil
+		},
+	}
 
 	// TODO: Setup keybase, viper object, etc. to be passed into
 	// the below functions and eliminate global vars, like we do
@@ -66,10 +85,14 @@ func main() {
 	)
 
 	// prepare and add flags
-	executor := cli.PrepareMainCmd(rootCmd, "BC", os.ExpandEnv("$HOME/.basecli"))
+	executor := cli.PrepareBaseCmd(rootCmd, "BC", os.ExpandEnv("$HOME/.qstarscli"))
+
+
+
 	err := executor.Execute()
 	if err != nil {
 		// Note: Handle with #870
 		panic(err)
 	}
 }
+
