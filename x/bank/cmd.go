@@ -2,14 +2,13 @@ package bank
 
 import (
 	"fmt"
-
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	qbasetxs "github.com/QOSGroup/qbase/txs"
 	qbtype "github.com/QOSGroup/qbase/types"
-	txs "github.com/QOSGroup/qos/txs"
+	"github.com/QOSGroup/qos/txs"
 	sdk "github.com/QOSGroup/qstars/types"
 )
 
@@ -63,7 +62,7 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 	return cmd
 }
 
-func BuildMsg(from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins, cdc *wire.Codec) *qbasetxs.TxStd {
+func BuildMsg(from qbtype.Address, to qbtype.Address, coins sdk.Coins, cdc *wire.Codec) *qbasetxs.TxStd {
 
 	tx := txs.TxTransform{}
 	receiver := txs.AddrTrans{}
