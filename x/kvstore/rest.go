@@ -7,8 +7,8 @@ import (
 
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/lcd/lib"
-	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/wire"
 	"github.com/gorilla/mux"
 	"github.com/tendermint/tendermint/libs/common"
 )
@@ -27,6 +27,7 @@ func RegisterRoutes(r *mux.Router, cdc *wire.Codec, storeName string) {
 			skr, err := NewGetKVReq(r)
 			if err != nil {
 				lib.HttpResponseWrapper(w, cdc, nil, err)
+				return
 			}
 			result, err := skr.GetKV(storeName, cdc)
 			lib.HttpResponseWrapper(w, cdc, result, err)
@@ -36,6 +37,7 @@ func RegisterRoutes(r *mux.Router, cdc *wire.Codec, storeName string) {
 		skr, err := NewSendKVReq(r)
 		if err != nil {
 			lib.HttpResponseWrapper(w, cdc, nil, err)
+			return
 		}
 		result, err := skr.SendKV(storeName, cdc)
 		lib.HttpResponseWrapper(w, cdc, result, err)
@@ -71,7 +73,7 @@ func (skr *sendKVReq) SendKV(storeName string, cdc *wire.Codec) (*ResultSendKV, 
 		return nil, err
 	}
 
-	result, err := SendKV( cdc, skr.PrivateKey, skr.Key, skr.Value, opts)
+	result, err := SendKV(cdc, skr.PrivateKey, skr.Key, skr.Value, opts)
 	if err != nil {
 		return nil, err
 	}
