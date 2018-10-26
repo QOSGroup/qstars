@@ -31,7 +31,7 @@ func Decbase64(input string) []byte {
 
 }
 
-func PubAddrRetrieval(caPriHex string,cdc *wire.Codec) (string, string) {
+func PubAddrRetrieval(caPriHex string,cdc *wire.Codec) (string, string, ed25519.PrivKeyEd25519) {
 	caHex, _ := hex.DecodeString(caPriHex[2:])
 	var key ed25519.PrivKeyEd25519
 	cdc.MustUnmarshalBinaryBare(caHex, &key)
@@ -45,7 +45,7 @@ func PubAddrRetrieval(caPriHex string,cdc *wire.Codec) (string, string) {
 	bech32Addr, _ := bech32.ConvertAndEncode(Bech32PrefixAccAddr, addr.Bytes())
 	fmt.Println(bech32Pub)
 	fmt.Println(bech32Addr)
-	return bech32Pub, bech32Addr
+	return bech32Pub, bech32Addr, key
 }
 
 //func main() {
