@@ -74,8 +74,8 @@ func BuildMsg(from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins, cdc *wire
 	sender.Amount = qbtype.NewInt(coins[0].Amount.Int64())
 	sender.QscName = coins[0].Denom
 
-	tx.Receivers[0] = receiver
-	tx.Senders[0] = sender
+	tx.Receivers = append(tx.Receivers,receiver)
+	tx.Senders = append(tx.Senders,sender)
 
 	stdTx := qbasetxs.TxStd{}
 	//	stdTx.ITx = tx

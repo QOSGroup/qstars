@@ -51,12 +51,12 @@ func NewSendBody(r *http.Request) (*sendBody, error) {
 	vars := mux.Vars(r)
 	sb.address = vars["address"]
 
-	var m sendBody
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
 	}
-	err = msgCdc.UnmarshalJSON(body, &m)
+	err = msgCdc.UnmarshalJSON(body, sb)
 	if err != nil {
 		return nil, err
 	}
