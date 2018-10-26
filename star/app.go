@@ -6,7 +6,7 @@ import (
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/bank"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
-
+	"github.com/QOSGroup/qbase/txs"
 
 
 	"io"
@@ -25,7 +25,7 @@ func NewApp(log.Logger, dbm.DB, io.Writer) abci.Application {
 	rootDir := os.ExpandEnv("$HOME/.qstarsd")
 	app := baseapp.NewAPP(rootDir)
 	app.Register(kvstore.NewKVStub())
-	app.Register(kvstore.NewKVStub())
+	app.Register(bank.NewBankStub())
 
 	app.Start()
 	return app.Baseapp
@@ -40,7 +40,10 @@ func MakeCodec() *wire.Codec {
 
 	cdc.RegisterInterface((*account.Account)(nil), nil)
 
-	cdc.RegisterConcrete(&bank.SendTx{}, "qstars/bank/SendTx",nil)
+	cdc.RegisterConcrete(&bank.SendTx{}, "basecoin/SendTx",nil)
+	kvstore.NewKVStub().RegisterKVCdc(cdc)
+
+	txs.RegisterCodec(cdc)
 
 	//cdc.RegisterConcrete(&qosacc.QOSAccount{}, "qbase/account/QOSAccount", nil)
 

@@ -5,6 +5,7 @@ package bank
 import (
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/utils"
 
 	qbasetypes "github.com/QOSGroup/qbase/types"
@@ -54,7 +55,8 @@ func NewSendOptions(opts ...func(*SendOptions)) *SendOptions {
 func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, sopt *SendOptions) (*SendResult, error) {
 
 
-	_, addrben32 := utility.PubAddrRetrieval(fromstr,cdc)
+	_, addrben32, priv:= utility.PubAddrRetrieval(fromstr,cdc)
+
 
 
 	from, err := types.AccAddressFromBech32(addrben32)
@@ -62,14 +64,30 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	if err != nil {
 		return nil, err
 	}
-	cliCtx:= *config.GetCLIContext().QOSCliContext
+
+	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
+	var cliCtx context.CLIContext
+	if directTOQOS==true{
+		cliCtx = *config.GetCLIContext().QOSCliContext
+	}else {
+		cliCtx = *config.GetCLIContext().QSCCliContext
+		var cc qbasetypes.BaseCoin
+		nn := int64(1)
+		msg := genStdSendTx(cdc,key,to,cc,priv,nn,config.GetCLIContext().Config.ChainID)
+
+		response, _ := utils.SendTx(cliCtx, cdc,msg,priv)
+		result := &SendResult{}
+		result.Hash = response
+
+		return result, nil
+	}
 
 	//cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
 	//cdc.RegisterConcrete(&ed25519.PubKeyEd25519{}, "ed25519.PubKeyEd25519", nil)
 	//cdc.RegisterInterface((*qbaseaccount.Account)(nil), nil)
 	//cdc.RegisterConcrete(&qosaccount.QOSAccount{}, "qbase/account/QOSAccount", nil)
 
-	account, err := cliCtx.GetAccount(key,cdc)
+	account, err := config.GetCLIContext().QOSCliContext.GetAccount(key,cdc)
 
 	if err != nil {
 		return nil, err
@@ -94,16 +112,9 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 		return nil, errors.Errorf("Address %s doesn't have enough coins to pay for this transaction.", from)
 	}
 
-	// build and sign the transaction, then broadcast to Tendermint
-	//msg := BuildMsg(from, to, coins, cdc)
-	//
-	var priv ed25519.PrivKeyEd25519
-	bz := utility.Decbase64(fromstr)
-	copy(priv[:], bz)
-
 
 	nn := int64(account.Nonce)
-	msg := genStdSendTx(cdc,from,to,cc,priv,nn,"qos")
+	msg := genStdSendTx(cdc,from,to,cc,priv,nn,config.GetCLIContext().Config.ChainID)
 	response, err := utils.SendTx(cliCtx, cdc,msg,priv)
 
 	result := &SendResult{}

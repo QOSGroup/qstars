@@ -3,8 +3,7 @@ package main
 import (
 	"os"
 
-
-	"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qbase/version"
 	"github.com/QOSGroup/qstars/client"
 	"github.com/QOSGroup/qstars/client/lcd"
 	"github.com/QOSGroup/qstars/config"
@@ -14,7 +13,6 @@ import (
 	"github.com/QOSGroup/qstars/x/kvstore"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/QOSGroup/qbase/version"
 )
 
 // rootCmd is the entry point for this binary
@@ -67,8 +65,7 @@ func main() {
 
 	//
 
-	txs.RegisterCodec(cdc)
-	kvstore.NewKVStub().RegisterKVCdc(cdc)
+
 	rootCmd.AddCommand(
 		client.PostCommands(
 			kvstore.SendKVCmd(cdc),
