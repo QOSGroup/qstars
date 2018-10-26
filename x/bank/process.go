@@ -3,7 +3,7 @@
 package bank
 
 import (
-
+	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/example/basecoin/tx"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client/utils"
@@ -54,9 +54,10 @@ func NewSendOptions(opts ...func(*SendOptions)) *SendOptions {
 }
 
 func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, sopt *SendOptions) (*SendResult, error) {
-	_, addrben32 := utility.PubAddrRetrieval(fromstr)
+	_, addrben32 := utility.PubAddrRetrieval(fromstr,cdc)
 
 	from, err := types.AccAddressFromBech32(addrben32)
+	key := account.AddressStoreKey(from)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +68,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	//cdc.RegisterInterface((*qbaseaccount.Account)(nil), nil)
 	//cdc.RegisterConcrete(&qosaccount.QOSAccount{}, "qbase/account/QOSAccount", nil)
 
-	account, err := cliCtx.GetAccount(from,cdc)
+	account, err := cliCtx.GetAccount(key,cdc)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 		if !amount.IsZero() {
 			mount := qbasetypes.NewInt(100)
 			cc = qbasetypes.BaseCoin{
-				Name:   "qos",
+				Name:   qsc.Name,
 				Amount: mount,
 			}
 		}

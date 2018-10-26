@@ -3,14 +3,14 @@ package utility
 import "C"
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
-	"github.com/tendermint/go-amino"
+	"github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qstars/wire"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/bech32"
-	"github.com/QOSGroup/qbase/types"
 )
 
-var cdc = amino.NewCodec()
 
 const (
 	// expected address length
@@ -31,10 +31,14 @@ func Decbase64(input string) []byte {
 
 }
 
-func PubAddrRetrieval(s string) (string, string) {
-	bz := Decbase64(s)
+func PubAddrRetrieval(caPriHex string,cdc *wire.Codec) (string, string) {
+	caHex, _ := hex.DecodeString(caPriHex[2:])
 	var key ed25519.PrivKeyEd25519
-	copy(key[:], bz)
+	cdc.MustUnmarshalBinaryBare(caHex, &key)
+
+	//bz := Decbase64(s)
+	//var key ed25519.PrivKeyEd25519
+	//copy(key[:], caHex)
 	pub := key.PubKey().Bytes()
 	addr := key.PubKey().Address()
 	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
