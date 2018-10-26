@@ -2,11 +2,11 @@ package context
 
 import (
 	"fmt"
+	"github.com/QOSGroup/qstars/wire"
 	"io"
 
 	"github.com/pkg/errors"
-
-	qosacc "github.com/QOSGroup/qos/account"
+	bctypes "github.com/QOSGroup/qbase/example/basecoin/types"
 	"github.com/tendermint/tendermint/libs/common"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
@@ -36,7 +36,7 @@ func (ctx CLIContext) QueryStore(key cmn.HexBytes, storeName string) (res []byte
 
 // QueryStore performs a query from a Tendermint node with the provided key and
 // store name.
-func (ctx CLIContext) QueryQOSAccount(key cmn.HexBytes, storeName string) (res []byte, err error) {
+func (ctx CLIContext) QueryQOSAccount(key cmn.HexBytes) (res []byte, err error) {
 
 	return ctx.query("/store/acc/key", key)
 
@@ -52,21 +52,22 @@ func (ctx CLIContext) QueryKV(key cmn.HexBytes) (res []byte, err error) {
 
 // GetAccount queries for an account given an address and a block height. An
 // error is returned if the query or decoding fails.
-func (ctx CLIContext) GetAccount(address []byte) (*qosacc.QOSAccount, error) {
+func (ctx CLIContext) GetAccount(address []byte,cdc *wire.Codec) (*bctypes.AppAccount, error) {
 
-	//res, err := ctx.QueryQOSAccount(address, ctx.AccountStore)
-	//if err != nil {
-	//	return nil, err
-	//} else if len(res) == 0 {
-	//	return nil, err
-	//}
-	//
-	//_, err := ctx.Codec.MarshalBinary(genNewAccount())
-	//if err != nil {
-	//	return nil, err
-	//}
-	account := genNewAccount()
-	return &account, nil
+	result, err := ctx.QueryQOSAccount(address)
+	if err != nil {
+		return nil, err
+	} else if len(result) == 0 {
+		return nil, errors.New("Account is not exsit.")
+	}
+
+	var acc *bctypes.AppAccount
+	cdc.UnmarshalBinaryBare(result, &acc)
+
+	json, err := cdc.MarshalJSON(acc)
+	fmt.Println(fmt.Sprintf("query addr is  %s", json))
+
+	return acc, nil
 }
 
 // BroadcastTx broadcasts transaction bytes to a Tendermint node.

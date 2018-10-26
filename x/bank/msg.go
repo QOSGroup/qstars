@@ -2,6 +2,7 @@ package bank
 
 import (
 	"encoding/json"
+	qbtype "github.com/QOSGroup/qbase/types"
 	sdk "github.com/QOSGroup/qstars/types"
 )
 
@@ -10,7 +11,7 @@ import (
 
 // Transaction Input
 type Input struct {
-	Address sdk.AccAddress `json:"address"`
+	Address qbtype.Address `json:"address"`
 	Coins   sdk.Coins      `json:"coins"`
 }
 
@@ -39,7 +40,7 @@ func (in Input) ValidateBasic() sdk.Error {
 }
 
 // NewInput - create a transaction input, used with MsgSend
-func NewInput(addr sdk.AccAddress, coins sdk.Coins) Input {
+func NewInput(addr qbtype.Address, coins sdk.Coins) Input {
 	input := Input{
 		Address: addr,
 		Coins:   coins,
@@ -52,7 +53,7 @@ func NewInput(addr sdk.AccAddress, coins sdk.Coins) Input {
 
 // Transaction Output
 type Output struct {
-	Address sdk.AccAddress `json:"address"`
+	Address qbtype.Address `json:"address"`
 	Coins   sdk.Coins      `json:"coins"`
 }
 
@@ -80,7 +81,7 @@ func (out Output) ValidateBasic() sdk.Error {
 }
 
 // NewOutput - create a transaction output, used with MsgSend
-func NewOutput(addr sdk.AccAddress, coins sdk.Coins) Output {
+func NewOutput(addr qbtype.Address, coins sdk.Coins) Output {
 	output := Output{
 		Address: addr,
 		Coins:   coins,

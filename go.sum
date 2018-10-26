@@ -5,10 +5,13 @@ github.com/QOSGroup/qbase v0.0.0-20181012065522-bd749f6b1c45 h1:NjNgNz0FtXvkK8tF
 github.com/QOSGroup/qbase v0.0.0-20181012065522-bd749f6b1c45/go.mod h1:22IlhpD5Mqr2lTa316bLAj+/hIt4yV0bO06QLiRWz5c=
 github.com/QOSGroup/qbase v0.0.1 h1:li4VTymzgvyKz+l229AOkNARctkqG+pw4dc0Jl7acEk=
 github.com/QOSGroup/qbase v0.0.1/go.mod h1:22IlhpD5Mqr2lTa316bLAj+/hIt4yV0bO06QLiRWz5c=
+github.com/QOSGroup/qbase v0.0.2/go.mod h1:22IlhpD5Mqr2lTa316bLAj+/hIt4yV0bO06QLiRWz5c=
+github.com/QOSGroup/qbase v0.0.3/go.mod h1:22IlhpD5Mqr2lTa316bLAj+/hIt4yV0bO06QLiRWz5c=
 github.com/QOSGroup/qos v0.0.0-20181010063456-29aff7923f71 h1:RVBq3VqjzuLQ40tZV6ATUZVPyXRkUO19FR67VS5j04o=
 github.com/QOSGroup/qos v0.0.0-20181010063456-29aff7923f71/go.mod h1:i8qRWKYrVnQQh9qEWnGIvtp+1W91G/nIy8NJ57Lw91A=
 github.com/QOSGroup/qos v0.0.0-20181015092406-97fcfa08ee4c h1:LTbWFFjPXWuFhy1XuyAJDtaggJjlofUZFkmlrVXoCaU=
 github.com/QOSGroup/qos v0.0.0-20181015092406-97fcfa08ee4c/go.mod h1:u77TPaR1rqlIotUAu3i9IIWlVLrB18imH+QFwIzv6CU=
+github.com/QOSGroup/qos v0.0.0-20181025041541-aba04a66ec10/go.mod h1:zScZgn6dyKSnHJp0bxHkC6mcYlLjXDxCSjOGQzO0D74=
 github.com/VividCortex/gohistogram v1.0.0/go.mod h1:Pf5mBqqDxYaXu3hDrrU+w6nw50o/4+TcAqDqk/vUH7g=
 github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412/go.mod h1:WPjqKcmVOxf0XSf3YxCJs6N6AOSrOx3obionmG7T0y0=
 github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d h1:1aAija9gr0Hyv4KfQcRcwlmFIrhkDmIj2dz5bkg/s/8=

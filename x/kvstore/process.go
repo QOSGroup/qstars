@@ -3,13 +3,14 @@
 package kvstore
 
 import (
+	"github.com/QOSGroup/qbase/example/kvstore"
 	"github.com/QOSGroup/qbase/txs"
-	qbasetypes "github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/QOSGroup/qbase/types"
 )
 
 // ResultSendKV result of send kv
@@ -58,10 +59,11 @@ func SendKVOptionSequence(sequence string) SetSendKVOption {
 	}
 }
 
-func wrapToStdTx(key string, value string, chainid string) *txs.TxStd {
-	kv := NewKvstoreTx([]byte(key), []byte(value))
-	return txs.NewTxStd(kv, chainid, qbasetypes.NewInt(int64(10000)))
+func wrapToStdTx(key, value, chainID string) *txs.TxStd {
+	kv := kvstore.NewKvstoreTx([]byte(key), []byte(value))
+	return txs.NewTxStd(kv, chainID, types.NewInt(int64(10000)))
 }
+
 
 // SendKV process of set kv
 func SendKV(cdc *wire.Codec, privateKey, key, value string, option *SendKVOption) (*ResultSendKV, error) {

@@ -1,109 +1,72 @@
 package bank
 
-import "github.com/QOSGroup/qbase/types"
-
 import (
+	"bytes"
 	"fmt"
-	"github.com/QOSGroup/qbase/account"
-	"github.com/QOSGroup/qbase/context"
-	"github.com/QOSGroup/qbase/qcp"
-	"github.com/QOSGroup/qbase/store"
 	"github.com/QOSGroup/qbase/txs"
-	"github.com/QOSGroup/qstars/baseapp"
-	"github.com/QOSGroup/qstars/x/kvstore"
-	go_amino "github.com/tendermint/go-amino"
+	btypes "github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qbase/context"
 )
 
-type KvstoreTx struct {
-	baseapp.BaseContract
-	Key   []byte
-	Value []byte
-	Bytes []byte
+type SendTx struct {
+	From btypes.Address  `json:"from"`
+	To   btypes.Address  `json:"to"`
+	Coin btypes.BaseCoin `json:"coin"`
 }
 
-func NewKvstoreTx(key []byte, value []byte) KvstoreTx {
-	return KvstoreTx{
-		Key:   key,
-		Value: value,
-	}
+var _ txs.ITx = (*SendTx)(nil)
+
+func NewSendTx(from btypes.Address, to btypes.Address, coin btypes.BaseCoin) SendTx {
+	return SendTx{From: from, To: to, Coin: coin}
 }
 
-func (kv KvstoreTx) StartX(base *baseapp.QstarsBaseApp) error{
-
-	var mainStore = store.NewKVStoreKey("kv")
-	var kvMapper = kvstore.NewKvMapper(mainStore)
-	base.Baseapp.RegisterMapper(kvMapper)
-
-	if err := base.Baseapp.LoadLatestVersion(); err != nil {
-		fmt.Println(err)
-		return err
-	}
-	return nil
-}
-
-func (kv KvstoreTx) RegisterKVCdc(cdc *go_amino.Codec) {
-
-	txs.RegisterCodec(cdc)
-	cdc.RegisterConcrete(&kvstore.KvstoreTx{}, "kvstore/main/kvstoretx", nil)
-}
-
-func (kv KvstoreTx) ValidateData() bool {
-	if len(kv.Key) < 0 {
+func (tx SendTx) ValidateData(ctx context.Context) bool {
+	if len(tx.From) == 0 || len(tx.To) == 0 || btypes.NewInt(0).GT(tx.Coin.Amount) {
 		return false
 	}
 	return true
 }
 
-func (kv KvstoreTx) Exec(ctx context.Context) (result types.Result, crossTxQcps *txs.TxQcp) {
 
-	logger := ctx.Logger()
-	kvMapper := ctx.Mapper(KvMapperName).(*KvMapper)
-	qcpMapper := ctx.Mapper(qcp.QcpMapperName).(*qcp.QcpMapper)
-	accMapper := ctx.Mapper(account.AccountMapperName).(*account.AccountMapper)
+func (tx SendTx) Exec(ctx context.Context) (result btypes.Result, crossTxQcps *txs.TxQcp) {
+	result = btypes.Result{
+		Code: btypes.ABCICodeOK,
+	}
 
-	key := string(kv.Key)
-	value := kvMapper.GetKey(key)
+	fmt.Println("--------------------------------------------")
+	fmt.Println("--------------------------------------------")
+	fmt.Println("--------------------------------------------")
+	cross := txs.TxQcp{
 
-	logger.Info("qcpMapper", qcpMapper)
-	logger.Info("accMapper", accMapper)
+	}
+	tt := txs.TxStd{
+	}
+	tt.ITx = tx
+	crossTxQcps.TxStd = &tt
+	crossTxQcps.To = "qos"
 
-	logger.Info("origin is: ", key, "=", value)
+	r := btypes.Result{
 
-	kvMapper.SaveKV(key, string(kv.Value))
-
-	value = kvMapper.GetKey(key)
-
-	logger.Info("after is: ", key, value)
-
-	clearKey := "lllllll"
-
-	store := kvMapper.GetStore()
-	store.Set([]byte(clearKey), []byte("11111"))
-
-	logger.Info("clear value: %s", store.Get([]byte(clearKey)))
-
-	store.Delete([]byte(clearKey))
-
-	return
+	}
+	return r, &cross
 }
 
-func (kv KvstoreTx) GetSigner() []types.Address {
-	return nil
+func (tx SendTx) GetSigner() []btypes.Address {
+	return []btypes.Address{tx.From}
 }
 
-func (kv KvstoreTx) CalcGas() types.BigInt {
-	return types.ZeroInt()
+func (tx SendTx) CalcGas() btypes.BigInt {
+	return btypes.ZeroInt()
 }
 
-func (kv KvstoreTx) GetGasPayer() types.Address {
-	return types.Address{}
+func (tx SendTx) GetGasPayer() btypes.Address {
+	return tx.From
 }
 
-func (kv KvstoreTx) GetSignData() []byte {
-	signData := make([]byte, len(kv.Key)+len(kv.Value)+len(kv.Bytes))
-	signData = append(signData, kv.Key...)
-	signData = append(signData, kv.Value...)
-	signData = append(signData, kv.Bytes...)
-
-	return signData
+func (tx SendTx) GetSignData() []byte {
+	var buf bytes.Buffer
+	buf.Write(tx.From)
+	buf.Write(tx.To)
+	buf.Write([]byte(tx.Coin.String()))
+	return buf.Bytes()
 }
