@@ -14,12 +14,13 @@ import (
 )
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
-func RegisterRoutes( r *mux.Router, cdc *wire.Codec, kb keys.Keybase) {
+func RegisterRoutes(r *mux.Router, cdc *wire.Codec, kb keys.Keybase) {
 	//r.HandleFunc("/accounts/{address}/send", SendRequestHandlerFn(cdc, kb, cliCtx)).Methods("POST")
 	r.HandleFunc("/accounts/{address}/send", func(w http.ResponseWriter, r *http.Request) {
 		sb, err := NewSendBody(r)
 		if err != nil {
 			lib.HttpResponseWrapper(w, cdc, nil, err)
+			return
 		}
 
 		result, err := sb.Send(cdc, kb)
@@ -51,7 +52,6 @@ func NewSendBody(r *http.Request) (*sendBody, error) {
 	vars := mux.Vars(r)
 	sb.address = vars["address"]
 
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,6 @@ func NewSendBody(r *http.Request) (*sendBody, error) {
 }
 func (sb *sendBody) Send(cdc *wire.Codec, kb keys.Keybase) (*SendResult, error) {
 
-
 	to, err := sdk.AccAddressFromBech32(sb.address)
 	if err != nil {
 		return nil, err
@@ -76,7 +75,7 @@ func (sb *sendBody) Send(cdc *wire.Codec, kb keys.Keybase) (*SendResult, error) 
 	// parse coins trying to be sent
 	coins, err := sdk.ParseCoins(amount)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	result, err := Send(cdc, fromstr, to, coins, NewSendOptions(
