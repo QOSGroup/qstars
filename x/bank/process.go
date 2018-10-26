@@ -3,21 +3,19 @@
 package bank
 
 import (
-	"github.com/QOSGroup/qbase/example/basecoin/tx"
-	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/account"
+	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client/utils"
 
+	qbasetypes "github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
-	qbasetypes "github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/pkg/errors"
 
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-
 )
 
 type SendResult struct {
@@ -116,7 +114,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 
 func genStdSendTx(cdc *amino.Codec, sender qbasetypes.Address, receiver qbasetypes.Address, coin qbasetypes.BaseCoin,
 	priKey ed25519.PrivKeyEd25519, nonce int64, chainid string) *txs.TxStd {
-	sendTx := tx.NewSendTx(sender, receiver, coin)
+	sendTx := NewSendTx(sender, receiver, coin)
 	gas := qbasetypes.NewInt(int64(0))
 	tx := txs.NewTxStd(&sendTx, chainid, gas)
 	//priHex, _ := hex.DecodeString(senderPriHex[2:])
