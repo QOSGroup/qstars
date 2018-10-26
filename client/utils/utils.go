@@ -14,7 +14,7 @@ import (
 // Finally, it broadcasts the signed transaction to a node.
 func SendTx(cliCtx context.CLIContext, cdc *wire.Codec, txStd *txs.TxStd, priv ed25519.PrivKeyEd25519) (string, error) {
 
-	txBytes, err := cdc.MarshalBinary(txStd)
+	txBytes, err := cdc.MarshalBinaryBare(txStd)
 	if err != nil {
 		panic("use cdc encode object fail")
 	}

@@ -78,6 +78,8 @@ chain_id = "{{ .ChainID }}"
 qos_node_uri = "{{ .QOSNodeURI }}"
 
 qstars_node_uri = "{{ .QSTARSNodeURI }}"
+
+direct_to_qos = "{{ .DirectTOQOS }}"
 `
 
 
