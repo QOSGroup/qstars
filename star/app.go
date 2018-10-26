@@ -5,7 +5,9 @@ import (
 	"github.com/QOSGroup/qstars/baseapp"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/bank"
+
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
+
 
 	"io"
 	"os"
@@ -33,9 +35,9 @@ func MakeCodec() *wire.Codec {
 	cdc := wire.NewCodec()
 
 	cdc.RegisterConcrete(&types.AppAccount{}, "basecoin/AppAccount", nil)
-	//cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
-	//cdc.RegisterConcrete(&ed25519.PubKeyEd25519{}, "ed25519.PubKeyEd25519", nil)
+
 	cryptoAmino.RegisterAmino(cdc)
+
 	cdc.RegisterInterface((*account.Account)(nil), nil)
 
 	cdc.RegisterConcrete(&bank.SendTx{}, "qstars/bank/SendTx",nil)
