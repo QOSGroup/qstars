@@ -3,16 +3,13 @@
 package bank
 
 import (
-	qbaseaccount "github.com/QOSGroup/qbase/account"
-	qosaccount "github.com/QOSGroup/qos/account"
-	"github.com/QOSGroup/qstars/client/utils"
+			"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/pkg/errors"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+		"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 type SendResult struct {
@@ -57,10 +54,10 @@ func Send(cdc *wire.Codec, fromstr string, to types.AccAddress, coins types.Coin
 	}
 	cliCtx:= *config.GetCLIContext().QSCCliContext
 
-	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
-	cdc.RegisterConcrete(&ed25519.PubKeyEd25519{}, "ed25519.PubKeyEd25519", nil)
-	cdc.RegisterInterface((*qbaseaccount.Account)(nil), nil)
-	cdc.RegisterConcrete(&qosaccount.QOSAccount{}, "qbase/account/QOSAccount", nil)
+	//cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
+	//cdc.RegisterConcrete(&ed25519.PubKeyEd25519{}, "ed25519.PubKeyEd25519", nil)
+	//cdc.RegisterInterface((*qbaseaccount.Account)(nil), nil)
+	//cdc.RegisterConcrete(&qosaccount.QOSAccount{}, "qbase/account/QOSAccount", nil)
 
 	account, err := cliCtx.GetAccount(from)
 	if err != nil {
