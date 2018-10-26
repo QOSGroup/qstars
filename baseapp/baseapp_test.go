@@ -63,3 +63,8 @@ func (mock MockABCI )GetStore() store.KVStore{
 func (mock MockABCI )Copy() mapper.IMapper{
 	return nil
 }
+
+
+func (mock MockABCI )Del(key []byte){
+
+}
