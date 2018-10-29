@@ -39,14 +39,17 @@ func (tx SendTx) Exec(ctx context.Context) (result btypes.Result, crossTxQcps *t
 	cross := txs.TxQcp{
 
 	}
+	crossTxQcps = &cross
 	tt := txs.TxStd{
+
 	}
+
 	tt.ITx = tx
 	crossTxQcps.TxStd = &tt
-	crossTxQcps.To = "qos"
+	crossTxQcps.To = "basecoin-chain"
 
 	r := btypes.Result{
-
+		Code:0,
 	}
 	return r, &cross
 }

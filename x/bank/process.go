@@ -64,28 +64,16 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	if err != nil {
 		return nil, err
 	}
-
+	var chainID string
 	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
 	var cliCtx context.CLIContext
 	if directTOQOS==true{
 		cliCtx = *config.GetCLIContext().QOSCliContext
+		chainID = config.GetCLIContext().Config.QOSChainID
 	}else {
 		cliCtx = *config.GetCLIContext().QSCCliContext
-		var cc qbasetypes.BaseCoin
-		nn := int64(1)
-		msg := genStdSendTx(cdc,key,to,cc,priv,nn,config.GetCLIContext().Config.ChainID)
-
-		response, _ := utils.SendTx(cliCtx, cdc,msg,priv)
-		result := &SendResult{}
-		result.Hash = response
-
-		return result, nil
+		chainID = config.GetCLIContext().Config.ChainID
 	}
-
-	//cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
-	//cdc.RegisterConcrete(&ed25519.PubKeyEd25519{}, "ed25519.PubKeyEd25519", nil)
-	//cdc.RegisterInterface((*qbaseaccount.Account)(nil), nil)
-	//cdc.RegisterConcrete(&qosaccount.QOSAccount{}, "qbase/account/QOSAccount", nil)
 
 	account, err := config.GetCLIContext().QOSCliContext.GetAccount(key,cdc)
 
@@ -112,9 +100,24 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 		return nil, errors.Errorf("Address %s doesn't have enough coins to pay for this transaction.", from)
 	}
 
+	var nn int64
+	if directTOQOS==true {
+		nn = int64(account.Nonce)
+	}else {
+		qscaccount, err := config.GetCLIContext().QSCCliContext.GetAccount(key,cdc)
+		if err != nil{
+			if err.Error()=="Account is not exsit." {
+				nn = int64(0)
+			}else{
+				return nil,err
+			}
+		}else{
+			nn = int64(qscaccount.Nonce)
+		}
+	}
 
-	nn := int64(account.Nonce)
-	msg := genStdSendTx(cdc,from,to,cc,priv,nn,config.GetCLIContext().Config.ChainID)
+
+	msg := genStdSendTx(cdc,from,to,cc,priv,nn,chainID)
 	response, err := utils.SendTx(cliCtx, cdc,msg,priv)
 
 	result := &SendResult{}

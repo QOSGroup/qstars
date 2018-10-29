@@ -73,6 +73,8 @@ const defaultConfigTemplate = `# This is a TOML config file.
 # For more information, see https://github.com/toml-lang/toml
 
 # Path to the JSON file containing the initial validator set and other meta data
+qos_chain_id = "{{ .QOSChainID }}"
+
 chain_id = "{{ .ChainID }}"
 
 qos_node_uri = "{{ .QOSNodeURI }}"
