@@ -6,9 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	qbasetxs "github.com/QOSGroup/qbase/txs"
-	qbtype "github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qos/txs"
 	sdk "github.com/QOSGroup/qstars/types"
 )
 
@@ -62,26 +59,26 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 	return cmd
 }
 
-func BuildMsg(from qbtype.Address, to qbtype.Address, coins sdk.Coins, cdc *wire.Codec) *qbasetxs.TxStd {
-
-	tx := txs.TxTransform{}
-	receiver := txs.AddrTrans{}
-	receiver.Amount = qbtype.NewInt(coins[0].Amount.Int64())
-	receiver.QscName = coins[0].Denom
-
-	sender := txs.AddrTrans{}
-	sender.Amount = qbtype.NewInt(coins[0].Amount.Int64())
-	sender.QscName = coins[0].Denom
-
-	tx.Receivers = append(tx.Receivers,receiver)
-	tx.Senders = append(tx.Senders,sender)
-
-	stdTx := qbasetxs.TxStd{}
-	//	stdTx.ITx = tx
-	stdTx.ChainID = "chainid"
-
-	return &stdTx
-}
+//func BuildMsg(from qbtype.Address, to qbtype.Address, coins sdk.Coins, cdc *wire.Codec) *qbasetxs.TxStd {
+//
+//	tx := txs.TxTransform{}
+//	receiver := txs.AddrTrans{}
+//	receiver.Amount = qbtype.NewInt(coins[0].Amount.Int64())
+//	receiver.QscName = coins[0].Denom
+//
+//	sender := txs.AddrTrans{}
+//	sender.Amount = qbtype.NewInt(coins[0].Amount.Int64())
+//	sender.QscName = coins[0].Denom
+//
+//	tx.Receivers = append(tx.Receivers,receiver)
+//	tx.Senders = append(tx.Senders,sender)
+//
+//	stdTx := qbasetxs.TxStd{}
+//	//	stdTx.ITx = tx
+//	stdTx.ChainID = "chainid"
+//
+//	return &stdTx
+//}
 
 // MsgSend - high level transaction of the coin module
 type MsgSend struct {

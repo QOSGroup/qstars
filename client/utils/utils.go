@@ -23,7 +23,7 @@ func SendTx(cliCtx context.CLIContext, cdc *wire.Codec, txStd *txs.TxStd, priv e
 	resJSON, err := cliCtx.EnsureBroadcastTx(txBytes)
 
 	if err != nil {
-		return "12345678901234", nil
+		return err.Error(), err
 	}
 	return resJSON.Hash.String(), err
 }

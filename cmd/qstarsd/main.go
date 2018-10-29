@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/QOSGroup/qbase/server"
 	"github.com/QOSGroup/qstars/star"
+	"github.com/QOSGroup/qstars/baseapp"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"
 	"os"
@@ -19,7 +20,8 @@ func main() {
 	//}
 
 	cdc := star.MakeCodec()
-	ctx := server.NewDefaultContext()
+	baseapp.InitApp()
+	ctx := baseapp.GetServerContext().ServerContext
 	//viper.SetDefault("pruning", "nothing")
 
 	rootCmd := &cobra.Command{

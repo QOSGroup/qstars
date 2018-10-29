@@ -62,8 +62,10 @@ func (ctx CLIContext) GetAccount(address []byte,cdc *wire.Codec) (*bctypes.AppAc
 	}
 
 	var acc *bctypes.AppAccount
-	cdc.UnmarshalBinaryBare(result, &acc)
-
+	err = cdc.UnmarshalBinaryBare(result, &acc)
+	if err!=nil{
+		return nil, err
+	}
 	json, err := cdc.MarshalJSON(acc)
 	fmt.Println(fmt.Sprintf("query addr is  %s", json))
 

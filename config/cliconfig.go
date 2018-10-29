@@ -17,6 +17,7 @@ type QStarsClientContext struct{
 }
 
 type CLIConfig struct {
+	QOSChainID string `mapstructure:"qos_chain_id"`
 	ChainID string `mapstructure:"chain_id"`
 	RootDir string `mapstructure:"home"`
 	QOSNodeURI string `mapstructure:"qos_node_uri"`
