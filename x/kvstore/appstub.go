@@ -2,10 +2,11 @@ package kvstore
 
 import (
 	"fmt"
+	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/store"
+	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/baseapp"
 	go_amino "github.com/tendermint/go-amino"
-
 )
 
 type KVStub struct {
@@ -31,6 +32,9 @@ func (kv KVStub) StartX(base *baseapp.QstarsBaseApp) error{
 }
 
 func (kv KVStub) RegisterKVCdc(cdc *go_amino.Codec) {
-
 	cdc.RegisterConcrete(&kv.KvTx, "kvstore/KvstoreTx", nil)
+}
+
+func (kv KVStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result{
+	return nil
 }

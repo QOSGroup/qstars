@@ -8,6 +8,7 @@ import (
 	"github.com/QOSGroup/qstars/client/lcd"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/star"
+	"github.com/QOSGroup/qstars/x/bank"
 	authcmd "github.com/QOSGroup/qstars/x/auth"
 	bankcmd "github.com/QOSGroup/qstars/x/bank"
 	"github.com/QOSGroup/qstars/x/kvstore"
@@ -29,6 +30,9 @@ func main() {
 
 	// get the codec
 	cdc := star.MakeCodec()
+
+	bank.NewBankStub().RegisterKVCdc(cdc)
+	kvstore.NewKVStub().RegisterKVCdc(cdc)
 
 	rootCmd := &cobra.Command{
 		Use:   "cmd",
