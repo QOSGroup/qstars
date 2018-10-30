@@ -18,7 +18,7 @@ type QStarsClientContext struct{
 
 type CLIConfig struct {
 	QOSChainID string `mapstructure:"qos_chain_id"`
-	ChainID string `mapstructure:"chain_id"`
+	QSCChainID string `mapstructure:"chain_id"`
 	RootDir string `mapstructure:"home"`
 	QOSNodeURI string `mapstructure:"qos_node_uri"`
 	QSTARSNodeURI string `mapstructure:"qstars_node_uri"`
@@ -62,7 +62,7 @@ func InterceptLoadConfig() (conf *CLIConfig, err error) {
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
 		// the following parse config is needed to create directories
 		conf, _ = ParseConfig()
-		conf.ChainID = "abc"
+		conf.QSCChainID = "abc"
 		conf.QOSNodeURI = "localhost:1317"
 		conf.QSTARSNodeURI = "localhost:1317"
 		WriteConfigFile(configFilePath, conf)

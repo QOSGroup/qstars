@@ -8,6 +8,7 @@ import (
 	go_amino "github.com/tendermint/go-amino"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qbase/context"
+	"github.com/QOSGroup/qbase/example/basecoin/tx"
 )
 
 type BankStub struct {
@@ -26,7 +27,8 @@ func (kv BankStub) StartX(base *baseapp.QstarsBaseApp) error{
 }
 
 func (kv BankStub) RegisterKVCdc(cdc *go_amino.Codec) {
-	cdc.RegisterConcrete(&SendTx{}, "basecoin/SendTx",nil)
+	cdc.RegisterConcrete(&tx.SendTx{}, "basecoin/SendTx",nil)
+	cdc.RegisterConcrete(&WrapperSendTx{}, "qstars/WrapperSendTx",nil)
 	cdc.RegisterConcrete(&bctypes.AppAccount{}, "basecoin/AppAccount", nil)
 }
 
