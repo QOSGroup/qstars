@@ -3,6 +3,8 @@ package baseapp
 import (
 	"fmt"
 	"github.com/QOSGroup/qbase/baseabci"
+	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/utility"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 	"os"
@@ -32,13 +34,21 @@ func InitApp(){
 
 	}
 }
-func NewAPP(rootDir string) QstarsBaseApp {
+
+func NewAPP(rootDir string,cdc *go_amino.Codec) (QstarsBaseApp,error) {
+
+	sconf, err := config.ReadConf(rootDir+"/config/qstarsconf.toml")
+	if err!=nil{
+		return QstarsBaseApp{},err
+	}
+
+	_,_, qCtx.QStarsSignerPriv = utility.PubAddrRetrieval(sconf.QStarsPrivateKey,cdc)
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
 	qstarts := QstarsBaseApp{
 		Logger:  logger,
 		RootDir: rootDir,
 	}
-	return qstarts
+	return qstarts,nil
 }
 
 type QstarsBaseApp struct {
@@ -94,5 +104,6 @@ func (base *QstarsBaseApp) Start() error{
 	base.Baseapp.RegisterAccountProto(bctypes.NewAppAccount)
 	base.Baseapp.RegisterTxQcpResultHandler(base.TxQcpResultHandler)
 	base.Baseapp.RegisterTxQcpSigner(GetServerContext().QStarsSignerPriv)
+
 	return base.loadX()
 }

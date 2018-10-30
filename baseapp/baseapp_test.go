@@ -7,13 +7,16 @@ import (
 	"testing"
 	go_amino "github.com/tendermint/go-amino"
 	"github.com/QOSGroup/qbase/mapper"
+
+	"github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qbase/context"
 )
 
 // TODO update
 func TestInitCmd(t *testing.T) {
-
+	InitApp()
 	cdc := wire.NewCodec()
-	app:=NewAPP("")
+	app,_:=NewAPP("",cdc)
 	mock := new(MockABCI)
 	mock.RegisterKVCdc(cdc)
 	app.Register(mock)
@@ -24,6 +27,9 @@ type MockABCI struct{
 	Cdc *go_amino.Codec
 }
 
+func (mock *MockABCI) MapperName() string {
+	panic("implement me")
+}
 
 func (mock *MockABCI )RegisterKVCdc(cdc *go_amino.Codec){
 	mock.Cdc = cdc
@@ -64,6 +70,9 @@ func (mock MockABCI )Copy() mapper.IMapper{
 	return nil
 }
 
+func (mock *MockABCI )ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result{
+	return &types.Result{}
+}
 
 func (mock MockABCI )Del(key []byte){
 
