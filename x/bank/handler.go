@@ -1,34 +1,31 @@
 package bank
 
 import (
-	"bytes"
 	"fmt"
+	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	btypes "github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qbase/context"
+	"github.com/tendermint/tendermint/types"
+	"strconv"
 )
 
-type SendTx struct {
-	From btypes.Address  `json:"from"`
-	To   btypes.Address  `json:"to"`
-	Coin btypes.BaseCoin `json:"coin"`
+type WrapperSendTx struct {
+	Wrapper *txs.TxStd
 }
 
-var _ txs.ITx = (*SendTx)(nil)
+var _ txs.ITx = (*WrapperSendTx)(nil)
 
-func NewSendTx(from btypes.Address, to btypes.Address, coin btypes.BaseCoin) SendTx {
-	return SendTx{From: from, To: to, Coin: coin}
+func NewWrapperSendTx(wrapper *txs.TxStd) WrapperSendTx {
+	return WrapperSendTx{Wrapper: wrapper}
 }
 
-func (tx SendTx) ValidateData(ctx context.Context) bool {
-	if len(tx.From) == 0 || len(tx.To) == 0 || btypes.NewInt(0).GT(tx.Coin.Amount) {
-		return false
-	}
+func (tx WrapperSendTx) ValidateData(ctx context.Context) bool {
+
 	return true
 }
 
 
-func (tx SendTx) Exec(ctx context.Context) (result btypes.Result, crossTxQcps *txs.TxQcp) {
+func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTxQcps *txs.TxQcp) {
 	result = btypes.Result{
 		Code: btypes.ABCICodeOK,
 	}
@@ -40,13 +37,14 @@ func (tx SendTx) Exec(ctx context.Context) (result btypes.Result, crossTxQcps *t
 
 	}
 	crossTxQcps = &cross
-	tt := txs.TxStd{
 
-	}
+	heigth1 := strconv.FormatInt(ctx.BlockHeight(),10)
+	tx1 := (types.Tx (ctx.TxBytes())).String()
 
-	tt.ITx = tx
-	crossTxQcps.TxStd = &tt
-	crossTxQcps.To = "basecoin-chain"
+	fmt.Println(" heigth: " + heigth1 + " hash:" + tx1)
+
+	crossTxQcps.TxStd = tx.Wrapper
+	crossTxQcps.To = "main-chain"
 
 	r := btypes.Result{
 		Code:0,
@@ -54,22 +52,18 @@ func (tx SendTx) Exec(ctx context.Context) (result btypes.Result, crossTxQcps *t
 	return r, &cross
 }
 
-func (tx SendTx) GetSigner() []btypes.Address {
-	return []btypes.Address{tx.From}
+func (tx WrapperSendTx) GetSigner() []btypes.Address {
+	return nil
 }
 
-func (tx SendTx) CalcGas() btypes.BigInt {
+func (tx WrapperSendTx) CalcGas() btypes.BigInt {
 	return btypes.ZeroInt()
 }
 
-func (tx SendTx) GetGasPayer() btypes.Address {
-	return tx.From
+func (tx WrapperSendTx) GetGasPayer() btypes.Address {
+	return nil
 }
 
-func (tx SendTx) GetSignData() []byte {
-	var buf bytes.Buffer
-	buf.Write(tx.From)
-	buf.Write(tx.To)
-	buf.Write([]byte(tx.Coin.String()))
-	return buf.Bytes()
+func (tx WrapperSendTx) GetSignData() []byte {
+	return nil
 }

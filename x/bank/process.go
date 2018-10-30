@@ -3,6 +3,7 @@
 package bank
 
 import (
+	"github.com/QOSGroup/qbase/example/basecoin/tx"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client/context"
@@ -53,26 +54,19 @@ func NewSendOptions(opts ...func(*SendOptions)) *SendOptions {
 }
 
 func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, sopt *SendOptions) (*SendResult, error) {
-
-
 	_, addrben32, priv:= utility.PubAddrRetrieval(fromstr,cdc)
-
-
-
 	from, err := types.AccAddressFromBech32(addrben32)
 	key := account.AddressStoreKey(from)
 	if err != nil {
 		return nil, err
 	}
-	var chainID string
+
 	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
 	var cliCtx context.CLIContext
 	if directTOQOS==true{
 		cliCtx = *config.GetCLIContext().QOSCliContext
-		chainID = config.GetCLIContext().Config.QOSChainID
 	}else {
 		cliCtx = *config.GetCLIContext().QSCCliContext
-		chainID = config.GetCLIContext().Config.ChainID
 	}
 
 	account, err := config.GetCLIContext().QOSCliContext.GetAccount(key,cdc)
@@ -101,24 +95,29 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	}
 
 	var nn int64
-	if directTOQOS==true {
-		nn = int64(account.Nonce)
-	}else {
-		qscaccount, err := config.GetCLIContext().QSCCliContext.GetAccount(key,cdc)
-		if err != nil{
-			if err.Error()=="Account is not exsit." {
-				nn = int64(0)
-			}else{
-				return nil,err
-			}
-		}else{
-			nn = int64(qscaccount.Nonce)
-		}
-	}
+	nn = int64(account.Nonce)
+	//if directTOQOS==true {
+	//	nn = int64(account.Nonce)
+	//}else {
+	//	qscaccount, err := config.GetCLIContext().QSCCliContext.GetAccount(key,cdc)
+	//	if err != nil{
+	//		if err.Error()=="Account is not exsit." {
+	//			nn = int64(0)
+	//		}else{
+	//			return nil,err
+	//		}
+	//	}else{
+	//		nn = int64(qscaccount.Nonce)
+	//	}
+	//}
 	nn++
-
-	msg := genStdSendTx(cdc,from,to,cc,priv,nn,chainID)
-	response, err := utils.SendTx(cliCtx, cdc,msg,priv)
+	var msg *txs.TxStd
+	if directTOQOS==true {
+		msg = genStdSendTx(cdc, from, to, cc, priv, nn)
+	}else{
+		msg = genStdWrapTx(cdc, from, to, cc, priv, nn)
+	}
+	response, err := utils.SendTx(cliCtx, cdc,msg)
 
 	result := &SendResult{}
 	result.Hash = response
@@ -127,10 +126,10 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 }
 
 func genStdSendTx(cdc *amino.Codec, sender qbasetypes.Address, receiver qbasetypes.Address, coin qbasetypes.BaseCoin,
-	priKey ed25519.PrivKeyEd25519, nonce int64, chainid string) *txs.TxStd {
-	sendTx := NewSendTx(sender, receiver, coin)
+	priKey ed25519.PrivKeyEd25519, nonce int64) *txs.TxStd {
+	sendTx := tx.NewSendTx(sender, receiver, coin)
 	gas := qbasetypes.NewInt(int64(0))
-	tx := txs.NewTxStd(&sendTx, chainid, gas)
+	tx := txs.NewTxStd(&sendTx, config.GetCLIContext().Config.QOSChainID, gas)
 	//priHex, _ := hex.DecodeString(senderPriHex[2:])
 	//var priKey ed25519.PrivKeyEd25519
 	//cdc.MustUnmarshalBinaryBare(priHex, &priKey)
@@ -142,4 +141,25 @@ func genStdSendTx(cdc *amino.Codec, sender qbasetypes.Address, receiver qbasetyp
 	}}
 
 	return tx
+}
+
+func genStdWrapTx(cdc *amino.Codec, sender qbasetypes.Address, receiver qbasetypes.Address, coin qbasetypes.BaseCoin,
+	priKey ed25519.PrivKeyEd25519, nonce int64 ) *txs.TxStd {
+	sendTx := tx.NewSendTx(sender, receiver, coin)
+	gas := qbasetypes.NewInt(int64(0))
+	tx := txs.NewTxStd(&sendTx, config.GetCLIContext().Config.QOSChainID, gas)
+	//priHex, _ := hex.DecodeString(senderPriHex[2:])
+	//var priKey ed25519.PrivKeyEd25519
+	//cdc.MustUnmarshalBinaryBare(priHex, &priKey)
+	signature, _ := tx.SignTx(priKey, nonce)
+	tx.Signature = []txs.Signature{txs.Signature{
+		Pubkey:    priKey.PubKey(),
+		Signature: signature,
+		Nonce:     nonce,
+	}}
+
+
+	tx2 := txs.NewTxStd(&sendTx, config.GetCLIContext().Config.QSCChainID, gas)
+	tx2.ITx = NewWrapperSendTx(tx)
+	return tx2
 }
