@@ -18,7 +18,10 @@ func NewApp(log.Logger, dbm.DB, io.Writer) abci.Application {
 	//cfg := ctx.Config
 	//rootDir := cfg.RootDir
 	rootDir := os.ExpandEnv("$HOME/.qstarsd")
-	app := baseapp.NewAPP(rootDir)
+	app,err := baseapp.NewAPP(rootDir,MakeCodec())
+	if err != nil{
+		return nil
+	}
 	app.Register(kvstore.NewKVStub())
 	app.Register(bank.NewBankStub())
 

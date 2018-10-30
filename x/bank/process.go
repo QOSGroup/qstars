@@ -115,7 +115,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 			nn = int64(qscaccount.Nonce)
 		}
 	}
-
+	nn++
 
 	msg := genStdSendTx(cdc,from,to,cc,priv,nn,chainID)
 	response, err := utils.SendTx(cliCtx, cdc,msg,priv)
