@@ -3,18 +3,20 @@
 package bank
 
 import (
-	"github.com/QOSGroup/qbase/example/basecoin/tx"
+	"fmt"
 	"github.com/QOSGroup/qbase/account"
+	"github.com/QOSGroup/qbase/example/basecoin/tx"
 	"github.com/QOSGroup/qbase/txs"
+	qbasetypes "github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/utils"
-
-	qbasetypes "github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/pkg/errors"
+	"strconv"
+	"time"
 
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -22,6 +24,9 @@ import (
 
 type SendResult struct {
 	Hash string `json:"hash"`
+	Error string `json:"error"`
+	Result string `json:"result"`
+	Heigth string `json:"heigth"`
 }
 
 type SendOptions struct {
@@ -70,6 +75,16 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	}
 
 	account, err := config.GetCLIContext().QOSCliContext.GetAccount(key,cdc)
+	//mock
+	if (true){
+		var cc qbasetypes.BaseCoin
+		nn := int64(1)
+		msg := genStdWrapTx(cdc,key,to,cc,priv,nn)
+		response,_, _ := utils.SendTx(cliCtx, cdc,msg)
+		result := &SendResult{}
+		result.Hash = response
+		return result, nil
+	}
 
 	if err != nil {
 		return nil, err
@@ -117,12 +132,43 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	}else{
 		msg = genStdWrapTx(cdc, from, to, cc, priv, nn)
 	}
-	response, err := utils.SendTx(cliCtx, cdc,msg)
+	response, commitresult,err := utils.SendTx(cliCtx, cdc,msg)
 
 	result := &SendResult{}
 	result.Hash = response
-
+	height := strconv.FormatInt(commitresult.Height,10)
+	result.Heigth = height
+	if directTOQOS == false{
+		counter := 0
+		for{
+			if counter>=10{
+				fmt.Println("time out")
+				result.Error = "time out"
+				break
+			}
+			resultstr,err := fetchResult(height,commitresult.Hash.String())
+			if err != nil{
+				fmt.Println("get result error:"+err.Error())
+				result.Error = err.Error()
+			}
+			if resultstr!="-1"{
+				fmt.Println("get result")
+				result.Result = resultstr
+				break;
+			}
+			time.Sleep(500 * time.Millisecond)
+			counter++
+		}
+	}
 	return result, nil
+}
+
+func fetchResult(heigth1 string, tx1 string) (string,error){
+
+	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
+	res,err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey),QSCResultMapperName)
+	re := string(res)
+	return re,err
 }
 
 func genStdSendTx(cdc *amino.Codec, sender qbasetypes.Address, receiver qbasetypes.Address, coin qbasetypes.BaseCoin,

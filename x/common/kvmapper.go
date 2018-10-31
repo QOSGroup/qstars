@@ -1,18 +1,17 @@
-package kvstore
+package common
 
 import (
 	"github.com/QOSGroup/qbase/mapper"
 )
 
-const KvMapperName = "kv"
 
 type KvMapper struct {
 	*mapper.BaseMapper
 }
 
-func NewKvMapper() *KvMapper {
+func NewKvMapper(kvMapperName string) *KvMapper {
 	var txMapper = KvMapper{}
-	txMapper.BaseMapper = mapper.NewBaseMapper(nil,KvMapperName)
+	txMapper.BaseMapper = mapper.NewBaseMapper(nil,kvMapperName)
 	return &txMapper
 }
 
