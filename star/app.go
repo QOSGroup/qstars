@@ -18,8 +18,8 @@ func NewApp(log.Logger, dbm.DB, io.Writer) abci.Application {
 	//cfg := ctx.Config
 	//rootDir := cfg.RootDir
 	rootDir := os.ExpandEnv("$HOME/.qstarsd")
-	app,err := baseapp.NewAPP(rootDir,MakeCodec())
-	if err != nil{
+	app, err := baseapp.NewAPP(rootDir, MakeCodec())
+	if err != nil {
 		return nil
 	}
 	app.Register(kvstore.NewKVStub())
@@ -32,6 +32,11 @@ func NewApp(log.Logger, dbm.DB, io.Writer) abci.Application {
 func MakeCodec() *wire.Codec {
 
 	cdc := baseabci.MakeQBaseCodec()
+
+	bank.NewBankStub().RegisterKVCdc(cdc)
+	kvstore.NewKVStub().RegisterKVCdc(cdc)
+
+	//cdc := baseabci.MakeQBaseCodec()
 	//cdc.RegisterConcrete(&bctypes.AppAccount{}, "basecoin/AppAccount", nil)
 	return cdc
 }

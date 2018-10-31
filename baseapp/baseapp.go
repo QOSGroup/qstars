@@ -3,52 +3,52 @@ package baseapp
 import (
 	"fmt"
 	"github.com/QOSGroup/qbase/baseabci"
+	"github.com/QOSGroup/qbase/server"
+	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 	"os"
 	"path/filepath"
-	"github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qbase/server"
 
 	"github.com/QOSGroup/qbase/context"
 	bctypes "github.com/QOSGroup/qbase/example/basecoin/types"
 	go_amino "github.com/tendermint/go-amino"
 	dbm "github.com/tendermint/tendermint/libs/db"
 )
+
 type QStarsContext struct {
-	ServerContext *server.Context
+	ServerContext    *server.Context
 	QStarsSignerPriv crypto.PrivKey
 }
 
 var qCtx *QStarsContext
 
-func GetServerContext() *QStarsContext{
+func GetServerContext() *QStarsContext {
 	return qCtx
 }
 
-func InitApp(){
+func InitApp() {
 	qCtx = &QStarsContext{
-		ServerContext:server.NewDefaultContext(),
-
+		ServerContext: server.NewDefaultContext(),
 	}
 }
 
-func NewAPP(rootDir string,cdc *go_amino.Codec) (QstarsBaseApp,error) {
+func NewAPP(rootDir string, cdc *go_amino.Codec) (QstarsBaseApp, error) {
 
-	sconf, err := config.ReadConf(rootDir+"/config/qstarsconf.toml")
-	if err!=nil{
-		return QstarsBaseApp{},err
+	sconf, err := config.ReadConf(rootDir + "/config/qstarsconf.toml")
+	if err != nil {
+		return QstarsBaseApp{}, err
 	}
 
-	_,_, qCtx.QStarsSignerPriv = utility.PubAddrRetrieval(sconf.QStarsPrivateKey,cdc)
+	_, _, qCtx.QStarsSignerPriv = utility.PubAddrRetrieval(sconf.QStarsPrivateKey, cdc)
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
 	qstarts := QstarsBaseApp{
 		Logger:  logger,
 		RootDir: rootDir,
 	}
-	return qstarts,nil
+	return qstarts, nil
 }
 
 type QstarsBaseApp struct {
@@ -63,35 +63,36 @@ func (base *QstarsBaseApp) Register(basecontract BaseContract) {
 	base.ContractList = append(base.ContractList, basecontract)
 }
 
-func (base *QstarsBaseApp) loadX() error{
+func (base *QstarsBaseApp) loadX() error {
 	for index, c := range base.ContractList {
 		fmt.Printf("arr[%d]=%d \n", index, c)
 		err := c.StartX(base)
-		if err!=nil{
+		if err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (base *QstarsBaseApp) RegisterCDC(cdc *go_amino.Codec){
+func (base *QstarsBaseApp) RegisterCDC(cdc *go_amino.Codec) {
 	for _, c := range base.ContractList {
 		c.RegisterKVCdc(cdc)
 	}
+
 }
 
-func (base *QstarsBaseApp) TxQcpResultHandler (ctx context.Context, txQcpResult interface{}) types.Result {
+func (base *QstarsBaseApp) TxQcpResultHandler(ctx context.Context, txQcpResult interface{}) types.Result {
 	var rr types.Result
 	for _, c := range base.ContractList {
-		tmprr := c.ResultNotify(ctx,txQcpResult)
-		if tmprr!=nil{
+		tmprr := c.ResultNotify(ctx, txQcpResult)
+		if tmprr != nil {
 			rr = *tmprr
 		}
 	}
 	return rr
 }
 
-func (base *QstarsBaseApp) Start() error{
+func (base *QstarsBaseApp) Start() error {
 
 	db, err := dbm.NewGoLevelDB("kvstore", filepath.Join(base.RootDir, "data"))
 	if err != nil {

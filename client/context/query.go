@@ -2,11 +2,11 @@ package context
 
 import (
 	"fmt"
+	"github.com/QOSGroup/qos/account"
 	"github.com/QOSGroup/qstars/wire"
 	"io"
 
 	"github.com/pkg/errors"
-	bctypes "github.com/QOSGroup/qbase/example/basecoin/types"
 	"github.com/tendermint/tendermint/libs/common"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
@@ -52,7 +52,7 @@ func (ctx CLIContext) QueryKV(key cmn.HexBytes) (res []byte, err error) {
 
 // GetAccount queries for an account given an address and a block height. An
 // error is returned if the query or decoding fails.
-func (ctx CLIContext) GetAccount(address []byte,cdc *wire.Codec) (*bctypes.AppAccount, error) {
+func (ctx CLIContext) GetAccount(address []byte, cdc *wire.Codec) (*account.QOSAccount, error) {
 
 	result, err := ctx.QueryQOSAccount(address)
 	if err != nil {
@@ -61,9 +61,9 @@ func (ctx CLIContext) GetAccount(address []byte,cdc *wire.Codec) (*bctypes.AppAc
 		return nil, errors.New("Account is not exsit.")
 	}
 
-	var acc *bctypes.AppAccount
+	var acc *account.QOSAccount
 	err = cdc.UnmarshalBinaryBare(result, &acc)
-	if err!=nil{
+	if err != nil {
 		return nil, err
 	}
 	json, err := cdc.MarshalJSON(acc)

@@ -21,6 +21,11 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 		Use:   "send",
 		Short: "Create and sign a send tx",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Println(r)
+				}
+			}()
 			toStr := viper.GetString(flagTo)
 			to, err := sdk.AccAddressFromBech32(toStr)
 			if err != nil {
@@ -32,6 +37,7 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 			amount := viper.GetString(flagAmount)
 			// parse coins trying to be sent
 			coins, err := sdk.ParseCoins(amount)
+
 			if err != nil {
 				return err
 			}

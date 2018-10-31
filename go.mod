@@ -4,6 +4,8 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/QOSGroup/qbase v0.0.5
 	github.com/QOSGroup/qos v0.0.1
+	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
+	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/brejski/hid v0.0.0-20180408220029-06112dcfcc50 // indirect
@@ -14,6 +16,7 @@ require (
 	github.com/mattn/go-isatty v0.0.3
 	github.com/pkg/errors v0.8.0
 	github.com/prometheus/common v0.0.0-20180801064454-c7de2306084e
+	github.com/sirupsen/logrus v1.1.1 // indirect
 	github.com/spf13/cobra v0.0.1
 	github.com/spf13/pflag v1.0.2 // indirect
 	github.com/spf13/viper v1.0.0
@@ -22,4 +25,5 @@ require (
 	github.com/tendermint/tendermint v0.23.1
 	github.com/zondax/ledger-goclient v0.0.0-20180813155702-4296ee5701e9
 	golang.org/x/crypto v0.0.0-20181009213950-7c1a557ab941
+	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
 )

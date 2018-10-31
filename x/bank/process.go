@@ -58,8 +58,15 @@ func NewSendOptions(opts ...func(*SendOptions)) *SendOptions {
 	return sopt
 }
 
+// Send 暂时只支持一次只转一种币 coins.Len() == 1
 func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, sopt *SendOptions) (*SendResult, error) {
 	_, addrben32, priv := utility.PubAddrRetrieval(fromstr, cdc)
+
+	// TODO 暂时只支持一次只转一种币
+	if coins.Len() == 0 {
+		return nil, errors.New("coins不能为空")
+	}
+
 	from, err := types.AccAddressFromBech32(addrben32)
 	key := account.AddressStoreKey(from)
 	if err != nil {
@@ -80,19 +87,16 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 		return nil, err
 	}
 	var cc qbasetypes.BaseCoin
+	// TODO 暂时只支持一次只转一种币
+	cc = qbasetypes.BaseCoin{
+		Name:   coins[0].Denom,
+		Amount: qbasetypes.NewInt(coins[0].Amount.Int64()),
+	}
+
 	var qcoins types.Coins
-	for _, qsc := range account.Coins {
+	for _, qsc := range account.QSCs {
 		amount := qsc.Amount
 		qcoins = append(qcoins, types.NewCoin(qsc.Name, types.NewInt(amount.Int64())))
-
-		//TODO-------------------------
-		if !amount.IsZero() {
-			mount := qbasetypes.NewInt(100)
-			cc = qbasetypes.BaseCoin{
-				Name:   qsc.Name,
-				Amount: mount,
-			}
-		}
 	}
 
 	if !qcoins.IsGTE(coins) {
@@ -101,20 +105,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 
 	var nn int64
 	nn = int64(account.Nonce)
-	//if directTOQOS==true {
-	//	nn = int64(account.Nonce)
-	//}else {
-	//	qscaccount, err := config.GetCLIContext().QSCCliContext.GetAccount(key,cdc)
-	//	if err != nil{
-	//		if err.Error()=="Account is not exsit." {
-	//			nn = int64(0)
-	//		}else{
-	//			return nil,err
-	//		}
-	//	}else{
-	//		nn = int64(qscaccount.Nonce)
-	//	}
-	//}
+
 	nn++
 	var msg *txs.TxStd
 	if directTOQOS == true {
@@ -162,10 +153,12 @@ func fetchResult(heigth1 string, tx1 string) (string, error) {
 }
 func newQOSTx(sender qbasetypes.Address, receiver qbasetypes.Address, coin qbasetypes.BaseCoin) *qostxs.TransferTx {
 	sendTx := qostxs.TransferTx{}
+
 	sendTx.Senders = append(sendTx.Senders,
 		qostxs.TransItem{Address: sender, QOS: qbasetypes.NewInt(0), QSCs: qbasetypes.BaseCoins{&coin}})
+
 	sendTx.Receivers = append(sendTx.Receivers,
-		qostxs.TransItem{Address: receiver, QOS: qbasetypes.NewInt(0), QSCs: nil})
+		qostxs.TransItem{Address: receiver, QOS: qbasetypes.NewInt(0), QSCs: qbasetypes.BaseCoins{&coin}})
 
 	return &sendTx
 }
