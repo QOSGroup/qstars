@@ -3,7 +3,6 @@ module github.com/QOSGroup/qstars
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/QOSGroup/qbase v0.0.5
-
 	github.com/QOSGroup/qos v0.0.1
 	github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d
 	github.com/bgentry/speakeasy v0.1.0

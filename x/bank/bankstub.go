@@ -2,8 +2,11 @@ package bank
 
 import (
 	"fmt"
-	bctypes "github.com/QOSGroup/qbase/example/basecoin/types"
+	"github.com/QOSGroup/qbase/context"
+	"github.com/QOSGroup/qbase/example/basecoin/tx"
 	"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qos/account"
 	"github.com/QOSGroup/qstars/baseapp"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/prometheus/common/log"
@@ -17,9 +20,7 @@ import (
 
 type BankStub struct {
 	baseapp.BaseContract
-
 }
-
 
 func NewBankStub() BankStub {
 	return BankStub{}
@@ -35,16 +36,17 @@ func (kv BankStub) StartX(base *baseapp.QstarsBaseApp) error{
 		fmt.Println(err)
 		return err
 	}
+
 	return nil
 }
 
 func (kv BankStub) RegisterKVCdc(cdc *go_amino.Codec) {
-	cdc.RegisterConcrete(&tx.SendTx{}, "basecoin/SendTx",nil)
-	cdc.RegisterConcrete(&WrapperSendTx{}, "qstars/WrapperSendTx",nil)
-	cdc.RegisterConcrete(&bctypes.AppAccount{}, "basecoin/AppAccount", nil)
+	cdc.RegisterConcrete(&tx.SendTx{}, "basecoin/SendTx", nil)
+	cdc.RegisterConcrete(&WrapperSendTx{}, "qstars/WrapperSendTx", nil)
+	cdc.RegisterConcrete(&account.QOSAccount{}, "qos/QOSAccount", nil)
 }
 
-func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result{
+func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	in := txQcpResult.(*txs.QcpTxResult)
 	fmt.Println("QcpOriginalSequence:"+string(in.QcpOriginalSequence))
 	var resultCode types.ABCICodeType
@@ -71,6 +73,7 @@ func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *t
 	}
 	rr := types.Result{
 		Code:resultCode,
+
 	}
 	return &rr
 }
