@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/QOSGroup/qbase/server"
-	"github.com/QOSGroup/qstars/star"
 	"github.com/QOSGroup/qstars/baseapp"
+	"github.com/QOSGroup/qstars/star"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"
 	"os"
