@@ -63,8 +63,9 @@ func InterceptLoadConfig() (conf *CLIConfig, err error) {
 		// the following parse config is needed to create directories
 		conf, _ = ParseConfig()
 		conf.QSCChainID = "abc"
-		conf.QOSNodeURI = "localhost:1317"
-		conf.QSTARSNodeURI = "localhost:1317"
+		conf.QOSNodeURI = "qos"
+		conf.QOSNodeURI = "localhost:22657"
+		conf.QSTARSNodeURI = "localhost:22657"
 		WriteConfigFile(configFilePath, conf)
 		// Fall through, just so that its parsed into memory.
 	}
