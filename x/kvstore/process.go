@@ -76,7 +76,7 @@ func SendKV(cdc *wire.Codec, privateKey, key, value string, option *SendKVOption
 
 	txStd := wrapToStdTx(key, value, option.chainID)
 
-	hash, err := utils.SendTx(cliCtx, cdc, txStd)
+	hash,_, err := utils.SendTx(cliCtx, cdc, txStd)
 	if err != nil {
 		return nil, err
 	}

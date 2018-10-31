@@ -5,6 +5,7 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/baseapp"
+	"github.com/QOSGroup/qstars/x/common"
 	go_amino "github.com/tendermint/go-amino"
 )
 
@@ -20,7 +21,7 @@ func NewKVStub() KVStub {
 func (kv KVStub) StartX(base *baseapp.QstarsBaseApp) error{
 
 	//var mainStore = store.NewKVStoreKey("kv")
-	var kvMapper = NewKvMapper()
+	var kvMapper = common.NewKvMapper(KvMapperName)
 	base.Baseapp.RegisterMapper(kvMapper)
 
 	if err := base.Baseapp.LoadLatestVersion(); err != nil {

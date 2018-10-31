@@ -1,13 +1,15 @@
 package kvstore
 
-import "github.com/QOSGroup/qbase/types"
-
 import (
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/qcp"
 	"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qstars/x/common"
 )
+
+const KvMapperName  =  "qstarskv"
 
 type KvstoreTx struct {
 	Key   []byte
@@ -36,7 +38,7 @@ func (kv KvstoreTx) ValidateData() bool {
 func (kv KvstoreTx) Exec(ctx context.Context) (result types.Result, crossTxQcps *txs.TxQcp) {
 
 	logger := ctx.Logger()
-	kvMapper := ctx.Mapper(KvMapperName).(*KvMapper)
+	kvMapper := ctx.Mapper(KvMapperName).(*common.KvMapper)
 	qcpMapper := ctx.Mapper(qcp.QcpMapperName).(*qcp.QcpMapper)
 	accMapper := ctx.Mapper(account.AccountMapperName).(*account.AccountMapper)
 
