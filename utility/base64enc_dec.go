@@ -11,7 +11,6 @@ import (
 	"github.com/tendermint/tendermint/libs/bech32"
 )
 
-
 const (
 	// expected address length
 	//AddrLen = 20
@@ -31,7 +30,7 @@ func Decbase64(input string) []byte {
 
 }
 
-func PubAddrRetrieval(caPriHex string,cdc *wire.Codec) (string, string, ed25519.PrivKeyEd25519) {
+func PubAddrRetrieval(caPriHex string, cdc *wire.Codec) (string, string, ed25519.PrivKeyEd25519) {
 	caHex, _ := hex.DecodeString(caPriHex[2:])
 	var key ed25519.PrivKeyEd25519
 	cdc.MustUnmarshalBinaryBare(caHex, &key)

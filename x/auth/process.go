@@ -4,14 +4,14 @@ package auth
 
 import (
 	"github.com/QOSGroup/qbase/account"
-	bctypes "github.com/QOSGroup/qbase/example/basecoin/types"
-	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qbase/types"
+	qosaccount "github.com/QOSGroup/qos/account"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
 )
 
 // QueryAccount query account by addr
-func QueryAccount(cdc *wire.Codec, addr string) (*bctypes.AppAccount, error) {
+func QueryAccount(cdc *wire.Codec, addr string) (*qosaccount.QOSAccount, error) {
 	address, err := types.GetAddrFromBech32(addr)
 	if err != nil {
 		return nil, err
@@ -20,7 +20,7 @@ func QueryAccount(cdc *wire.Codec, addr string) (*bctypes.AppAccount, error) {
 
 	cliCtx := config.GetCLIContext().QOSCliContext
 
-	acc, err := cliCtx.GetAccount(key,cdc)
+	acc, err := cliCtx.GetAccount(key, cdc)
 	if err != nil {
 		return nil, err
 	}

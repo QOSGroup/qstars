@@ -1,14 +1,13 @@
 package main
 
 import (
+	"github.com/QOSGroup/qstars/star"
 	"os"
 
 	"github.com/QOSGroup/qbase/version"
 	"github.com/QOSGroup/qstars/client"
 	"github.com/QOSGroup/qstars/client/lcd"
 	"github.com/QOSGroup/qstars/config"
-	"github.com/QOSGroup/qstars/star"
-	"github.com/QOSGroup/qstars/x/bank"
 	authcmd "github.com/QOSGroup/qstars/x/auth"
 	bankcmd "github.com/QOSGroup/qstars/x/bank"
 	"github.com/QOSGroup/qstars/x/kvstore"
@@ -31,9 +30,6 @@ func main() {
 	// get the codec
 	cdc := star.MakeCodec()
 
-	bank.NewBankStub().RegisterKVCdc(cdc)
-	kvstore.NewKVStub().RegisterKVCdc(cdc)
-
 	rootCmd := &cobra.Command{
 		Use:   "cmd",
 		Short: "qstars Command Line Interface(command)",
@@ -45,7 +41,7 @@ func main() {
 			if err != nil {
 				return err
 			}
-			config.CreateCLIContextTwo(cdc,cfg)
+			config.CreateCLIContextTwo(cdc, cfg)
 			return nil
 		},
 	}
@@ -69,7 +65,6 @@ func main() {
 
 	//
 
-
 	rootCmd.AddCommand(
 		client.PostCommands(
 			kvstore.SendKVCmd(cdc),
@@ -88,12 +83,9 @@ func main() {
 	// prepare and add flags
 	executor := cli.PrepareBaseCmd(rootCmd, "BC", os.ExpandEnv("$HOME/.qstarscli"))
 
-
-
 	err := executor.Execute()
 	if err != nil {
 		// Note: Handle with #870
 		panic(err)
 	}
 }
-
