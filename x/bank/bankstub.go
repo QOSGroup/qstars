@@ -27,11 +27,6 @@ func (kv BankStub) StartX(base *baseapp.QstarsBaseApp) error {
 	var qosMapper = common.NewKvMapper(QSCResultMapperName)
 	base.Baseapp.RegisterMapper(qosMapper)
 
-	if err := base.Baseapp.LoadLatestVersion(); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
 	return nil
 }
 

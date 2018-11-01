@@ -1,7 +1,6 @@
 package kvstore
 
 import (
-	"fmt"
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/baseapp"
@@ -18,16 +17,12 @@ func NewKVStub() KVStub {
 	return KVStub{}
 }
 
-func (kv KVStub) StartX(base *baseapp.QstarsBaseApp) error{
+func (kv KVStub) StartX(base *baseapp.QstarsBaseApp) error {
 
 	//var mainStore = store.NewKVStoreKey("kv")
 	var kvMapper = common.NewKvMapper(KvMapperName)
 	base.Baseapp.RegisterMapper(kvMapper)
 
-	if err := base.Baseapp.LoadLatestVersion(); err != nil {
-		fmt.Println(err)
-		return err
-	}
 	return nil
 }
 
@@ -35,6 +30,6 @@ func (kv KVStub) RegisterKVCdc(cdc *go_amino.Codec) {
 	cdc.RegisterConcrete(&kv.KvTx, "kvstore/KvstoreTx", nil)
 }
 
-func (kv KVStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result{
+func (kv KVStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	return nil
 }

@@ -71,6 +71,12 @@ func (base *QstarsBaseApp) loadX() error {
 			return err
 		}
 	}
+
+	if err := base.Baseapp.LoadLatestVersion(); err != nil {
+		fmt.Println(err)
+		return err
+	}
+
 	return nil
 }
 
