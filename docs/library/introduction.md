@@ -1,5 +1,5 @@
-# SDK development for ios and Android
-How to use Gomobile for library development for ios and Android
+# SDK development for iOS and Android
+How to use Gomobile for library development for iOS and Android
 
 ## Environment prerequisites:
 * OSX
