@@ -62,8 +62,8 @@ func InterceptLoadConfig() (conf *CLIConfig, err error) {
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
 		// the following parse config is needed to create directories
 		conf, _ = ParseConfig()
-		conf.QSCChainID = "abc"
-		conf.QOSNodeURI = "qos"
+		conf.QSCChainID = "qstars-test"
+		conf.QOSNodeURI = "qos-test"
 		conf.QOSNodeURI = "localhost:22657"
 		conf.QSTARSNodeURI = "localhost:22657"
 		WriteConfigFile(configFilePath, conf)

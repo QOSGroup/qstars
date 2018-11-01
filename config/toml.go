@@ -9,10 +9,8 @@ cmn "github.com/tendermint/tendermint/libs/common"
 )
 
 var (
-
 	defaultConfigDir     = "config"
 	defaultDataDir       = "data"
-
 	defaultConfigFileName  = "config.toml"
 	defaultGenesisJSONName = "genesis.json"
 	defaultConfigFilePath  = filepath.Join(defaultConfigDir, defaultConfigFileName)
@@ -26,8 +24,6 @@ func init() {
 		panic(err)
 	}
 }
-
-/****** these are for production settings ***********/
 
 // EnsureRoot creates the root, config, and data directories if they don't exist,
 // and panics if it fails.

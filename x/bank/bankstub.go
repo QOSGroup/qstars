@@ -15,7 +15,7 @@ import (
 )
 
 type BankStub struct {
-	baseapp.BaseContract
+	baseapp.BaseXTransaction
 }
 
 func NewBankStub() BankStub {
@@ -30,7 +30,7 @@ func (kv BankStub) StartX(base *baseapp.QstarsBaseApp) error {
 	return nil
 }
 
-func (kv BankStub) RegisterKVCdc(cdc *go_amino.Codec) {
+func (kv BankStub) RegisterCdc(cdc *go_amino.Codec) {
 	cdc.RegisterConcrete(&WrapperSendTx{}, "qstars/WrapperSendTx", nil)
 	qosapp.RegisterCodec(cdc)
 }
