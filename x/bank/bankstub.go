@@ -1,7 +1,6 @@
 package bank
 
 import (
-	"fmt"
 	"github.com/QOSGroup/qbase/baseabci"
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
@@ -37,20 +36,21 @@ func (kv BankStub) RegisterCdc(cdc *go_amino.Codec) {
 
 func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	in := txQcpResult.(*txs.QcpTxResult)
-	fmt.Println("QcpOriginalSequence:" + string(in.QcpOriginalSequence))
+	log.Debugf("ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
 	var resultCode types.ABCICodeType
 	qcpTxResult, ok := baseabci.ConvertTxQcpResult(txQcpResult)
 	if ok == false {
-		fmt.Println("ConvertTxQcpResult error.")
+		log.Errorf("ResultNotify ConvertTxQcpResult error.")
 		resultCode = types.ABCICodeType(types.CodeTxDecode)
 	} else {
 		//get original cross chain transaction
 		orginalSeq := qcpTxResult.QcpOriginalSequence
 		orginalTx := baseabci.GetQcpMapper(ctx).GetChainOutTxs("", orginalSeq)
-		if orginalTx.IsResult == false {
-			log.Error("Cross chain result is not a type of result.")
+		if orginalTx.IsResult == true {
+			log.Errorf("ResultNotify Cross chain result is not a type of result.")
 			resultCode = types.ABCICodeType(types.CodeInternal)
 		} else {
+			log.Debugf("ResultNotify update status")
 			//orginalTx.
 			orginalTxHash := "123" //orginalTx.abc
 			kvMapper := ctx.Mapper(QSCResultMapperName).(*common.KvMapper)

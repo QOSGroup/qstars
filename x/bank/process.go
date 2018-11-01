@@ -127,13 +127,13 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 				result.Error = "time out"
 				break
 			}
-			resultstr, err := fetchResult(height, commitresult.Hash.String())
+			resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
 			if err != nil {
 				fmt.Println("get result error:" + err.Error())
 				result.Error = err.Error()
 			}
-			if resultstr != "-1" {
-				fmt.Println("get result")
+			if resultstr != "" && resultstr != "-1" {
+				fmt.Printf("get result:[%+v]\n", resultstr)
 				result.Result = resultstr
 				break
 			}
@@ -144,12 +144,27 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	return result, nil
 }
 
-func fetchResult(heigth1 string, tx1 string) (string, error) {
+func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 
-	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
-	res, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), QSCResultMapperName)
-	re := string(res)
-	return re, err
+	// TODO qbase还没实现
+	//qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
+	qstarskey := "123"
+	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), QSCResultMapperName)
+	fmt.Printf("QueryStore: %+v, %+v\n", d, err)
+
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Printf("QueryStore: %+v, %+v\n", d, err)
+
+	var res []byte
+	err = cdc.UnmarshalBinaryBare(d, &res)
+	if err != nil {
+		return "", err
+	}
+
+	return string(res), err
 }
 func newQOSTx(sender qbasetypes.Address, receiver qbasetypes.Address, coin qbasetypes.BaseCoin) *qostxs.TransferTx {
 	sendTx := qostxs.TransferTx{}
