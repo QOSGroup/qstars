@@ -14,6 +14,7 @@ const (
 	flagAmount  = "amount"
 	flagFrom    = "from"
 	flagCommand = "command"
+	flagChainid = "chainid"
 )
 
 // SendTxCmd will create a send tx and sign it with the given key.
@@ -38,12 +39,12 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 			amount := viper.GetString(flagAmount)
 			// parse coins trying to be sent
 			coins, err := sdk.ParseCoins(amount)
-
+			chainid := viper.GetString(flagChainid)
 			if err != nil {
 				return err
 			}
 
-			result, err := Send(cdc, fromstr, to, coins, NewSendOptions(
+			result, err := Send(cdc, fromstr, to, coins, chainid, NewSendOptions(
 				gas(viper.GetInt64("gas")),
 				fee(viper.GetString("fee"))))
 			if err != nil {
@@ -82,13 +83,13 @@ func ApproveCmd(cdc *wire.Codec) *cobra.Command {
 			amount := viper.GetString(flagAmount)
 			// parse coins trying to be sent
 			coins, err := sdk.ParseCoins(amount)
-
+			chainid := viper.GetString(flagChainid)
 			if err != nil {
 				return err
 			}
 
 			command := viper.GetString(flagCommand)
-			result, err := Approve(cdc, command, fromstr, toStr, coins, NewSendOptions(
+			result, err := Approve(cdc, command, fromstr, toStr, coins, chainid, NewSendOptions(
 				gas(viper.GetInt64("gas")),
 				fee(viper.GetString("fee"))))
 			if err != nil {

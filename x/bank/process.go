@@ -60,7 +60,7 @@ func NewSendOptions(opts ...func(*SendOptions)) *SendOptions {
 }
 
 func TxSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
-	var ts *txs.TxStd
+	ts := new(txs.TxStd)
 	err := cdc.UnmarshalJSON(txb, ts)
 	if err != nil {
 		return nil, err
@@ -80,8 +80,8 @@ func TxSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
 	return result, nil
 }
 
-// Send 暂时只支持一次只转一种币 coins.Len() == 1
-func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, sopt *SendOptions) (*SendResult, error) {
+// Send 暂时只支持一次只转一种币 coins.Len() == 1; add chainid string input
+func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, chainid string, sopt *SendOptions) (*SendResult, error) {
 	if coins.Len() == 0 {
 		return nil, errors.New("coins不能为空")
 	}
@@ -134,9 +134,9 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	t := tx.NewTransfer(from, to, ccs)
 	var msg *txs.TxStd
 	if directTOQOS == true {
-		msg = genStdSendTx(cdc, t, priv, nn)
+		msg = genStdSendTx(cdc, t, priv, chainid, nn)
 	} else {
-		msg = genStdWrapTx(cdc, t, priv, nn)
+		msg = genStdWrapTx(cdc, t, priv, chainid, nn)
 	}
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 
@@ -175,8 +175,8 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	return result, nil
 }
 
-// Send 暂时只支持一次只转一种币 coins.Len() == 1
-func Approve(cdc *wire.Codec, command string, fromstr string, tostr string, coins types.Coins,
+// Send 暂时只支持一次只转一种币 coins.Len() == 1; add chainid string input
+func Approve(cdc *wire.Codec, command string, fromstr string, tostr string, coins types.Coins, chainid string,
 	sopt *SendOptions) (*SendResult, error) {
 	if command != "cancel" {
 		if coins.Len() == 0 {
@@ -279,9 +279,9 @@ func Approve(cdc *wire.Codec, command string, fromstr string, tostr string, coin
 	var msg *txs.TxStd
 	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
 	if directTOQOS == true {
-		msg = genStdSendTx(cdc, t, priv, nonce)
+		msg = genStdSendTx(cdc, t, priv, chainid, nonce)
 	} else {
-		msg = genStdWrapTx(cdc, t, priv, nonce)
+		msg = genStdWrapTx(cdc, t, priv, chainid, nonce)
 	}
 
 	var cliCtx context.CLIContext
@@ -344,20 +344,23 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 	return string(res), err
 }
 
-func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, nonce int64) *txs.TxStd {
+//add the string input chainid
+func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64) *txs.TxStd {
 	gas := qbasetypes.NewInt(int64(0))
-	stx := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QOSChainID, gas)
+	stx := txs.NewTxStd(sendTx, chainid, gas)
 	signature, _ := stx.SignTx(priKey, nonce)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
 		Nonce:     nonce,
 	}}
+
 	return stx
 }
 
-func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, nonce int64) *txs.TxStd {
-	stx := genStdSendTx(cdc, sendTx, priKey, nonce)
+//add the string input chainid
+func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64) *txs.TxStd {
+	stx := genStdSendTx(cdc, sendTx, priKey, chainid, nonce)
 	tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
 	tx2.ITx = NewWrapperSendTx(stx)
 	return tx2

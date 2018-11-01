@@ -1,16 +1,16 @@
 package config
 
 import (
-"bytes"
-"path/filepath"
-"text/template"
+	"bytes"
+	"path/filepath"
+	"text/template"
 
-cmn "github.com/tendermint/tendermint/libs/common"
+	cmn "github.com/tendermint/tendermint/libs/common"
 )
 
 var (
-	defaultConfigDir     = "config"
-	defaultDataDir       = "data"
+	defaultConfigDir       = "config"
+	defaultDataDir         = "data"
 	defaultConfigFileName  = "config.toml"
 	defaultGenesisJSONName = "genesis.json"
 	defaultConfigFilePath  = filepath.Join(defaultConfigDir, defaultConfigFileName)
@@ -79,6 +79,3 @@ qstars_node_uri = "{{ .QSTARSNodeURI }}"
 
 direct_to_qos = "{{ .DirectTOQOS }}"
 `
-
-
-

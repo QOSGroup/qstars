@@ -10,26 +10,26 @@ import (
 
 var Clictx QStarsClientContext
 
-type QStarsClientContext struct{
+type QStarsClientContext struct {
 	QOSCliContext *context.CLIContext
 	QSCCliContext *context.CLIContext
-	Config *CLIConfig
+	Config        *CLIConfig
 }
 
 type CLIConfig struct {
-	QOSChainID string `mapstructure:"qos_chain_id"`
-	QSCChainID string `mapstructure:"qsc_chain_id"`
-	RootDir string `mapstructure:"home"`
-	QOSNodeURI string `mapstructure:"qos_node_uri"`
+	QOSChainID    string `mapstructure:"qos_chain_id"`
+	QSCChainID    string `mapstructure:"qsc_chain_id"`
+	RootDir       string `mapstructure:"home"`
+	QOSNodeURI    string `mapstructure:"qos_node_uri"`
 	QSTARSNodeURI string `mapstructure:"qstars_node_uri"`
-	DirectTOQOS bool `mapstructure:"direct_to_qos"`
+	DirectTOQOS   bool   `mapstructure:"direct_to_qos"`
 }
 
 func GetCLIContext() QStarsClientContext {
 	return Clictx
 }
 
-func CreateCLIContextTwo(cdc *wire.Codec, cfg *CLIConfig) QStarsClientContext{
+func CreateCLIContextTwo(cdc *wire.Codec, cfg *CLIConfig) QStarsClientContext {
 
 	pQOSCliContext := context.NewCLIContext1(cfg.QOSNodeURI).
 		WithCodec(cdc).
@@ -42,11 +42,10 @@ func CreateCLIContextTwo(cdc *wire.Codec, cfg *CLIConfig) QStarsClientContext{
 	Clictx = QStarsClientContext{
 		QOSCliContext: &pQOSCliContext,
 		QSCCliContext: &pQSCCliContext,
-		Config: cfg,
+		Config:        cfg,
 	}
 	return Clictx
 }
-
 
 // If a new config is created, change some of the default tendermint settings
 func InterceptLoadConfig() (conf *CLIConfig, err error) {
@@ -77,10 +76,10 @@ func InterceptLoadConfig() (conf *CLIConfig, err error) {
 	return
 }
 
-func DefaultConfig() *CLIConfig{
-	return &CLIConfig{
-	}
+func DefaultConfig() *CLIConfig {
+	return &CLIConfig{}
 }
+
 // ParseConfig retrieves the default environment configuration,
 // sets up the Tendermint root and ensures that the root exists
 func ParseConfig() (*CLIConfig, error) {
@@ -93,4 +92,3 @@ func ParseConfig() (*CLIConfig, error) {
 	EnsureRoot(conf.RootDir)
 	return conf, err
 }
-

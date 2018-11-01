@@ -6,7 +6,6 @@ package lib
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/tendermint/go-amino"
@@ -22,18 +21,18 @@ func HttpResponseWrapper(w http.ResponseWriter, cdc *amino.Codec, result interfa
 	}
 }
 
-func ResponseWrapper(w io.Writer, cdc *amino.Codec, result interface{}, err error) {
+func ResponseWrapper(cdc *amino.Codec, result interface{}, err error) ([]byte, error) {
 	if err != nil {
-		writeResponse(w, tmtype.NewRPCErrorResponse("", 0, err.Error(), ""))
+		return writeResponse(tmtype.NewRPCErrorResponse("", 0, err.Error(), ""))
 	} else {
-		writeResponse(w, tmtype.NewRPCSuccessResponse(cdc, "", result))
+		return writeResponse(tmtype.NewRPCSuccessResponse(cdc, "", result))
 	}
 }
 
-func writeResponse(w io.Writer, res tmtype.RPCResponse) {
+func writeResponse(res tmtype.RPCResponse) ([]byte, error) {
 	jsonBytes, err := json.MarshalIndent(res, "", "  ")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	w.Write(jsonBytes)
+	return jsonBytes, nil
 }
