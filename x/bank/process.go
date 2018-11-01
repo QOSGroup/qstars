@@ -58,6 +58,27 @@ func NewSendOptions(opts ...func(*SendOptions)) *SendOptions {
 	return sopt
 }
 
+func TxSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
+	var ts *txs.TxStd
+	err := cdc.UnmarshalJSON(txb, ts)
+	if err != nil {
+		return nil, err
+	}
+
+	cliCtx := *config.GetCLIContext().QOSCliContext
+	response, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
+	result := &SendResult{}
+	if err != nil {
+		result.Error = err.Error()
+		return result, nil
+	}
+
+	result.Hash = response
+	height := strconv.FormatInt(commitresult.Height, 10)
+	result.Heigth = height
+	return result, nil
+}
+
 // Send 暂时只支持一次只转一种币 coins.Len() == 1
 func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, sopt *SendOptions) (*SendResult, error) {
 	_, addrben32, priv := utility.PubAddrRetrieval(fromstr, cdc)
