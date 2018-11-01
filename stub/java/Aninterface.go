@@ -11,17 +11,27 @@ import (
 // ----------------------------------------------------------------------------
 
 //export AccountCreate
-func AccountCreate() *C.char {
+//func AccountCreate() *C.char {
+//	output := stub.AccountCreateStr()
+//	return C.CString(output)
+//}
+
+func AccountCreate() string {
 	output := stub.AccountCreateStr()
-	return C.CString(output)
+	return output
+	//stub.AccountCreateStr(w)
 }
 
 //export QSCKVStoreSet
-func QSCKVStoreSet(k, v, privkey, chain *C.char) int {
-	output := stub.QSCKVStoreSetPost(C.GoString(k), C.GoString(v), C.GoString(privkey), C.GoString(chain))
+//func QSCKVStoreSet(k, v, privkey, chain *C.char) int {
+//	output := stub.QSCKVStoreSetPost(C.GoString(k), C.GoString(v), C.GoString(privkey), C.GoString(chain))
+//	return output
+//}
+
+func QSCKVStoreSet(k, v, privkey, chain string) int {
+	output := stub.QSCKVStoreSetPost(k, v, privkey, chain)
 	return output
 }
-
 
 //export QSCKVStoreGet
 func QSCKVStoreGet(k *C.char) *C.char {
@@ -30,59 +40,73 @@ func QSCKVStoreGet(k *C.char) *C.char {
 }
 
 //export QSCQueryAccount
-func QSCQueryAccount(addr *C.char) *C.char {
-	output := stub.QSCQueryAccountGet(C.GoString(addr))
-	return C.CString(output)
-}
+//func QSCQueryAccount(addr *C.char) *C.char {
+//	output := stub.QSCQueryAccountGet(C.GoString(addr))
+//	return C.CString(output)
+//}
 
-
-//export QSCMintCoin
-func QSCMintCoin() {
-	fmt.Println("this is QSCMintCoin function interface")
-}
-
-//export QSCtransfer
-func QSCtransfer(addr, amount, privkey, chain, accountnumber, seq, gas *C.char) *C.char {
-	output := stub.QSCtransferPost(C.GoString(addr), C.GoString(amount), C.GoString(privkey), C.GoString(chain), C.GoString(accountnumber), C.GoString(seq), C.GoString(gas))
-	return C.CString(output)
-}
-
-//export QOStoQSCtransfer
-func QOStoQSCtransfer() {
-	fmt.Println("this is QOStoQSCtransfer function interface")
-}
-
-//export QSCtoQOStransfer
-func QSCtoQOStransfer() {
-	fmt.Println("this is QSCtoQOStransfer function interface")
+func QSCQueryAccount(addr string) string {
+	output := stub.QSCQueryAccountGet(addr)
+	return output
 }
 
 //export AccountRecover
-func AccountRecover(mncode *C.char) *C.char {
-	output := stub.AccountRecoverStr(C.GoString(mncode))
-	return C.CString(output)
+//func AccountRecover(mncode *C.char) *C.char {
+//	output := stub.AccountRecoverStr(C.GoString(mncode))
+//	return C.CString(output)
+//}
+
+func AccountRecover(mncode string) string {
+	output := stub.AccountRecoverStr(mncode)
+	return output
 }
 
 //export GetIPfromInput
-func GetIPfromInput(ip *C.char) {
-	stub.GetIPfrom(C.GoString(ip))
+//func GetIPfromInput(ip *C.char) {
+//	stub.GetIPfrom(C.GoString(ip))
+//}
+
+func GetIPfromInput(ip string) {
+	stub.GetIPfrom(ip)
 }
 
 //export PubAddrRetrieval
-func PubAddrRetrieval(priv *C.char) *C.char {
-	output := stub.PubAddrRetrievalStr(C.GoString(priv))
-	return C.CString(output)
+//func PubAddrRetrieval(priv *C.char) *C.char {
+//	output := stub.PubAddrRetrievalStr(C.GoString(priv))
+//	return C.CString(output)
+//}
+
+func PubAddrRetrieval(priv string) string {
+	//	fmt.Println("Please input host including IP and port for initialization on Qstar deamon:")
+	output := stub.PubAddrRetrievalStr(priv)
+	return output
+}
+
+//export QSCtransferSend
+//func QSCtransferSend(addrto, coinstr, privkey *C.char) *C.char {
+//	output := stub.QSCtransferSendStr(C.GoString(addrto), C.GoString(coinstr), C.GoString(privkey))
+//	return C.CString(output)
+//}
+
+//for QSCtransferSend
+func QSCtransferSend(addrto, coinstr, privkey, chainid string) string {
+	output := stub.QSCtransferSendStr(addrto, coinstr, privkey, chainid)
+	return output
 }
 
 func main() {
-//	AccountCreate()
-//	GetIPfromInput("127.0.0.1:1317")
-//	out := QSCQueryAccount("address1an4rky8h6c7jgwk92arg2ms3q9ehask87yl4x2")
-//	fmt.Println(out)
-//	QSCKVStoreSet("2", "Bob", "lEMsVbO4nCbAdQkr9hyTG15IaGvBIq1BFcNt4XeSeF9uo80srafrM25SVpfS1naE8G7MpYhcoQ9Wu1yFIl3ZEw", "test-chain-Ky10Zg")
-//	kvout := QSCKVStoreGet("2")
-//	fmt.Println(kvout)
-//	AccountRecover("clean axis column history legend mosquito worry magic exotic beef layer glue cannon craft worry decide slice soft hockey tennis lottery spatial segment minute")
-//	puba:= PubAddrRetrieval("lEMsVbO4nCbAdQkr9hyTG15IaGvBIq1BFcNt4XeSeF9uo80srafrM25SVpfS1naE8G7MpYhcoQ9Wu1yFIl3ZEw")
-//	fmt.Println(puba)
+	//AccountCreate()
+	GetIPfromInput("localhost:1317")
+	//acc, err := testQuery("http://localhost:1317", "address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355")
+	//fmt.Printf("---acc:%+v, err:%+v\n", acc, err)
+	//out := QSCQueryAccount("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355")
+	//fmt.Println(out)
+	//QSCKVStoreSet("2", "Bob", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "test-chain-Ky10Zg")
+	//	kvout := QSCKVStoreGet("2")
+	//	fmt.Println(kvout)
+	//AccountRecover("celery quick meat flight garden video adjust like rose process fly leaf series general vast explain rocket rail phrase sing trash drum success cannon")
+	//puba := PubAddrRetrieval("0xa3288910400f8f271b2df5df818d267b5d87ea70aa25908748f67de4ed2f3e68b12b07f436483c84704d005d9b8064eb1546c4699d8b386bf285aaf18c8212f85dce28a29e")
+	//fmt.Println(puba)
+	transout := QSCtransferSend("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "test-chain-Ky10Zg")
+	fmt.Println(transout)
 }

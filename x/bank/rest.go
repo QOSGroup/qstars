@@ -13,7 +13,7 @@ import (
 )
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
-func RegisterRoutes( cdc *wire.Codec,r *mux.Router) {
+func RegisterRoutes(cdc *wire.Codec, r *mux.Router) {
 	//r.HandleFunc("/accounts/{address}/send", SendRequestHandlerFn(cdc, kb, cliCtx)).Methods("POST")
 	r.HandleFunc("/accounts/{address}/send", func(w http.ResponseWriter, r *http.Request) {
 		sb, err := NewSendBody(r)
@@ -85,11 +85,12 @@ func (sb *sendBody) Send(cdc *wire.Codec) (*SendResult, error) {
 	amount := sb.Amount
 	// parse coins trying to be sent
 	coins, err := sdk.ParseCoins(amount)
+	chainid := sb.ChainID
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := Send(cdc, fromstr, to, coins, NewSendOptions(
+	result, err := Send(cdc, fromstr, to, coins, chainid, NewSendOptions(
 		gas(viper.GetInt64("gas")),
 		fee(viper.GetString("fee"))))
 
