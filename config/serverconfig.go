@@ -2,14 +2,19 @@ package config
 
 import (
 	"fmt"
+	"github.com/BurntSushi/toml"
 	"io/ioutil"
 	"os"
-	"github.com/BurntSushi/toml"
 )
 
-// person
+/*
+qstars configuration file
+QStarsPrivateKey qstars privatekey
+QStarsTransactions TBD
+ */
 type ServerConf struct {
 	QStarsPrivateKey   string `toml:"QStarsPrivateKey"`
+	QStarsTransactions string `toml:"QStarsTransactions"`
 }
 
 

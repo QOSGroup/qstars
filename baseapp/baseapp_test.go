@@ -2,29 +2,50 @@ package baseapp
 
 import (
 	"fmt"
+	"github.com/QOSGroup/qbase/mapper"
 	"github.com/QOSGroup/qbase/store"
 	"github.com/QOSGroup/qstars/wire"
-	"testing"
 	go_amino "github.com/tendermint/go-amino"
-	"github.com/QOSGroup/qbase/mapper"
+	"github.com/tendermint/tendermint/libs/log"
+	"os"
+	"testing"
 
-	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qbase/context"
+	"github.com/QOSGroup/qbase/types"
 )
 
 // TODO update
 func TestInitCmd(t *testing.T) {
 	InitApp()
 	cdc := wire.NewCodec()
-	app,_:=NewAPP("",cdc)
+	app,_:=NewMockAPP("",cdc)
 	mock := new(MockABCI)
+	mock.Logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
 	mock.RegisterKVCdc(cdc)
 	app.Register(mock)
 	app.Start()
 }
+/**
+	startup a qstar chain instance
+ */
+func NewMockAPP(rootDir string, cdc *go_amino.Codec) (QstarsBaseApp, error) {
+
+
+	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
+	qstarts := QstarsBaseApp{
+		Logger:  logger,
+		RootDir: rootDir,
+	}
+	return qstarts, nil
+}
 
 type MockABCI struct{
 	Cdc *go_amino.Codec
+	Logger       log.Logger
+}
+
+func (mock *MockABCI) RegisterCdc(cdc *go_amino.Codec) {
+
 }
 
 func (mock *MockABCI) MapperName() string {

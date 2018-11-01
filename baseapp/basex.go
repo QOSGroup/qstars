@@ -7,9 +7,9 @@ import (
 	"github.com/QOSGroup/qbase/context"
 )
 
-type BaseContract interface {
+type BaseXTransaction interface {
 	mapper.IMapper
-	RegisterKVCdc(cdc *go_amino.Codec)
+	RegisterCdc(cdc *go_amino.Codec)
 	StartX(base *QstarsBaseApp) error
 	ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result
 }

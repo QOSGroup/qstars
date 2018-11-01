@@ -12,9 +12,7 @@ import (
 	"github.com/QOSGroup/qstars/client"
 )
 
-// GetAccountCmd returns a query account that will display the state of the
-// account at a given address.
-//, decoder auth.AccountDecoder
+// CreateAccountCmd returns a new account
 func CreateAccountCmd(cdc *wire.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "createaccount",
@@ -36,7 +34,6 @@ func CreateAccountCmd(cdc *wire.Codec) *cobra.Command {
 
 // GetAccountCmd returns a query account that will display the state of the
 // account at a given address.
-//, decoder AccountDecoder
 func GetAccountCmd(cdc *wire.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "account [address]",
