@@ -3,7 +3,6 @@ package utility
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"fmt"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -41,8 +40,8 @@ func PubAddrRetrieval(caPriHex string, cdc *wire.Codec) (string, string, ed25519
 	addr := key.PubKey().Address()
 	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
 	bech32Addr, _ := bech32.ConvertAndEncode(Bech32PrefixAccAddr, addr.Bytes())
-	fmt.Println(bech32Pub)
-	fmt.Println(bech32Addr)
+	//fmt.Println(bech32Pub)
+	//fmt.Println(bech32Addr)
 	return bech32Pub, bech32Addr, key
 }
 
