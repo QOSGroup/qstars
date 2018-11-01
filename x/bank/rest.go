@@ -26,6 +26,18 @@ func RegisterRoutes(r *mux.Router, cdc *wire.Codec, kb keys.Keybase) {
 		result, err := sb.Send(cdc, kb)
 		lib.HttpResponseWrapper(w, cdc, result, err)
 	}).Methods("POST")
+
+	r.HandleFunc("/accounts/txSend", func(w http.ResponseWriter, r *http.Request) {
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			lib.HttpResponseWrapper(w, cdc, nil, err)
+			return
+		}
+
+		result, err := TxSend(cdc, body)
+
+		lib.HttpResponseWrapper(w, cdc, result, err)
+	}).Methods("POST")
 }
 
 type sendBody struct {
@@ -83,5 +95,4 @@ func (sb *sendBody) Send(cdc *wire.Codec, kb keys.Keybase) (*SendResult, error) 
 		fee(viper.GetString("fee"))))
 
 	return result, err
-
 }
