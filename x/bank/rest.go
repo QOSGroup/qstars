@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/QOSGroup/qstars/crypto/keys"
 	sdk "github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/wire"
 
@@ -14,7 +13,7 @@ import (
 )
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
-func RegisterRoutes(r *mux.Router, cdc *wire.Codec, kb keys.Keybase) {
+func RegisterRoutes( cdc *wire.Codec,r *mux.Router) {
 	//r.HandleFunc("/accounts/{address}/send", SendRequestHandlerFn(cdc, kb, cliCtx)).Methods("POST")
 	r.HandleFunc("/accounts/{address}/send", func(w http.ResponseWriter, r *http.Request) {
 		sb, err := NewSendBody(r)
@@ -23,7 +22,7 @@ func RegisterRoutes(r *mux.Router, cdc *wire.Codec, kb keys.Keybase) {
 			return
 		}
 
-		result, err := sb.Send(cdc, kb)
+		result, err := sb.Send(cdc)
 		lib.HttpResponseWrapper(w, cdc, result, err)
 	}).Methods("POST")
 
@@ -75,7 +74,7 @@ func NewSendBody(r *http.Request) (*sendBody, error) {
 
 	return sb, nil
 }
-func (sb *sendBody) Send(cdc *wire.Codec, kb keys.Keybase) (*SendResult, error) {
+func (sb *sendBody) Send(cdc *wire.Codec) (*SendResult, error) {
 
 	to, err := sdk.AccAddressFromBech32(sb.address)
 	if err != nil {

@@ -72,12 +72,8 @@ func createHandler(cdc *wire.Codec) http.Handler {
 	NodeVersionRegisterRoutes( cdc,r)
 
 	auth.RegisterRoutes(cdc, r)
-	bank.RegisterRoutes( r, cdc, nil)
-	kvstore.RegisterRoutes( r, cdc, "main")
-	//ibc.RegisterRoutes(cliCtx, r, cdc, kb)
-	//stake.RegisterRoutes(cliCtx, r, cdc, kb)
-	//slashing.RegisterRoutes(cliCtx, r, cdc, kb)
-	//gov.RegisterRoutes(cliCtx, r, cdc)
+	bank.RegisterRoutes(cdc, r)
+	kvstore.RegisterRoutes( cdc,r)
 
 	return r
 }

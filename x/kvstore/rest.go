@@ -20,7 +20,7 @@ func init() {
 }
 
 // register REST routes
-func RegisterRoutes(r *mux.Router, cdc *wire.Codec, storeName string) {
+func RegisterRoutes(cdc *wire.Codec,r *mux.Router) {
 	r.HandleFunc(
 		"/kv/{key}",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +29,7 @@ func RegisterRoutes(r *mux.Router, cdc *wire.Codec, storeName string) {
 				lib.HttpResponseWrapper(w, cdc, nil, err)
 				return
 			}
-			result, err := skr.GetKV(storeName, cdc)
+			result, err := skr.GetKV( cdc)
 			lib.HttpResponseWrapper(w, cdc, result, err)
 		}).Methods("GET")
 
@@ -39,7 +39,7 @@ func RegisterRoutes(r *mux.Router, cdc *wire.Codec, storeName string) {
 			lib.HttpResponseWrapper(w, cdc, nil, err)
 			return
 		}
-		result, err := skr.SendKV(storeName, cdc)
+		result, err := skr.SendKV( cdc)
 		lib.HttpResponseWrapper(w, cdc, result, err)
 	}).Methods("POST")
 }
@@ -65,7 +65,7 @@ func NewSendKVReq(r *http.Request) (*sendKVReq, error) {
 	return skr, nil
 }
 
-func (skr *sendKVReq) SendKV(storeName string, cdc *wire.Codec) (*ResultSendKV, error) {
+func (skr *sendKVReq) SendKV( cdc *wire.Codec) (*ResultSendKV, error) {
 	opts, err := NewSendKVOption(
 		SendKVOptionChainID(skr.ChainID),
 	)
@@ -93,7 +93,7 @@ func NewGetKVReq(r *http.Request) (*getKVReq, error) {
 	return skr, nil
 }
 
-func (skr *getKVReq) GetKV(storeName string, cdc *wire.Codec) (*ResultGetKV, error) {
+func (skr *getKVReq) GetKV(cdc *wire.Codec) (*ResultGetKV, error) {
 	result, err := GetKV(cdc, skr.Key, nil)
 	if err != nil {
 		return nil, err

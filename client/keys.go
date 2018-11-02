@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/QOSGroup/qstars/crypto/keys"
+	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	dbm "github.com/tendermint/tendermint/libs/db"
 )
 
@@ -14,9 +14,3 @@ func GetKeyBase(db dbm.DB) keys.Keybase {
 	return keybase
 }
 
-// MockKeyBase generates an in-memory keybase that will be discarded
-// useful for --dry-run to generate a seed phrase without
-// storing the key
-func MockKeyBase() keys.Keybase {
-	return GetKeyBase(dbm.NewMemDB())
-}
