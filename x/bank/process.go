@@ -7,13 +7,13 @@ import (
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs"
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/x/bank/tx"
 	"github.com/pkg/errors"
 	"strconv"
 	"time"
@@ -25,7 +25,7 @@ import (
 type SendResult struct {
 	Hash   string `json:"hash"`
 	Error  string `json:"error"`
-	Code  string `json:"error"`
+	Code   string `json:"error"`
 	Result string `json:"result"`
 	Heigth string `json:"heigth"`
 }
@@ -82,13 +82,11 @@ func TxSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
 
 // Send 暂时只支持一次只转一种币 coins.Len() == 1
 func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, sopt *SendOptions) (*SendResult, error) {
-	_, addrben32, priv := utility.PubAddrRetrieval(fromstr, cdc)
-
-	// TODO 暂时只支持一次只转一种币
 	if coins.Len() == 0 {
 		return nil, errors.New("coins不能为空")
 	}
 
+	_, addrben32, priv := utility.PubAddrRetrieval(fromstr, cdc)
 	from, err := types.AccAddressFromBech32(addrben32)
 	key := account.AddressStoreKey(from)
 	if err != nil {
@@ -103,37 +101,40 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 		cliCtx = *config.GetCLIContext().QSCCliContext
 	}
 
-	account, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
-
+	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
 	if err != nil {
 		return nil, err
 	}
-	var cc qbasetypes.BaseCoin
-	// TODO 暂时只支持一次只转一种币
-	cc = qbasetypes.BaseCoin{
-		Name:   coins[0].Denom,
-		Amount: qbasetypes.NewInt(coins[0].Amount.Int64()),
+
+	var ccs []qbasetypes.BaseCoin
+	for _, coin := range coins {
+		ccs = append(ccs, qbasetypes.BaseCoin{
+			Name:   coin.Denom,
+			Amount: qbasetypes.NewInt(coin.Amount.Int64()),
+		})
 	}
 
 	var qcoins types.Coins
-	for _, qsc := range account.QSCs {
+	for _, qsc := range acc.QSCs {
 		amount := qsc.Amount
 		qcoins = append(qcoins, types.NewCoin(qsc.Name, types.NewInt(amount.Int64())))
 	}
+	qcoins = append(qcoins, types.NewCoin("qos", types.NewInt(acc.QOS.Int64())))
 
 	if !qcoins.IsGTE(coins) {
 		return nil, errors.Errorf("Address %s doesn't have enough coins to pay for this transaction.", from)
 	}
 
 	var nn int64
-	nn = int64(account.Nonce)
-
+	nn = int64(acc.Nonce)
 	nn++
+
+	t := tx.NewTransfer(from, to, ccs)
 	var msg *txs.TxStd
 	if directTOQOS == true {
-		msg = genStdSendTx(cdc, from, to, cc, priv, nn)
+		msg = genStdSendTx(cdc, t, priv, nn)
 	} else {
-		msg = genStdWrapTx(cdc, from, to, cc, priv, nn)
+		msg = genStdWrapTx(cdc, t, priv, nn)
 	}
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 
@@ -162,9 +163,152 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 			time.Sleep(500 * time.Millisecond)
 			counter++
 		}
-	}else {
-		result.Result = string(commitresult.DeliverTx.Data)
-		result.Code = strconv.FormatInt(int64(commitresult.DeliverTx.Code),10)
+	}
+	return result, nil
+}
+
+// Send 暂时只支持一次只转一种币 coins.Len() == 1
+func Approve(cdc *wire.Codec, command string, fromstr string, tostr string, coins types.Coins,
+	sopt *SendOptions) (*SendResult, error) {
+	if command != "cancel" {
+		if coins.Len() == 0 {
+			return nil, errors.New("coins不能为空")
+		}
+	}
+
+	fmt.Printf("---command:%s, from:%s, to:%s\n", command, fromstr, tostr)
+	var priv ed25519.PrivKeyEd25519
+	var from, to qbasetypes.Address
+	var nonce int64
+	var err error
+	if command == "use" {
+		from, err = types.AccAddressFromBech32(fromstr)
+		if err != nil {
+			return nil, err
+		}
+
+		var addrben32 string
+		_, addrben32, priv = utility.PubAddrRetrieval(tostr, cdc)
+		to, err = types.AccAddressFromBech32(addrben32)
+		if err != nil {
+			return nil, err
+		}
+
+		key := account.AddressStoreKey(to)
+		if err != nil {
+			return nil, err
+		}
+		acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
+		if err != nil {
+			return nil, err
+		}
+		nonce = int64(acc.Nonce)
+		nonce++
+
+	} else {
+		var addrben32 string
+		_, addrben32, priv = utility.PubAddrRetrieval(fromstr, cdc)
+		from, err = types.AccAddressFromBech32(addrben32)
+		if err != nil {
+			return nil, err
+		}
+
+		to, err = types.AccAddressFromBech32(tostr)
+		if err != nil {
+			return nil, err
+		}
+
+		key := account.AddressStoreKey(from)
+		if err != nil {
+			return nil, err
+		}
+
+		acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
+		if err != nil {
+			return nil, err
+		}
+		var qcoins types.Coins
+		for _, qsc := range acc.QSCs {
+			amount := qsc.Amount
+			qcoins = append(qcoins, types.NewCoin(qsc.Name, types.NewInt(amount.Int64())))
+		}
+		qcoins = append(qcoins, types.NewCoin("qos", types.NewInt(acc.QOS.Int64())))
+		if command != "cancel" {
+			if !qcoins.IsGTE(coins) {
+				return nil, errors.Errorf("Address %s doesn't have enough coins to pay for this transaction.", from)
+			}
+		}
+
+		nonce = int64(acc.Nonce)
+		nonce++
+	}
+
+	var ccs []qbasetypes.BaseCoin
+	for _, coin := range coins {
+		ccs = append(ccs, qbasetypes.BaseCoin{
+			Name:   coin.Denom,
+			Amount: qbasetypes.NewInt(coin.Amount.Int64()),
+		})
+	}
+
+	atx := tx.NewApproveTx(from, to)
+	var t txs.ITx
+	switch command {
+	case "create":
+		t = atx.Create(ccs)
+	case "increase":
+		t = atx.Increase(ccs)
+	case "decrease":
+		t = atx.Decrease(ccs)
+	case "use":
+		t = atx.Use(ccs)
+	case "cancel":
+		t = atx.Cancel()
+	default:
+		return nil, errors.New("command not support")
+	}
+
+	var msg *txs.TxStd
+	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
+	if directTOQOS == true {
+		msg = genStdSendTx(cdc, t, priv, nonce)
+	} else {
+		msg = genStdWrapTx(cdc, t, priv, nonce)
+	}
+
+	var cliCtx context.CLIContext
+	if directTOQOS == true {
+		cliCtx = *config.GetCLIContext().QOSCliContext
+	} else {
+		cliCtx = *config.GetCLIContext().QSCCliContext
+	}
+	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
+
+	result := &SendResult{}
+	result.Hash = response
+	height := strconv.FormatInt(commitresult.Height, 10)
+	result.Heigth = height
+	if directTOQOS == false {
+		counter := 0
+		for {
+			if counter >= 10 {
+				fmt.Println("time out")
+				result.Error = "time out"
+				break
+			}
+			resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
+			if err != nil {
+				fmt.Println("get result error:" + err.Error())
+				result.Error = err.Error()
+			}
+			if resultstr != "" && resultstr != "-1" {
+				fmt.Printf("get result:[%+v]\n", resultstr)
+				result.Result = resultstr
+				break
+			}
+			time.Sleep(500 * time.Millisecond)
+			counter++
+		}
 	}
 	return result, nil
 }
@@ -191,51 +335,22 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 
 	return string(res), err
 }
-func newQOSTx(sender qbasetypes.Address, receiver qbasetypes.Address, coin qbasetypes.BaseCoin) *qostxs.TransferTx {
-	sendTx := qostxs.TransferTx{}
 
-	sendTx.Senders = append(sendTx.Senders,
-		qostxs.TransItem{Address: sender, QOS: qbasetypes.NewInt(0), QSCs: qbasetypes.BaseCoins{&coin}})
-
-	sendTx.Receivers = append(sendTx.Receivers,
-		qostxs.TransItem{Address: receiver, QOS: qbasetypes.NewInt(0), QSCs: qbasetypes.BaseCoins{&coin}})
-
-	return &sendTx
-}
-
-func genStdSendTx(cdc *amino.Codec, sender qbasetypes.Address, receiver qbasetypes.Address, coin qbasetypes.BaseCoin,
-	priKey ed25519.PrivKeyEd25519, nonce int64) *txs.TxStd {
-	sendTx := newQOSTx(sender, receiver, coin)
+func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, nonce int64) *txs.TxStd {
 	gas := qbasetypes.NewInt(int64(0))
-	tx := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QOSChainID, gas)
-	//priHex, _ := hex.DecodeString(senderPriHex[2:])
-	//var priKey ed25519.PrivKeyEd25519
-	//cdc.MustUnmarshalBinaryBare(priHex, &priKey)
-	signature, _ := tx.SignTx(priKey, nonce)
-	tx.Signature = []txs.Signature{txs.Signature{
+	stx := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QOSChainID, gas)
+	signature, _ := stx.SignTx(priKey, nonce)
+	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
 		Nonce:     nonce,
 	}}
-	return tx
+	return stx
 }
 
-func genStdWrapTx(cdc *amino.Codec, sender qbasetypes.Address, receiver qbasetypes.Address, coin qbasetypes.BaseCoin,
-	priKey ed25519.PrivKeyEd25519, nonce int64) *txs.TxStd {
-	sendTx := newQOSTx(sender, receiver, coin)
-	gas := qbasetypes.NewInt(int64(0))
-	tx := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QOSChainID, gas)
-	//priHex, _ := hex.DecodeString(senderPriHex[2:])
-	//var priKey ed25519.PrivKeyEd25519
-	//cdc.MustUnmarshalBinaryBare(priHex, &priKey)
-	signature, _ := tx.SignTx(priKey, nonce)
-	tx.Signature = []txs.Signature{txs.Signature{
-		Pubkey:    priKey.PubKey(),
-		Signature: signature,
-		Nonce:     nonce,
-	}}
-
-	tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, gas)
-	tx2.ITx = NewWrapperSendTx(tx)
+func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, nonce int64) *txs.TxStd {
+	stx := genStdSendTx(cdc, sendTx, priKey, nonce)
+	tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
+	tx2.ITx = NewWrapperSendTx(stx)
 	return tx2
 }

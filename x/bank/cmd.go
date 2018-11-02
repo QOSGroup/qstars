@@ -10,9 +10,10 @@ import (
 )
 
 const (
-	flagTo     = "to"
-	flagAmount = "amount"
-	flagFrom   = "from"
+	flagTo      = "to"
+	flagAmount  = "amount"
+	flagFrom    = "from"
+	flagCommand = "command"
 )
 
 // SendTxCmd will create a send tx and sign it with the given key.
@@ -61,6 +62,52 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 
 	cmd.Flags().String(flagTo, "", "Address to send coins")
 	cmd.Flags().String(flagAmount, "", "Amount of coins to send")
+
+	return cmd
+}
+
+// ApproveCmd will create a approve tx and sign it with the given key.
+func ApproveCmd(cdc *wire.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "approve",
+		Short: "create increase decrease use and cancel approve",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Println(r)
+				}
+			}()
+			toStr := viper.GetString(flagTo)
+			fromstr := viper.GetString(flagFrom) //Teddy changes
+			amount := viper.GetString(flagAmount)
+			// parse coins trying to be sent
+			coins, err := sdk.ParseCoins(amount)
+
+			if err != nil {
+				return err
+			}
+
+			command := viper.GetString(flagCommand)
+			result, err := Approve(cdc, command, fromstr, toStr, coins, NewSendOptions(
+				gas(viper.GetInt64("gas")),
+				fee(viper.GetString("fee"))))
+			if err != nil {
+				return err
+			}
+
+			output, err := wire.MarshalJSONIndent(cdc, result)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(string(output))
+			return nil
+		},
+	}
+
+	cmd.Flags().String(flagTo, "", "Address to send coins")
+	cmd.Flags().String(flagAmount, "", "Amount of coins to send")
+	cmd.Flags().String(flagCommand, "", "client command, for approve: create,increase,decrease,use,cancel")
 
 	return cmd
 }
