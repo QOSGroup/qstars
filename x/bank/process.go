@@ -25,6 +25,7 @@ import (
 type SendResult struct {
 	Hash   string `json:"hash"`
 	Error  string `json:"error"`
+	Code  string `json:"error"`
 	Result string `json:"result"`
 	Heigth string `json:"heigth"`
 }
@@ -161,6 +162,9 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 			time.Sleep(500 * time.Millisecond)
 			counter++
 		}
+	}else {
+		result.Result = string(commitresult.DeliverTx.Data)
+		result.Code = strconv.FormatInt(int64(commitresult.DeliverTx.Code),10)
 	}
 	return result, nil
 }
