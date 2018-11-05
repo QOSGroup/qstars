@@ -52,10 +52,10 @@ func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *t
 		} else {
 			log.Debugf("ResultNotify update status")
 			//orginalTx.
-			orginalTxHash := "123" //orginalTx.abc
+			orginalTxHash := in.QcpOriginalExtends //orginalTx.abc
 			kvMapper := ctx.Mapper(QSCResultMapperName).(*common.KvMapper)
 			//put result to map for client query
-			c := strconv.FormatInt(qcpTxResult.Code, 10)
+			c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
 			kvMapper.Set([]byte(orginalTxHash), c)
 			resultCode = types.ABCICodeType(types.CodeOK)
 		}

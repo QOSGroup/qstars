@@ -2,9 +2,9 @@ module github.com/QOSGroup/qstars
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/QOSGroup/qbase v0.0.5
+	github.com/QOSGroup/qbase v0.0.6
 	github.com/QOSGroup/qmoon v0.0.0-20181030114621-b4924744954e // indirect
-	github.com/QOSGroup/qos v0.0.1
+	github.com/QOSGroup/qos v0.0.2-0.20181105092243-6ec5680d4ed7
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d

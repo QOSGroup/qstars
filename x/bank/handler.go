@@ -23,9 +23,9 @@ func NewWrapperSendTx(wrapper *txs.TxStd) WrapperSendTx {
 	return WrapperSendTx{Wrapper: wrapper}
 }
 
-func (tx WrapperSendTx) ValidateData(ctx context.Context) bool {
+func (tx WrapperSendTx) ValidateData(ctx context.Context) error {
 
-	return true
+	return nil
 }
 
 func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTxQcps *txs.TxQcp) {
@@ -49,6 +49,7 @@ func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTx
 
 	crossTxQcps.TxStd = tx.Wrapper
 	crossTxQcps.To = "qos-test"
+	crossTxQcps.Extends = qstarskey
 
 	r := btypes.Result{
 		Code: btypes.ABCICodeOK,

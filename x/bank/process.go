@@ -25,7 +25,7 @@ import (
 type SendResult struct {
 	Hash   string `json:"hash"`
 	Error  string `json:"error"`
-	Code   string `json:"error"`
+	Code   string `json:"code"`
 	Result string `json:"result"`
 	Heigth string `json:"heigth"`
 }
@@ -139,6 +139,12 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 
 	result := &SendResult{}
+	if err!=nil{
+		result.Hash = ""
+		result.Error = err.Error()
+		result.Code = "1"
+		return result, nil
+	}
 	result.Hash = response
 	height := strconv.FormatInt(commitresult.Height, 10)
 	result.Heigth = height
