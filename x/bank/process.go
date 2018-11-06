@@ -80,8 +80,8 @@ func TxSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
 	return result, nil
 }
 
-// Send 暂时只支持一次只转一种币 coins.Len() == 1; add chainid string input
-func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, chainid string, sopt *SendOptions) (*SendResult, error) {
+// Send 支持一次多种币 coins.Len() == 1;
+func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, sopt *SendOptions) (*SendResult, error) {
 	if coins.Len() == 0 {
 		return nil, errors.New("coins不能为空")
 	}
@@ -133,6 +133,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 
 	t := tx.NewTransfer(from, to, ccs)
 	var msg *txs.TxStd
+	chainid := config.GetCLIContext().Config.QOSChainID
 	if directTOQOS == true {
 		msg = genStdSendTx(cdc, t, priv, chainid, nn)
 	} else {
@@ -150,10 +151,15 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	result.Hash = response
 	height := strconv.FormatInt(commitresult.Height, 10)
 	result.Heigth = height
+	waittime,err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
+	if err!=nil {
+		panic("WaitingForQosResult should be able to convert to integer." + err.Error())
+	}
+
 	if directTOQOS == false {
 		counter := 0
 		for {
-			if counter >= 10 {
+			if counter >= waittime{
 				fmt.Println("time out")
 				result.Error = "time out"
 				break

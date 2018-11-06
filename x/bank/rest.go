@@ -85,12 +85,11 @@ func (sb *sendBody) Send(cdc *wire.Codec) (*SendResult, error) {
 	amount := sb.Amount
 	// parse coins trying to be sent
 	coins, err := sdk.ParseCoins(amount)
-	chainid := sb.ChainID
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := Send(cdc, fromstr, to, coins, chainid, NewSendOptions(
+	result, err := Send(cdc, fromstr, to, coins, NewSendOptions(
 		gas(viper.GetInt64("gas")),
 		fee(viper.GetString("fee"))))
 
