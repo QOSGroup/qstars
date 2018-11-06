@@ -44,22 +44,23 @@ func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *t
 		resultCode = types.ABCICodeType(types.CodeTxDecode)
 	} else {
 		//get original cross chain transaction
-		orginalSeq := qcpTxResult.QcpOriginalSequence
-		orginalTx := baseabci.GetQcpMapper(ctx).GetChainOutTxs("", orginalSeq)
-		if orginalTx.IsResult == true {
-			log.Errorf("ResultNotify Cross chain result is not a type of result.")
-			resultCode = types.ABCICodeType(types.CodeInternal)
-		} else {
-			log.Debugf("ResultNotify update status")
+		//orginalSeq := qcpTxResult.QcpOriginalSequence
+		//orginalTx := baseabci.GetQcpMapper(ctx).GetChainOutTxs("", orginalSeq)
+		//if orginalTx.IsResult == false {
+		//	log.Errorf("ResultNotify Cross chain result is not a type of result.")
+		//	resultCode = types.ABCICodeType(types.CodeInternal)
+		//} else {
+		//
+		//}
+		log.Errorf("ResultNotify update status")
 
-			orginalTxHash := in.QcpOriginalExtends //orginalTx.abc
-			kvMapper := ctx.Mapper(QSCResultMapperName).(*common.KvMapper)
-			//put result to map for client query
-			c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
-			log.Info("--------update key:"+QSCResultMapperName+" key:"+ orginalTxHash +" value:" + c)
-			kvMapper.Set([]byte(orginalTxHash), c)
-			resultCode = types.ABCICodeType(types.CodeOK)
-		}
+		orginalTxHash := in.QcpOriginalExtends //orginalTx.abc
+		kvMapper := ctx.Mapper(QSCResultMapperName).(*common.KvMapper)
+		//put result to map for client query
+		c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
+		log.Errorf("--------update key:"+QSCResultMapperName+" key:"+ orginalTxHash +" value:" + c)
+		kvMapper.Set([]byte(orginalTxHash), c)
+		resultCode = types.ABCICodeType(types.CodeOK)
 	}
 	rr := types.Result{
 		Code: resultCode,
