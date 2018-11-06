@@ -78,4 +78,6 @@ qos_node_uri = "{{ .QOSNodeURI }}"
 qstars_node_uri = "{{ .QSTARSNodeURI }}"
 
 direct_to_qos = "{{ .DirectTOQOS }}"
+
+waiting_for_qos_result = "{{ .WaitingForQosResult }}"
 `

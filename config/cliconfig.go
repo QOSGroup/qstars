@@ -23,6 +23,7 @@ type CLIConfig struct {
 	QOSNodeURI    string `mapstructure:"qos_node_uri"`
 	QSTARSNodeURI string `mapstructure:"qstars_node_uri"`
 	DirectTOQOS   bool   `mapstructure:"direct_to_qos"`
+	WaitingForQosResult string `mapstructure:"waiting_for_qos_result"`
 }
 
 func GetCLIContext() QStarsClientContext {

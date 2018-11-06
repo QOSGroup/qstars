@@ -39,12 +39,11 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 			amount := viper.GetString(flagAmount)
 			// parse coins trying to be sent
 			coins, err := sdk.ParseCoins(amount)
-			chainid := viper.GetString(flagChainid)
 			if err != nil {
 				return err
 			}
 
-			result, err := Send(cdc, fromstr, to, coins, chainid, NewSendOptions(
+			result, err := Send(cdc, fromstr, to, coins, NewSendOptions(
 				gas(viper.GetInt64("gas")),
 				fee(viper.GetString("fee"))))
 			if err != nil {
