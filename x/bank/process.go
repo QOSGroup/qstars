@@ -172,6 +172,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 			}
 			if resultstr != "" && resultstr != "-1" {
 				fmt.Printf("get result:[%+v]\n", resultstr)
+				result.Error = ""
 				result.Result = resultstr
 				break
 			}
@@ -334,14 +335,13 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 	//qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
 	qstarskey := GetResultKey(heigth1,tx1)
 	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), QSCResultMapperName)
-	fmt.Printf("QueryStore: %+v, %+v\n", d, err)
-
+	log.Infof("QueryStore: %+v, %+v\n", d, err)
 	if err != nil {
 		return "", err
 	}
-
-	log.Info("QueryStore: %+v, %+v\n", d, err)
-
+	if d==nil {
+		return "", nil
+	}
 	var res []byte
 	err = cdc.UnmarshalBinaryBare(d, &res)
 	if err != nil {
