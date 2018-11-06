@@ -15,6 +15,7 @@ import (
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/bank/tx"
 	"github.com/pkg/errors"
+	"github.com/prometheus/common/log"
 	"strconv"
 	"time"
 
@@ -331,7 +332,7 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 
 	// TODO qbase还没实现
 	//qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
-	qstarskey := "123"
+	qstarskey := GetResultKey(heigth1,tx1)
 	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), QSCResultMapperName)
 	fmt.Printf("QueryStore: %+v, %+v\n", d, err)
 
@@ -339,7 +340,7 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("QueryStore: %+v, %+v\n", d, err)
+	log.Info("QueryStore: %+v, %+v\n", d, err)
 
 	var res []byte
 	err = cdc.UnmarshalBinaryBare(d, &res)

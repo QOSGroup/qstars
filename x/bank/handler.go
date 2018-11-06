@@ -6,6 +6,7 @@ import (
 	"github.com/QOSGroup/qbase/txs"
 	btypes "github.com/QOSGroup/qbase/types"
 	starcommon "github.com/QOSGroup/qstars/x/common"
+	"github.com/prometheus/common/log"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/common"
 	"strconv"
@@ -27,7 +28,10 @@ func (tx WrapperSendTx) ValidateData(ctx context.Context) error {
 
 	return nil
 }
-
+func GetResultKey(heigth1 string, tx1 string) string{
+	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
+	return qstarskey
+}
 func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTxQcps *txs.TxQcp) {
 	result = btypes.Result{
 		Code: btypes.ABCICodeOK,
@@ -42,8 +46,8 @@ func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTx
 	kvMapper := ctx.Mapper(QSCResultMapperName).(*starcommon.KvMapper)
 	heigth1 := strconv.FormatInt(ctx.BlockHeight(), 10)
 	tx1 := (common.HexBytes)(tmhash.Sum(ctx.TxBytes()))
-	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1.String()
-	fmt.Println(qstarskey)
+	qstarskey := GetResultKey(heigth1,tx1.String())
+	log.Info("new request key:"+qstarskey)
 	qk := []byte(qstarskey)
 	kvMapper.Set(qk, "-1")
 
