@@ -28,15 +28,20 @@ func AccountCreate() string {
 //	return output
 //}
 
-func QSCKVStoreSet(k, v, privkey, chain string) int {
+func QSCKVStoreSet(k, v, privkey, chain string) string {
 	output := stub.QSCKVStoreSetPost(k, v, privkey, chain)
 	return output
 }
 
 //export QSCKVStoreGet
-func QSCKVStoreGet(k *C.char) *C.char {
-	output := stub.QSCKVStoreGetQuery(C.GoString(k))
-	return C.CString(output)
+//func QSCKVStoreGet(k *C.char) *C.char {
+//	output := stub.QSCKVStoreGetQuery(C.GoString(k))
+//	return C.CString(output)
+//}
+
+func QSCKVStoreGet(k string) string {
+	output := stub.QSCKVStoreGetQuery(k)
+	return output
 }
 
 //export QSCQueryAccount
@@ -101,12 +106,12 @@ func main() {
 	//fmt.Printf("---acc:%+v, err:%+v\n", acc, err)
 	//out := QSCQueryAccount("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355")
 	//fmt.Println(out)
-	//QSCKVStoreSet("2", "Bob", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "test-chain-Ky10Zg")
-	//	kvout := QSCKVStoreGet("2")
-	//	fmt.Println(kvout)
+	//QSCKVStoreSet("13", "Melon", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "test-chain-Ky10Zg")
+	kvout := QSCKVStoreGet("13")
+	fmt.Println(kvout)
 	//AccountRecover("celery quick meat flight garden video adjust like rose process fly leaf series general vast explain rocket rail phrase sing trash drum success cannon")
 	//puba := PubAddrRetrieval("0xa3288910400f8f271b2df5df818d267b5d87ea70aa25908748f67de4ed2f3e68b12b07f436483c84704d005d9b8064eb1546c4699d8b386bf285aaf18c8212f85dce28a29e")
 	//fmt.Println(puba)
-	transout := QSCtransferSend("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "test-chain-Ky10Zg")
-	fmt.Println(transout)
+	//transout := QSCtransferSend("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "222qos", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "qos-testapp")
+	//fmt.Println(transout)
 }

@@ -2,29 +2,36 @@ package stub
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
 
-func QSCKVStoreSetPost(k, v, privkey, chain string) (result int) {
-	payload := map[string]interface{}{"key": k, "value": v, "privatekey": privkey, "chainid": chain}
-	jsonpayload, _ := json.Marshal(payload)
-	body := bytes.NewBuffer(jsonpayload)
+type sendKVReq struct {
+	Key        string `json:"key"`
+	Value      string `json:"value"`
+	PrivateKey string `json:"privatekey"`
+	ChainID    string `json:"chainid"`
+}
+
+func QSCKVStoreSetPost(k, v, privkey, chain string) (result string) {
+	skr := sendKVReq{}
+	skr.Key = k
+	skr.Value = v
+	skr.PrivateKey = privkey
+	skr.ChainID = chain
+	payload, _ := cmCdc.MarshalJSON(skr)
+	body := bytes.NewBuffer(payload)
 	req, _ := http.NewRequest("POST", KVurl, body)
 	req.Header.Set("Content-Type", "application/json")
 	clt := http.Client{}
 	resp, _ := clt.Do(req)
 	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
-		result = 1
-		return result
-	}
-
-	return 0
-
+	rep, _ := ioutil.ReadAll(resp.Body)
+	output := string(rep)
+	fmt.Println(output)
+	return output
 }
 
 func QSCKVStoreGetQuery(k string) string {

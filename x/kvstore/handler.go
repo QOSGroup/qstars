@@ -9,7 +9,9 @@ import (
 	"github.com/QOSGroup/qstars/x/common"
 )
 
-const KvMapperName  =  "qstarskv"
+const KvMapperName = "kv"
+
+var _ txs.ITx = (*KvstoreTx)(nil)
 
 type KvstoreTx struct {
 	Key   []byte
@@ -28,11 +30,11 @@ func NewKvstoreTxHandler() KvstoreTx {
 	return KvstoreTx{}
 }
 
-func (kv KvstoreTx) ValidateData() bool {
+func (kv KvstoreTx) ValidateData(ctx context.Context) error {
 	if len(kv.Key) < 0 {
-		return false
+		return types.ErrInternal("key should not less than zero")
 	}
-	return true
+	return nil
 }
 
 func (kv KvstoreTx) Exec(ctx context.Context) (result types.Result, crossTxQcps *txs.TxQcp) {
