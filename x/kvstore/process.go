@@ -3,14 +3,14 @@
 package kvstore
 
 import (
-	"github.com/QOSGroup/qbase/example/kvstore"
+	"fmt"
 	"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/QOSGroup/qbase/types"
 )
 
 // ResultSendKV result of send kv
@@ -60,15 +60,15 @@ func SendKVOptionSequence(sequence string) SetSendKVOption {
 }
 
 func wrapToStdTx(key, value, chainID string) *txs.TxStd {
-	kv := kvstore.NewKvstoreTx([]byte(key), []byte(value))
+	kv := NewKvstoreTx([]byte(key), []byte(value))
+
 	return txs.NewTxStd(kv, chainID, types.NewInt(int64(10000)))
 }
-
 
 // SendKV process of set kv
 func SendKV(cdc *wire.Codec, privateKey, key, value string, option *SendKVOption) (*ResultSendKV, error) {
 
-	cliCtx:= *config.GetCLIContext().QSCCliContext
+	cliCtx := *config.GetCLIContext().QSCCliContext
 	//get addr from private key
 	var priv ed25519.PrivKeyEd25519
 	bz := utility.Decbase64(privateKey)
@@ -76,8 +76,9 @@ func SendKV(cdc *wire.Codec, privateKey, key, value string, option *SendKVOption
 
 	txStd := wrapToStdTx(key, value, option.chainID)
 
-	hash,_, err := utils.SendTx(cliCtx, cdc, txStd)
+	hash, _, err := utils.SendTx(cliCtx, cdc, txStd)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	result := &ResultSendKV{}
@@ -127,7 +128,7 @@ func GetKVOptionChainID(chainID string) SetGetKVOption {
 // GetKV process of get kv
 func GetKV(cdc *wire.Codec, key string, opt *GetKVOption) (*ResultGetKV, error) {
 
-	cliCtx:= *config.GetCLIContext().QSCCliContext
+	cliCtx := *config.GetCLIContext().QSCCliContext
 	value, err := cliCtx.QueryKV([]byte(key))
 	if err != nil {
 		return nil, err

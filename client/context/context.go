@@ -12,6 +12,7 @@ import (
 )
 
 const ctxAccStoreName = "qosaccount"
+const ctxKVStoreName = "kv"
 
 // CLIContext implements a typical CLI context created in SDK modules for
 // transaction handling and queries.
@@ -23,6 +24,7 @@ type CLIContext struct {
 	NodeURI         string
 	FromAddressName string
 	AccountStore    string
+	KVStore         string
 	TrustNode       bool
 	UseLedger       bool
 	Async           bool
@@ -43,6 +45,7 @@ func NewCLIContext1(nodeURI string) CLIContext {
 		Client:          rpc,
 		NodeURI:         nodeURI,
 		AccountStore:    ctxAccStoreName,
+		KVStore:         ctxKVStoreName,
 		FromAddressName: viper.GetString(client.FlagFrom),
 		Height:          viper.GetInt64(client.FlagHeight),
 		TrustNode:       viper.GetBool(client.FlagTrustNode),
@@ -52,7 +55,6 @@ func NewCLIContext1(nodeURI string) CLIContext {
 		PrintResponse:   viper.GetBool(client.FlagPrintResponse),
 	}
 }
-
 
 // WithCodec returns a copy of the context with an updated codec.
 func (ctx CLIContext) WithCodec(cdc *wire.Codec) CLIContext {
@@ -69,6 +71,12 @@ func (ctx CLIContext) WithLogger(w io.Writer) CLIContext {
 // WithAccountStore returns a copy of the context with an updated AccountStore.
 func (ctx CLIContext) WithAccountStore(accountStore string) CLIContext {
 	ctx.AccountStore = accountStore
+	return ctx
+}
+
+// WithKVStore returns a copy of the context with an updated KVStore.
+func (ctx CLIContext) WithKVStore(kvStore string) CLIContext {
+	ctx.KVStore = kvStore
 	return ctx
 }
 

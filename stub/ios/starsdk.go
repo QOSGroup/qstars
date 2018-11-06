@@ -13,7 +13,7 @@ func AccountCreate() string {
 }
 
 //for QSCKVStoreset
-func QSCKVStoreSet(k, v, privkey, chain string) int {
+func QSCKVStoreSet(k, v, privkey, chain string) string {
 	output := stub.QSCKVStoreSetPost(k, v, privkey, chain)
 	return output
 }
