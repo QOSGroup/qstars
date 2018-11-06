@@ -121,6 +121,8 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	}
 	qcoins = append(qcoins, types.NewCoin("qos", types.NewInt(acc.QOS.Int64())))
 
+	qcoins.Sort()
+	coins.Sort()
 	if !qcoins.IsGTE(coins) {
 		return nil, errors.Errorf("Address %s doesn't have enough coins to pay for this transaction.", from)
 	}
