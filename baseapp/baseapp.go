@@ -40,18 +40,13 @@ func InitApp() {
 /**
 	startup a qstar chain instance
  */
-func NewAPP(rootDir string, cdc *go_amino.Codec) (QstarsBaseApp, error) {
-	sconf, err := config.ReadConf(rootDir + "/config/qstarsconf.toml")
-	if err != nil {
-		return QstarsBaseApp{}, err
-	}
-
+func NewAPP(sconf *config.ServerConf , cdc *go_amino.Codec) (QstarsBaseApp, error) {
 	_, _, qCtx.QStarsSignerPriv = utility.PubAddrRetrieval(sconf.QStarsPrivateKey, cdc)
 	qCtx.QStarsTransactions = strings.Split(sconf.QStarsTransactions, ",")
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
 	qstarts := QstarsBaseApp{
 		Logger:  logger,
-		RootDir: rootDir,
+		RootDir: sconf.RootDir,
 	}
 	return qstarts, nil
 }

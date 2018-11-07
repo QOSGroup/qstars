@@ -10,6 +10,7 @@ import (
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/common"
 	"strconv"
+	"github.com/QOSGroup/qstars/config"
 )
 
 const QSCResultMapperName = "qstarsResult"
@@ -52,7 +53,7 @@ func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTx
 	kvMapper.Set(qk, "-1")
 
 	crossTxQcps.TxStd = tx.Wrapper
-	crossTxQcps.To = "qos-test"
+	crossTxQcps.To = config.GetServerConf().QOSChainName
 	crossTxQcps.Extends = qstarskey
 
 	r := btypes.Result{

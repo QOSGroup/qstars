@@ -13,12 +13,28 @@ QStarsPrivateKey qstars privatekey
 QStarsTransactions TBD
  */
 type ServerConf struct {
-	QStarsPrivateKey   string `toml:"QStarsPrivateKey"`
-	QStarsTransactions string `toml:"QStarsTransactions"`
+	QStarsPrivateKey   	string `toml:"QStarsPrivateKey"`
+	QStarsTransactions 	string `toml:"QStarsTransactions"`
+	QOSChainName       	string `toml:"QOSChainName"`
+	RootDir				string `toml:"RootDir"`
+}
+var serverconfiguration *ServerConf = nil
+func Init(filename string,rootDir string) (p *ServerConf, err error){
+	if serverconfiguration==nil{
+		sconf, err := readConf(filename)
+		if len(sconf.RootDir)==0{
+			sconf.RootDir = rootDir
+		}
+		return sconf,err
+	}else{
+		return serverconfiguration,nil
+	}
 }
 
-
-func ReadConf(fname string) (p *ServerConf, err error) {
+func GetServerConf() *ServerConf{
+	return serverconfiguration
+}
+func readConf(fname string) (p *ServerConf, err error) {
 	var (
 		fp       *os.File
 		fcontent []byte
