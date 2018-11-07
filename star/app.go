@@ -5,6 +5,7 @@ import (
 	"github.com/QOSGroup/qstars/baseapp"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/bank"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/x/kvstore"
 	"io"
 	"os"
@@ -33,12 +34,18 @@ func init() {
 /**
 	startup a qstar chain instance
  */
-func NewApp(log.Logger, dbm.DB, io.Writer) abci.Application {
+func NewApp(logger log.Logger, db dbm.DB, io io.Writer) (abci.Application) {
 	//cfg := ctx.Config
 	//rootDir := cfg.RootDir
 	rootDir := os.ExpandEnv("$HOME/.qstarsd")
-	app, err := baseapp.NewAPP(rootDir, MakeCodec())
+	sconf, err := config.Init(rootDir + "/config/qstarsconf.toml",rootDir)
 	if err != nil {
+		logger.Error(err.Error())
+		return nil
+	}
+	app, err := baseapp.NewAPP(sconf, MakeCodec())
+	if err != nil {
+		logger.Error(err.Error())
 		return nil
 	}
 	//TODO
@@ -50,7 +57,11 @@ func NewApp(log.Logger, dbm.DB, io.Writer) abci.Application {
 	//app.Register(kvstore.NewKVStub())
 	//app.Register(bank.NewBankStub())
 
-	app.Start()
+	err = app.Start()
+	if err!=nil{
+		logger.Error(err.Error())
+		return nil
+	}
 	return app.Baseapp
 }
 
