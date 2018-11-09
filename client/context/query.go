@@ -50,6 +50,35 @@ func (ctx CLIContext) QueryKV(key cmn.HexBytes) (res []byte, err error) {
 
 }
 
+// QuerySequenceIn performs a query from a Tendermint node with the provided chainid
+func (ctx CLIContext) QuerySequenceIn(chainid string) (in int64, err error) {
+	key := fmt.Sprintf("sequence/in/%s", chainid)
+	path := "/store/qcp/key"
+	res, err := ctx.query(path, []byte(key))
+	if err != nil {
+		return 0, err
+	}
+
+	err = ctx.Codec.UnmarshalBinaryBare(res, &in)
+
+	return
+}
+
+// QuerySequenceOut performs a query from a Tendermint node with the provided chainid
+func (ctx CLIContext) QuerySequenceOut(chainid string) (out int64, err error) {
+	key := fmt.Sprintf("sequence/out/%s", chainid)
+	path := "/store/qcp/key"
+
+	res, err := ctx.query(path, []byte(key))
+	if err != nil {
+		return 0, err
+	}
+
+	err = ctx.Codec.UnmarshalBinaryBare(res, &out)
+
+	return
+}
+
 // GetAccount queries for an account given an address and a block height. An
 // error is returned if the query or decoding fails.
 func (ctx CLIContext) GetAccount(address []byte, cdc *wire.Codec) (*account.QOSAccount, error) {
