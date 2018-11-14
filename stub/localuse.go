@@ -1,7 +1,7 @@
 package stub
 
 import (
-	"encoding/hex"
+	"encoding/base64"
 	"fmt"
 	qbasetypes "github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/client/lcd/lib"
@@ -38,19 +38,18 @@ func AccountCreate() *ResultCreateAccount {
 	addr := key.PubKey().Address()
 	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
 	bech32Addr, _ := bech32.ConvertAndEncode(qbasetypes.PREF_ADD, addr.Bytes())
+	//according to #92, return base64 format output
+	privkeybase64 := base64.StdEncoding.EncodeToString(key.Bytes())
 
-	//	privkeybase64 := base64.StdEncoding.EncodeToString(key[:])
-	//change privkey output to hex string format, from the QOS method
-	//privkeyhex := "0x" + hex.EncodeToString(acc.PrivKey.Bytes())
-
-	privkeyhex := "0x" + hex.EncodeToString(key.Bytes())
+	//to be discarded, change privkey output to hex string format, from the QOS mechanism
+	//privkeyhex := "0x" + hex.EncodeToString(key.Bytes())
 
 	//Type field for future use
 	Type := AccountResultType
 
 	result := &ResultCreateAccount{}
 	result.PubKey = bech32Pub
-	result.PrivKey = privkeyhex
+	result.PrivKey = privkeybase64
 	result.Addr = bech32Addr
 	result.Mnemonic = mnemonic
 	result.Type = Type
@@ -73,14 +72,14 @@ func AccountRecoverStr(mncode string) string {
 	addr := key.PubKey().Address()
 	bech32Pub, _ := bech32.ConvertAndEncode("cosmosaccpub", pub)
 	bech32Addr, _ := bech32.ConvertAndEncode(qbasetypes.PREF_ADD, addr.Bytes())
-	//	privkeybase64 := base64.StdEncoding.EncodeToString(key[:])
+	privkeybase64 := base64.StdEncoding.EncodeToString(key.Bytes())
 	//change privkey output to hex string format
-	privkeyhex := "0x" + hex.EncodeToString(key.Bytes())
+	//privkeyhex := "0x" + hex.EncodeToString(key.Bytes())
 
 	Type := AccountResultType
 	result := &ResultCreateAccount{}
 	result.PubKey = bech32Pub
-	result.PrivKey = privkeyhex
+	result.PrivKey = privkeybase64
 	result.Addr = bech32Addr
 	result.Mnemonic = mncode
 	result.Type = Type
@@ -98,7 +97,8 @@ type PubAddrRetrieval struct {
 
 func PubAddrRetrievalStr(s string) string {
 	//the privkey output was in hex string format, decode it with the same decoding
-	bz, _ := hex.DecodeString(s[2:])
+	//bz, _ := hex.DecodeString(s[2:])
+	bz, _ := base64.StdEncoding.DecodeString(s)
 	var key ed25519.PrivKeyEd25519
 	cmCdc.MustUnmarshalBinaryBare(bz, &key)
 	pub := key.PubKey().Bytes()

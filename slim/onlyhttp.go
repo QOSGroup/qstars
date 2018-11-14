@@ -3,18 +3,10 @@ package slim
 import (
 	"bytes"
 	"fmt"
-	"github.com/QOSGroup/qstars/star"
-	"github.com/QOSGroup/qstars/wire"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
-
-var cmCdc *wire.Codec
-
-func init() {
-	cmCdc = star.MakeCodec()
-}
 
 type sendKVReq struct {
 	Key        string `json:"key"`
@@ -23,15 +15,13 @@ type sendKVReq struct {
 	ChainID    string `json:"chainid"`
 }
 
-var KVurl = "http://localhost:8080"
-
 func QSCKVStoreSetPost(k, v, privkey, chain string) (result string) {
 	skr := sendKVReq{}
 	skr.Key = k
 	skr.Value = v
 	skr.PrivateKey = privkey
 	skr.ChainID = chain
-	payload, _ := cmCdc.MarshalJSON(skr)
+	payload, _ := Cdc.MarshalJSON(skr)
 	body := bytes.NewBuffer(payload)
 	req, _ := http.NewRequest("POST", KVurl, body)
 	req.Header.Set("Content-Type", "application/json")
