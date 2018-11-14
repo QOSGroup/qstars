@@ -25,6 +25,7 @@ func Init(filename string,rootDir string) (p *ServerConf, err error){
 		if len(sconf.RootDir)==0{
 			sconf.RootDir = rootDir
 		}
+		serverconfiguration = sconf
 		return sconf,err
 	}else{
 		return serverconfiguration,nil

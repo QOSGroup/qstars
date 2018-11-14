@@ -87,7 +87,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 		return nil, errors.New("coins不能为空")
 	}
 
-	_, addrben32, priv := utility.PubAddrRetrieval(fromstr, cdc)
+	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(fromstr, cdc)
 	from, err := types.AccAddressFromBech32(addrben32)
 	key := account.AddressStoreKey(from)
 	if err != nil {
@@ -204,7 +204,7 @@ func Approve(cdc *wire.Codec, command string, fromstr string, tostr string, coin
 		}
 
 		var addrben32 string
-		_, addrben32, priv = utility.PubAddrRetrieval(tostr, cdc)
+		_, addrben32, priv = utility.PubAddrRetrievalFromAmino(tostr, cdc)
 		to, err = types.AccAddressFromBech32(addrben32)
 		if err != nil {
 			return nil, err
@@ -223,7 +223,7 @@ func Approve(cdc *wire.Codec, command string, fromstr string, tostr string, coin
 
 	} else {
 		var addrben32 string
-		_, addrben32, priv = utility.PubAddrRetrieval(fromstr, cdc)
+		_, addrben32, priv = utility.PubAddrRetrievalFromAmino(fromstr, cdc)
 		from, err = types.AccAddressFromBech32(addrben32)
 		if err != nil {
 			return nil, err
