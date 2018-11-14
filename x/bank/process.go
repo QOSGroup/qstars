@@ -17,6 +17,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/common/log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/tendermint/go-amino"
@@ -172,8 +173,13 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 			}
 			if resultstr != "" && resultstr != "-1" {
 				fmt.Printf("get result:[%+v]\n", resultstr)
+				rs := []rune(resultstr)
+				index1 := strings.Index(resultstr, " ")
+
+
 				result.Error = ""
-				result.Result = resultstr
+				result.Result = string(rs[index1+1:])
+				result.Code = string(rs[:index1])
 				break
 			}
 			time.Sleep(500 * time.Millisecond)
