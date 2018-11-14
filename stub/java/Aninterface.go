@@ -2,7 +2,6 @@ package main
 
 import "C"
 import (
-	"fmt"
 	"github.com/QOSGroup/qstars/stub"
 )
 
@@ -101,17 +100,17 @@ func QSCtransferSend(addrto, coinstr, privkey, chainid string) string {
 
 func main() {
 	//AccountCreate()
-	GetIPfromInput("localhost:1317")
+	//GetIPfromInput("localhost:1317")
 	//acc, err := testQuery("http://localhost:1317", "address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355")
 	//fmt.Printf("---acc:%+v, err:%+v\n", acc, err)
 	//out := QSCQueryAccount("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355")
 	//fmt.Println(out)
 	//QSCKVStoreSet("13", "Melon", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "test-chain-Ky10Zg")
-	kvout := QSCKVStoreGet("13")
-	fmt.Println(kvout)
-	//AccountRecover("celery quick meat flight garden video adjust like rose process fly leaf series general vast explain rocket rail phrase sing trash drum success cannon")
-	//puba := PubAddrRetrieval("0xa3288910400f8f271b2df5df818d267b5d87ea70aa25908748f67de4ed2f3e68b12b07f436483c84704d005d9b8064eb1546c4699d8b386bf285aaf18c8212f85dce28a29e")
+	//kvout := QSCKVStoreGet("13")
+	//fmt.Println(kvout)
+	//AccountRecover("vague success fresh check remove banner music snap jelly medal bring mix eagle seat cash off winter mean comic turn always teach tiny wagon")
+	//puba := PubAddrRetrieval("oyiJEEABXGfojJnjfB/QrteV+n+uWfTVtvWA7lrEhZcpAAwWim4xUwsKHaGQ7MsrsRF1ztCTAe0Ss4AIopnk0LHLTQbK")
 	//fmt.Println(puba)
-	//transout := QSCtransferSend("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "222qos", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "qos-testapp")
+	//transout := QSCtransferSend("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "22qos", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "qos-testapp")
 	//fmt.Println(transout)
 }
