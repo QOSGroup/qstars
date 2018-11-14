@@ -21,5 +21,5 @@ Thanks for the team of cosmos, refer to the code of [cosmos-sdk](https://github.
 The current version is unreleased, we're keep on improvement.
 
 ## Docs
-* [kvstore](https://github.com/QOSGroup/qstars/docs)
+* [docs](./docs/README.md)
 

@@ -1,5 +1,6 @@
 ## Create your Own single node QStars
 prepare your chainid and coin name (equal to chain name)
+
 ### build qstarsd binary
 To create your own qstars, first each validator will need to install qstarsd in installation.md
 
@@ -13,67 +14,56 @@ see qos/docs/txcreateqsc_txissue_test.md
 see xxx
 it will requires the relay key pair
 
-### initial your qstars
+
+### Build qstarsd binary
+To create your own qstars, first each validator will need to install qstarsd in installation.md
+
+### Apply CA certification public key and private key
+you will get qsc key pair and relay key pair
+- alien needs: qsc private key and relay public key
+- relay needs: relay private key
+- qos public chain needs: qsc public key
+
+### Setup a your relay server
+see xxx
+it will requires the relay key pair
+
+### Initial your qstars
 ```bash
 qstarsd init 
 ```
+This will generate a `genesis.json` in `$HOME/.qstarsd/config/genesis.json` 
 
-This will generate a `genesis.json` in `$HOME/.qstarsd/config/genesis.json` distribute this file to all validators on your qstars.
-
-配置 联盟链私钥到下面这个文件
-配置 QOS公链
-cat ~/.qstarsd/config/qstarsconf.toml 
-# this is qstars_privatekey
-QStarsPrivateKey = "0xa328891040b7c4ca726ee42e46e0c6cc76f1d68c0e06f9c2894c48289f570dae64d0e05c533b45e7a573d8927e23597c013e01b5c29d5a0b1d2dbae83d6257345870679794"
+### Configure qsc private key to following file
+create  ~/.qstarsd/config/qstarsconf.toml and add following content.
+```
+// this is qstars_privatekey
+QStarsPrivateKey = "rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA=="
 QOSChainName = "qosrace"
+```
 
-配置genesis.json，增加如下内容
+### Configure genesis.json
 modify ~/.qstarsd/config/genesis.json
-1 change the "chain_id" to "your-chain-id"
-2 add following to genesis.json
+1. change the "chain_id" to "your-chain-id"
+2. add following to genesis.json
 
-the name and chain_id is the qos public chain's name 
-the pub_key's value is cassini's public key
+- the name and chain_id is the qos public chain's name 
+- the pub_key's value is cassini's public key
+
+
+### Configure qstars client configuration file
 ```
- "app_state": {
-	"qcps": [
-          {
-            "name": "qos-test",
-            "chain_id": "qos-test",
-            "pub_key": {
-              "type": "tendermint/PubKeyEd25519",
-              "value": "X9NorHcSXnCcEd+7G1ETU66dTiqy7RKCxzlQr37X3WY="
-            }
-          }
-        ]
-	}
-```
-
-配置config.toml
-
 [vagrant@vagrant-192-168-1-223 qstarsd]$ cat ~/.qstarscli/config/config.toml 
-qos_chain_id is public chain id
-qsc_chain_id is your alien chain id
-qos_node_uri is public chain abci url
-qsc_node_uri is your alien chain abci url
-
 ```
-# This is a TOML config file.
-# For more information, see https://github.com/toml-lang/toml
+- qos_chain_id is public chain id
+- qsc_chain_id is your alien chain id
+- qos_node_uri is public chain abci url
+- qsc_node_uri is your alien chain abci url
 
-# Path to the JSON file containing the initial validator set and other meta data
-qos_chain_id = "qos-test"
-
-qsc_chain_id = "qstars-test"
-
-qos_node_uri = "192.168.1.224:26657"
-
-qsc_node_uri = "localhost:26657"
-
-direct_to_qos = false
-
-waiting_for_qos_result = 70
-```
+###Start QStars
+./qstarsd start --with-tendermint
+ or 
+you can run startup.sh 
 
 Genesis example
 
@@ -123,3 +113,50 @@ Genesis example
 	}
 }
 ```
+
+## Create your Own Multiple node QStars
+download or build a tendermint of version 0.23.1
+```
+[tendermint]$ ./tendermint version
+0.23.1
+```
+run tendermint testnet to create each node's configuration file
+```cgo
+[vagrant@vagrant-192-168-168-191 tendermint]$ ./tendermint testnet --n 4 --hostname-prefix qosracenode --starting-ip-address 172.19.222.64 --v 4
+I[11-14|06:12:08.877] Found private validator                      module=main path=mytestnet/node0/config/priv_validator.json
+I[11-14|06:12:08.877] Found node key                               module=main path=mytestnet/node0/config/node_key.json
+I[11-14|06:12:08.877] Found genesis file                           module=main path=mytestnet/node0/config/genesis.json
+I[11-14|06:12:08.877] Found private validator                      module=main path=mytestnet/node1/config/priv_validator.json
+I[11-14|06:12:08.877] Found node key                               module=main path=mytestnet/node1/config/node_key.json
+I[11-14|06:12:08.877] Found genesis file                           module=main path=mytestnet/node1/config/genesis.json
+I[11-14|06:12:08.878] Found private validator                      module=main path=mytestnet/node2/config/priv_validator.json
+I[11-14|06:12:08.878] Found node key                               module=main path=mytestnet/node2/config/node_key.json
+I[11-14|06:12:08.878] Found genesis file                           module=main path=mytestnet/node2/config/genesis.json
+I[11-14|06:12:08.878] Found private validator                      module=main path=mytestnet/node3/config/priv_validator.json
+I[11-14|06:12:08.878] Found node key                               module=main path=mytestnet/node3/config/node_key.json
+I[11-14|06:12:08.878] Found genesis file                           module=main path=mytestnet/node3/config/genesis.json
+I[11-14|06:12:08.880] Generated private validator                  module=main path=mytestnet/node4/config/priv_validator.json
+I[11-14|06:12:08.881] Generated node key                           module=main path=mytestnet/node4/config/node_key.json
+I[11-14|06:12:08.881] Generated genesis file                       module=main path=mytestnet/node4/config/genesis.json
+I[11-14|06:12:08.883] Generated private validator                  module=main path=mytestnet/node5/config/priv_validator.json
+I[11-14|06:12:08.883] Generated node key                           module=main path=mytestnet/node5/config/node_key.json
+I[11-14|06:12:08.883] Generated genesis file                       module=main path=mytestnet/node5/config/genesis.json
+I[11-14|06:12:08.885] Generated private validator                  module=main path=mytestnet/node6/config/priv_validator.json
+I[11-14|06:12:08.886] Generated node key                           module=main path=mytestnet/node6/config/node_key.json
+I[11-14|06:12:08.886] Generated genesis file                       module=main path=mytestnet/node6/config/genesis.json
+I[11-14|06:12:08.888] Generated private validator                  module=main path=mytestnet/node7/config/priv_validator.json
+I[11-14|06:12:08.889] Generated node key                           module=main path=mytestnet/node7/config/node_key.json
+I[11-14|06:12:08.889] Generated genesis file                       module=main path=mytestnet/node7/config/genesis.json
+Successfully initialized 8 node directories
+
+```
+you will get several folders which has configuration files
+
+### Manually create qstarsserverconf.toml file in every folder
+This is as above step
+
+### change genesis files
+This is as above step
+
+### startup every node
+Copy each folder to each node
