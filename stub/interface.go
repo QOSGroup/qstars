@@ -74,7 +74,7 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 		fmt.Println(err)
 	}
 	//generate the sender address, i.e. the "from" part as the input with privkey in hex string format
-	_, addrben32, priv := utility.PubAddrRetrieval(privkey, cmCdc)
+	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cmCdc)
 	from, err := qbasetypes.GetAddrFromBech32(addrben32)
 
 	//coins generate from input

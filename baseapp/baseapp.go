@@ -41,7 +41,7 @@ func InitApp() {
 	startup a qstar chain instance
  */
 func NewAPP(sconf *config.ServerConf , cdc *go_amino.Codec) (QstarsBaseApp, error) {
-	_, _, qCtx.QStarsSignerPriv = utility.PubAddrRetrieval(sconf.QStarsPrivateKey, cdc)
+	_, _, qCtx.QStarsSignerPriv = utility.PubAddrRetrievalFromAmino(sconf.QStarsPrivateKey, cdc)
 	qCtx.QStarsTransactions = strings.Split(sconf.QStarsTransactions, ",")
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
 	qstarts := QstarsBaseApp{
