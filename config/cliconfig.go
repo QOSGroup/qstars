@@ -64,8 +64,8 @@ func InterceptLoadConfig() (conf *CLIConfig, err error) {
 		conf, _ = ParseConfig()
 		conf.QSCChainID = "qstars-test"
 		conf.QOSNodeURI = "qos-test"
-		conf.QOSNodeURI = "localhost:22657"
-		conf.QSTARSNodeURI = "localhost:22657"
+		conf.QOSNodeURI = "localhost:26657"
+		conf.QSTARSNodeURI = "localhost:26657"
 		WriteConfigFile(configFilePath, conf)
 		// Fall through, just so that its parsed into memory.
 	}
