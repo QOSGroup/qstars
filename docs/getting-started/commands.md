@@ -1,4 +1,28 @@
 
+# Configure command line tools
+
+cat ~/.qstarscli/config/config.toml
+```cgo
+
+# This is a TOML config file.
+# For more information, see https://github.com/toml-lang/toml
+
+# Path to the JSON file containing the initial validator set and other meta data
+qos_chain_id = "qosrace"
+
+qsc_chain_id = "qstarsrace"
+
+qos_node_uri = "172.19.222.64:26657"
+
+qstars_node_uri = "localhost:36657"
+
+direct_to_qos = "false"
+
+waiting_for_qos_result = ""
+
+```
+
+
 # 命令行
 ## 查账户余额
 ```

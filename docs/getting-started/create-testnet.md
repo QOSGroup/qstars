@@ -65,6 +65,9 @@ modify ~/.qstarsd/config/genesis.json
  or 
 you can run startup.sh 
 
+### Configure command line tool and run commands.
+See [commands](./commands.md)
+
 Genesis example
 
 ```
