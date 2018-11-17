@@ -35,7 +35,7 @@ I[10-09|07:28:03.382] Served RPC HTTP response                     module=rest-s
 
 ```
 
-###send a key and value:
+### send a key and value:
 
 ```
 curl -d "{\"key\":\"1\",\"value\":\"3\",\"privatekey\":\"NQgkKn3vmPgxGut+k832nH6l0A1GDtLy8Nz6fMp6y6q2dbL7FVPkNw9PPcCsobEHJf9eDmC3zrG/iWn9qxLuvg\",\"chainid\":\"chainabc\"}"  http://localhost:1317/kv
@@ -52,7 +52,7 @@ response
 }
 ```
 
-###get a key
+### get a key
 ```
 curl http://localhost:1317/kv/1
 ```
@@ -72,7 +72,7 @@ response
 
 
 
-###create an account
+### create an account
 using '#' to seperate base64 privatekey publickey and address
 ```$xslt
 curl -d "" http://localhost:1317/accounts
@@ -95,7 +95,7 @@ response
 ```
 
 
-###query an account
+### query an account
 after account is the address of the account
 ```
 curl http://localhost:1317/accounts/cosmosaccaddr120ws5500u0q8q75k70uetqp2xnysus5t4x9ug9
@@ -143,7 +143,7 @@ response
 
 ```
 
-###do a transaction
+### do a transaction
 privatekey in json is sender privatekey
 mount in json is coins
 the last part of url is receiver publickey

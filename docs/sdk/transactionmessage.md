@@ -39,7 +39,7 @@ For example:
 send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
 ```
 
-##input
+## input
 - sender private key
 base64: rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA==
 Bin:
@@ -57,10 +57,10 @@ address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355
 
 ```
 
-##output
+## output
 json string
 
-##step
+## step
 - data is required to sign are following:
 from address + 32 + to address + 32 + chain id + nonce
 ```

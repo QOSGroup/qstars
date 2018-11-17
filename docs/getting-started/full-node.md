@@ -6,7 +6,7 @@ information on the latest testnet, including the correct version
 of the QStars-SDK to use and details about the genesis file.
 :::
 
-Please ensure you have the [QStars](/getting-started/installation.md) installed. If you ran a full node on a previous testnet, please skip to [Upgrading From Previous Testnet](#upgrading-from-previous-testnet).
+Please ensure you have the [QStars](../getting-started/installation.md) installed. If you ran a full node on a previous testnet, please skip to [Upgrading From Previous Testnet](#upgrading-from-previous-testnet).
 
 ## Setting Up a New Node
 
@@ -29,7 +29,7 @@ You can edit this `name` later, in the `~/.qstarsd/config/config.toml` file:
 moniker = "<your_custom_name>"
 ```
 
-Your full node has been initialized! Please skip to [Genesis & Seeds](#genesis-seeds).
+Your full node has been initialized! Please skip to [Genesis & Seeds](#genesis--seeds).
 
 ## Upgrading From Previous Testnet
 
