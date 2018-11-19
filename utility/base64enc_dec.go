@@ -30,12 +30,12 @@ func Decbase64(input string) []byte {
 }
 
 func PubAddrRetrievalFromAmino(caPriBase64 string, cdc *wire.Codec) (string, string, ed25519.PrivKeyEd25519) {
-	caHex := "{\"type\": \"tendermint/PrivKeyEd25519\",\"value\": \""+ caPriBase64 +"\"}"
+	caHex := "{\"type\": \"tendermint/PrivKeyEd25519\",\"value\": \"" + caPriBase64 + "\"}"
 	var key ed25519.PrivKeyEd25519
 	err := cdc.UnmarshalJSON([]byte(caHex), &key)
-	if (err !=nil){
+	if err != nil {
 		log.Error(err.Error())
-		return "","",key
+		return "", "", key
 	}
 
 	pub := key.PubKey().Bytes()
