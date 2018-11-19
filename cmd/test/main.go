@@ -79,16 +79,16 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 
 	sigdata := append(msg.GetSignData(), Int2Byte(nn)...)
 	encodedStr := hex.EncodeToString(sigdata)
-	fmt.Println(":need to signdata %s", (encodedStr))
+	fmt.Println(":need to signdata ", (encodedStr))
 
 	encodedStr = hex.EncodeToString(from.Bytes())
-	fmt.Println("from: %s", (encodedStr))
+	fmt.Println("from: ", (encodedStr))
 	encodedStr = hex.EncodeToString(to.Bytes())
-	fmt.Println("to: %s", (encodedStr))
+	fmt.Println("to: ", (encodedStr))
 
 	signed1, _ := priv.Sign(sigdata)
 	encodedStr = hex.EncodeToString(signed1)
-	fmt.Println("sign content: %s", (encodedStr))
+	fmt.Println("sign content: ", (encodedStr))
 	return nil
 }
 
