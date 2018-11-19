@@ -1,12 +1,14 @@
 package stub
 
+import "C"
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"github.com/QOSGroup/qbase/txs"
-	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/x/bank/tx"
 	"github.com/tendermint/go-amino"
+	"github.com/tendermint/tendermint/libs/bech32"
 	"io/ioutil"
 	"net/http"
 
@@ -74,7 +76,14 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 		fmt.Println(err)
 	}
 	//generate the sender address, i.e. the "from" part as the input with privkey in hex string format
-	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cmCdc)
+	//_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cmCdc)
+
+	bz, _ := base64.StdEncoding.DecodeString(privkey)
+	var key ed25519.PrivKeyEd25519
+	cmCdc.MustUnmarshalBinaryBare(bz, &key)
+	priv := key
+	addrben32, _ := bech32.ConvertAndEncode(qbasetypes.PREF_ADD, key.PubKey().Address().Bytes())
+
 	from, err := qbasetypes.GetAddrFromBech32(addrben32)
 
 	//coins generate from input

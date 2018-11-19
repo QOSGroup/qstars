@@ -2,12 +2,14 @@ package slim
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/respwrap"
-	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/x/bank/tx"
+	"github.com/pkg/errors"
 	"github.com/tendermint/go-amino"
+	"github.com/tendermint/tendermint/libs/bech32"
 	"io/ioutil"
 	"net/http"
 
@@ -66,16 +68,32 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 	return stx
 }
 
+func getAddrFromBech32(bech32Addr string) (address []byte, err error) {
+	prefix, bz, err := bech32.DecodeAndConvert(bech32Addr)
+	address = bz
+	if prefix != PREF_ADD {
+		return nil, errors.Wrap(err, "Valid Address string should begin with")
+	}
+	return
+}
+
 //only need the following arguments, it`s enough!
 func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	//generate the receiver address, i.e. "addrto" with the following format
-	to, err := qbasetypes.GetAddrFromBech32(addrto)
+	to, err := getAddrFromBech32(addrto)
 	if err != nil {
 		fmt.Println(err)
 	}
 	//generate the sender address, i.e. the "from" part as the input with privkey in hex string format
-	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, Cdc)
-	from, err := qbasetypes.GetAddrFromBech32(addrben32)
+	//_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cmCdc)
+
+	bz, _ := base64.StdEncoding.DecodeString(privkey)
+	var key ed25519.PrivKeyEd25519
+	Cdc.MustUnmarshalBinaryBare(bz, &key)
+	priv := key
+	addrben32, _ := bech32.ConvertAndEncode(PREF_ADD, key.PubKey().Address().Bytes())
+
+	from, err := getAddrFromBech32(addrben32)
 
 	//coins generate from input
 	var ccs []qbasetypes.BaseCoin
@@ -115,7 +133,7 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	nn = int64(acc.Nonce)
 	nn++
 
-	//http part for restruction
+	//New transfer for QOS transaction
 	t := tx.NewTransfer(from, to, ccs)
 	msg := genStdSendTx(Cdc, t, priv, chainid, nn)
 

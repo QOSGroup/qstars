@@ -100,10 +100,12 @@ func PubAddrRetrievalStr(s string) string {
 	addr := key.PubKey().Address()
 	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
 	bech32Addr, _ := bech32.ConvertAndEncode(PREF_ADD, addr.Bytes())
+	//privkeybase64 := base64.StdEncoding.EncodeToString(key.Bytes())
 
 	result := &PubAddrRetrieval{}
 	result.PubKey = bech32Pub
 	result.Addr = bech32Addr
+	//result.PrivKey = privkeybase64
 
 	resp, _ := respwrap.ResponseWrapper(Cdc, result, nil)
 	out := string(resp)
