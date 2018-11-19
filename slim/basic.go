@@ -2,10 +2,10 @@ package slim
 
 import (
 	"encoding/base64"
+	"github.com/QOSGroup/qstars/slim/funcInlocal/bech32local"
+	"github.com/QOSGroup/qstars/slim/funcInlocal/bip39local"
+	"github.com/QOSGroup/qstars/slim/funcInlocal/ed25519local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/respwrap"
-	"github.com/bartekn/go-bip39"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/libs/bech32"
 )
 
 const PREF_ADD = "address"
@@ -25,16 +25,16 @@ const (
 )
 
 func AccountCreate() *ResultCreateAccount {
-	entropy, _ := bip39.NewEntropy(256)
-	mnemonic, _ := bip39.NewMnemonic(entropy)
-	seedo := bip39.NewSeed(mnemonic, "qstars")
+	entropy, _ := bip39local.NewEntropy(256)
+	mnemonic, _ := bip39local.NewMnemonic(entropy)
+	seedo := bip39local.NewSeed(mnemonic, "qstars")
 	//seedh := hex.EncodeToString(seedo)
 
-	key := ed25519.GenPrivKeyFromSecret(seedo)
+	key := ed25519local.GenPrivKeyFromSecret(seedo)
 	pub := key.PubKey().Bytes()
 	addr := key.PubKey().Address()
-	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
-	bech32Addr, _ := bech32.ConvertAndEncode(PREF_ADD, addr.Bytes())
+	bech32Pub, _ := bech32local.ConvertAndEncode(Bech32PrefixAccPub, pub)
+	bech32Addr, _ := bech32local.ConvertAndEncode(PREF_ADD, addr.Bytes())
 
 	privkeybase64 := base64.StdEncoding.EncodeToString(key.Bytes())
 	//privkeyhex := "0x" + hex.EncodeToString(key.Bytes())
@@ -62,12 +62,12 @@ func AccountCreateStr() string {
 }
 
 func AccountRecoverStr(mncode string) string {
-	seed := bip39.NewSeed(mncode, "qstars")
-	key := ed25519.GenPrivKeyFromSecret(seed)
+	seed := bip39local.NewSeed(mncode, "qstars")
+	key := ed25519local.GenPrivKeyFromSecret(seed)
 	pub := key.PubKey().Bytes()
 	addr := key.PubKey().Address()
-	bech32Pub, _ := bech32.ConvertAndEncode("cosmosaccpub", pub)
-	bech32Addr, _ := bech32.ConvertAndEncode(PREF_ADD, addr.Bytes())
+	bech32Pub, _ := bech32local.ConvertAndEncode("cosmosaccpub", pub)
+	bech32Addr, _ := bech32local.ConvertAndEncode(PREF_ADD, addr.Bytes())
 	privkeybase64 := base64.StdEncoding.EncodeToString(key.Bytes())
 	//change privkey output to hex string format
 	//privkeyhex := "0x" + hex.EncodeToString(key.Bytes())
@@ -94,12 +94,12 @@ func PubAddrRetrievalStr(s string) string {
 	//the privkey output was in hex string format, decode it with the same decoding
 	//bz, _ := hex.DecodeString(s[2:])
 	bz, _ := base64.StdEncoding.DecodeString(s)
-	var key ed25519.PrivKeyEd25519
+	var key ed25519local.PrivKeyEd25519
 	Cdc.MustUnmarshalBinaryBare(bz, &key)
 	pub := key.PubKey().Bytes()
 	addr := key.PubKey().Address()
-	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
-	bech32Addr, _ := bech32.ConvertAndEncode(PREF_ADD, addr.Bytes())
+	bech32Pub, _ := bech32local.ConvertAndEncode(Bech32PrefixAccPub, pub)
+	bech32Addr, _ := bech32local.ConvertAndEncode(PREF_ADD, addr.Bytes())
 	//privkeybase64 := base64.StdEncoding.EncodeToString(key.Bytes())
 
 	result := &PubAddrRetrieval{}

@@ -23,10 +23,11 @@ require (
 	github.com/spf13/viper v1.2.1
 	github.com/stretchr/testify v1.2.2
 	github.com/syndtr/goleveldb v0.0.0-20181012014443-6b91fda63f2e // indirect
+	github.com/tendermint/ed25519 v0.0.0-20171027050219-d8387025d2b9
 	github.com/tendermint/go-amino v0.12.0
 	github.com/tendermint/tendermint v0.23.1
 	github.com/zondax/ledger-goclient v0.0.0-20180813155702-4296ee5701e9 // indirect
-	golang.org/x/crypto v0.0.0-20181009213950-7c1a557ab941 // indirect
+	golang.org/x/crypto v0.0.0-20181009213950-7c1a557ab941
 	golang.org/x/net v0.0.0-20181017193950-04a2e542c03f // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
 )
