@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/bech32local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/ed25519local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/respwrap"
 	"github.com/pkg/errors"
-	"github.com/prometheus/common/log"
-	"github.com/tendermint/go-amino"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -65,6 +64,70 @@ func ZeroInt() BigInt { return BigInt{big.NewInt(0)} }
 
 func (i BigInt) String() string {
 	return i.i.String()
+}
+
+// MarshalAmino defines custom encoding scheme
+func (i BigInt) MarshalAmino() (string, error) {
+	if i.i == nil { // Necessary since default Uint initialization has i.i as nil
+		i.i = new(big.Int)
+	}
+	return marshalAmino(i.i)
+}
+
+// UnmarshalAmino defines custom decoding scheme
+func (i *BigInt) UnmarshalAmino(text string) error {
+	if i.i == nil { // Necessary since default BigInt initialization has i.i as nil
+		i.i = new(big.Int)
+	}
+	return unmarshalAmino(i.i, text)
+}
+
+// MarshalJSON defines custom encoding scheme
+func (i BigInt) MarshalJSON() ([]byte, error) {
+	if i.i == nil { // Necessary since default Uint initialization has i.i as nil
+		i.i = new(big.Int)
+	}
+	return marshalJSON(i.i)
+}
+
+// UnmarshalJSON defines custom decoding scheme
+func (i *BigInt) UnmarshalJSON(bz []byte) error {
+	if i.i == nil { // Necessary since default BigInt initialization has i.i as nil
+		i.i = new(big.Int)
+	}
+	return unmarshalJSON(i.i, bz)
+}
+
+// MarshalAmino for custom encoding scheme
+func marshalAmino(i *big.Int) (string, error) {
+	bz, err := i.MarshalText()
+	return string(bz), err
+}
+
+// UnmarshalAmino for custom decoding scheme
+func unmarshalAmino(i *big.Int, text string) (err error) {
+	return i.UnmarshalText([]byte(text))
+}
+
+// MarshalJSON for custom encoding scheme
+// Must be encoded as a string for JSON precision
+func marshalJSON(i *big.Int) ([]byte, error) {
+	text, err := i.MarshalText()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(string(text))
+}
+
+// UnmarshalJSON for custom decoding scheme
+// Must be encoded as a string for JSON precision
+func unmarshalJSON(i *big.Int, bz []byte) error {
+	var text string
+	err := json.Unmarshal(bz, &text)
+	if err != nil {
+		return err
+	}
+	return i.UnmarshalText([]byte(text))
 }
 
 // 函数：int64 转化为 []byte
@@ -143,7 +206,7 @@ func NewTxStd(itx ITx, cid string, mgas BigInt) (rTx *TxStd) {
 	return
 }
 
-func genStdSendTx(cdc *amino.Codec, sendTx ITx, priKey ed25519local.PrivKeyEd25519, chainid string, nonce int64) *TxStd {
+func genStdSendTx(sendTx ITx, priKey ed25519local.PrivKeyEd25519, chainid string, nonce int64) *TxStd {
 	gas := NewBigInt(int64(0))
 	stx := NewTxStd(sendTx, chainid, gas)
 	signature, _ := stx.SignTx(priKey, nonce)
@@ -168,6 +231,38 @@ func getAddrFromBech32(bech32Addr string) (address []byte) {
 }
 
 type Address []byte
+
+func (add Address) Bytes() []byte {
+	return add[:]
+}
+
+func (add Address) String() string {
+	bech32Addr, err := bech32local.ConvertAndEncode(PREF_ADD, add.Bytes())
+	if err != nil {
+		panic(err)
+	}
+	return bech32Addr
+}
+
+func (add Address) MarshalJSON() ([]byte, error) {
+	return json.Marshal(add.String())
+}
+
+// 将Bech32编码的地址Json进行UnMarshal
+func (add *Address) UnmarshalJSON(bech32Addr []byte) error {
+	var s string
+	err := json.Unmarshal(bech32Addr, &s)
+	if err != nil {
+		return err
+	}
+	add2 := getAddrFromBech32(s)
+	//if err != nil {
+	//	return err
+	//}
+	*add = add2
+	return nil
+}
+
 type BaseCoins []*BaseCoin
 type QSCs = BaseCoins
 
@@ -371,9 +466,9 @@ type BaseAccount struct {
 }
 
 type QOSAccount struct {
-	BaseAccount `json:"base_account"` // inherits BaseAccount
-	QOS         BigInt                `json:"qos"`  // coins in public chain
-	QSCs        QSCs                  `json:"qscs"` // varied QSCs
+	BaseAccount `json:"base_account"`
+	QOS         BigInt `json:"qos"`  // coins in public chain
+	QSCs        QSCs   `json:"qscs"` // varied QSCs
 }
 
 //only need the following arguments, it`s enough!
@@ -396,7 +491,7 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	var ccs []BaseCoin
 	coins, err := ParseCoins(coinstr)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	for _, coin := range coins {
 		ccs = append(ccs, BaseCoin{
@@ -432,8 +527,7 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 
 	//New transfer for QOS transaction
 	t := NewTransfer(from, to, ccs)
-	msg := genStdSendTx(Cdc, t, priv, chainid, nn)
-
+	msg := genStdSendTx(t, priv, chainid, nn)
 	jasonpayload, err := Cdc.MarshalJSON(msg)
 	if err != nil {
 		fmt.Println(err)

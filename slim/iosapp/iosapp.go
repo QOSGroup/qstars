@@ -4,9 +4,26 @@ import (
 	"github.com/QOSGroup/qstars/slim"
 )
 
-//for Account Create
 func AccountCreate() string {
 	output := slim.AccountCreateStr()
+	return output
+}
+
+//for QSCKVStoreset
+func QSCKVStoreSet(k, v, privkey, chain string) string {
+	output := slim.QSCKVStoreSetPost(k, v, privkey, chain)
+	return output
+}
+
+//for QSCKVStoreGet
+func QSCKVStoreGet(k string) string {
+	output := slim.QSCKVStoreGetQuery(k)
+	return output
+}
+
+//for QSCQueryAccount
+func QSCQueryAccount(addr string) string {
+	output := slim.QSCQueryAccountGet(addr)
 	return output
 }
 
@@ -16,10 +33,22 @@ func AccountRecover(mncode string) string {
 	return output
 }
 
+//for IP input
+func GetIPfromInput(ip string) {
+	//	fmt.Println("Please input host including IP and port for initialization on Qstar deamon:")
+	slim.GetIPfrom(ip)
+}
+
 //for PubAddrRetrieval
 func PubAddrRetrieval(priv string) string {
 	//	fmt.Println("Please input host including IP and port for initialization on Qstar deamon:")
 	output := slim.PubAddrRetrievalStr(priv)
+	return output
+}
+
+//for QSCtransferSend
+func QSCtransferSend(addrto, coinstr, privkey, chainid string) string {
+	output := slim.QSCtransferSendStr(addrto, coinstr, privkey, chainid)
 	return output
 }
 

@@ -2,8 +2,8 @@ package slim
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -58,8 +58,8 @@ func QSCKVStoreGetQuery(k string) string {
 	if resp.StatusCode == http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			//		fmt.Println(err)
-			log.Fatal(err)
+			fmt.Println(err)
+			//log.Fatal(err)
 		}
 		defer resp.Body.Close()
 		output := string(body)
@@ -76,7 +76,7 @@ func QSCQueryAccountGet(addr string) string {
 	if resp.StatusCode == http.StatusOK {
 		body, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 	}
 

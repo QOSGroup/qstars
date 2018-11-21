@@ -52,6 +52,8 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(&TxStd{}, "qbase/txs/stdtx", nil)
 	cdc.RegisterInterface((*ITx)(nil), nil)
 	cdc.RegisterConcrete(&TransferTx{}, "qos/txs/TransferTx", nil)
+	cdc.RegisterConcrete(&QOSAccount{}, "qbase/account/QOSAccount", nil)
+	cdc.RegisterConcrete(&BaseAccount{}, "qbase/account/BaseAccount", nil)
 }
 
 // amino codec to marshal/unmarshal
