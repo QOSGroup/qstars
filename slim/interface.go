@@ -3,63 +3,151 @@ package slim
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/binary"
 	"fmt"
-	"github.com/QOSGroup/qbase/txs"
+	"github.com/QOSGroup/qstars/slim/funcInlocal/bech32local"
+	"github.com/QOSGroup/qstars/slim/funcInlocal/ed25519local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/respwrap"
-	"github.com/QOSGroup/qstars/x/bank/tx"
 	"github.com/pkg/errors"
+	"github.com/prometheus/common/log"
 	"github.com/tendermint/go-amino"
-	"github.com/tendermint/tendermint/libs/bech32"
 	"io/ioutil"
+	"math/big"
 	"net/http"
-
-	qbasetypes "github.com/QOSGroup/qbase/types"
-	qosaccount "github.com/QOSGroup/qos/account"
-	"github.com/QOSGroup/qstars/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
 )
-
-// IP initialization
-var (
-	HostIP     string
-	Accounturl string
-	KVurl      string
-)
-
-func GetIPfrom(host string) {
-	HostIP = host
-	Accounturl = "http://" + HostIP + "/accounts/"
-	KVurl = "http://" + HostIP + "/kv"
-}
-
-func init() {
-	var h string
-	GetIPfrom(h)
-}
-
-func QSCQueryAccountGet(addr string) string {
-	aurl := Accounturl + addr
-	resp, _ := http.Get(aurl)
-	var body []byte
-	var err error
-	if resp.StatusCode == http.StatusOK {
-		body, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	defer resp.Body.Close()
-	output := string(body)
-	return output
-}
 
 //genStdSendTx for the Tx send operation
-func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64) *txs.TxStd {
-	gas := qbasetypes.NewInt(int64(0))
-	stx := txs.NewTxStd(sendTx, chainid, gas)
+// NewInt constructs BigInt from int64
+func NewInt(n int64) Int {
+	return Int{big.NewInt(n)}
+}
+
+func (i BigInt) Int64() int64 {
+	if !i.i.IsInt64() {
+		panic("Int64() out of bound")
+	}
+	return i.i.Int64()
+}
+
+type BigInt struct {
+	i *big.Int
+}
+
+func add(i *big.Int, i2 *big.Int) *big.Int { return new(big.Int).Add(i, i2) }
+
+// Add adds BigInt from another
+func (i BigInt) Add(i2 BigInt) (res BigInt) {
+	res = BigInt{add(i.i, i2.i)}
+	// Check overflow
+	if res.i.BitLen() > 255 {
+		panic("BigInt overflow")
+	}
+	return
+}
+
+func (bi BigInt) IsNil() bool {
+	return bi.i == nil
+}
+
+func (i BigInt) NilToZero() BigInt {
+	if i.IsNil() {
+		return ZeroInt()
+	}
+	return i
+}
+
+// ZeroInt returns BigInt value with zero
+func ZeroInt() BigInt { return BigInt{big.NewInt(0)} }
+
+func (i BigInt) String() string {
+	return i.i.String()
+}
+
+// 函数：int64 转化为 []byte
+func Int2Byte(in int64) []byte {
+	var ret = bytes.NewBuffer([]byte{})
+	err := binary.Write(ret, binary.BigEndian, in)
+	if err != nil {
+		fmt.Printf("Int2Byte error:%s", err.Error())
+		return nil
+	}
+
+	return ret.Bytes()
+}
+
+type BaseCoin struct {
+	Name   string `json:"coin_name"`
+	Amount BigInt `json:"amount"`
+}
+
+type TxStd struct {
+	ITx       ITx         `json:"itx"`      //ITx接口，将被具体Tx结构实例化
+	Signature []Signature `json:"sigature"` //签名数组
+	ChainID   string      `json:"chainid"`  //ChainID: 执行ITx.exec方法的链ID
+	MaxGas    BigInt      `json:"maxgas"`   //Gas消耗的最大值
+}
+
+func (tx *TxStd) GetSignData() []byte {
+	if tx.ITx == nil {
+		panic("ITx shouldn't be nil in TxStd.GetSignData()")
+		return nil
+	}
+
+	ret := tx.ITx.GetSignData()
+	ret = append(ret, []byte(tx.ChainID)...)
+	ret = append(ret, Int2Byte(tx.MaxGas.Int64())...)
+
+	return ret
+}
+
+// 签名：每个签名者外部调用此方法
+func (tx *TxStd) SignTx(privkey ed25519local.PrivKey, nonce int64) (signedbyte []byte, err error) {
+	if tx.ITx == nil {
+		return nil, errors.New("Signature txstd err(itx is nil)")
+	}
+
+	sigdata := append(tx.GetSignData(), Int2Byte(nonce)...)
+	signedbyte, err = privkey.Sign(sigdata)
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+type ITx interface {
+	GetSignData() []byte //获取签名字段
+}
+
+//var _ txs.ITx = (*TransferTx)(nil)
+
+type Signature struct {
+	Pubkey    ed25519local.PubKey `json:"pubkey"`    //可选
+	Signature []byte              `json:"signature"` //签名内容
+	Nonce     int64               `json:"nonce"`     //nonce的值
+}
+
+// 调用 NewTxStd后，需调用TxStd.SignTx填充TxStd.Signature(每个TxStd.Signer())
+func NewTxStd(itx ITx, cid string, mgas BigInt) (rTx *TxStd) {
+	rTx = &TxStd{
+		itx,
+		[]Signature{},
+		cid,
+		mgas,
+	}
+
+	return
+}
+
+func genStdSendTx(cdc *amino.Codec, sendTx ITx, priKey ed25519local.PrivKeyEd25519, chainid string, nonce int64) *TxStd {
+	gas := NewBigInt(int64(0))
+	stx := NewTxStd(sendTx, chainid, gas)
 	signature, _ := stx.SignTx(priKey, nonce)
-	stx.Signature = []txs.Signature{txs.Signature{
+	stx.Signature = []Signature{Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
 		Nonce:     nonce,
@@ -68,43 +156,252 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 	return stx
 }
 
-func getAddrFromBech32(bech32Addr string) (address []byte, err error) {
-	prefix, bz, err := bech32.DecodeAndConvert(bech32Addr)
+func getAddrFromBech32(bech32Addr string) (address []byte) {
+	//prefix, bz, err := bech32local.DecodeAndConvert(bech32Addr)
+	_, bz, _ := bech32local.DecodeAndConvert(bech32Addr)
+	//fmt.Printf("the prefix is %s\n", prefix)
 	address = bz
-	if prefix != PREF_ADD {
-		return nil, errors.Wrap(err, "Valid Address string should begin with")
-	}
+	//if prefix != "address" {
+	//	return nil, errors.Wrap(err, "Valid Address string should begin with")
+	//}
 	return
+}
+
+type Address []byte
+type BaseCoins []*BaseCoin
+type QSCs = BaseCoins
+
+func (coins BaseCoins) String() string {
+	if len(coins) == 0 {
+		return ""
+	}
+
+	out := ""
+	for _, coin := range coins {
+		out += fmt.Sprintf("%v,", coin.String())
+	}
+	return out[:len(out)-1]
+}
+
+func (coin *BaseCoin) String() string {
+	return fmt.Sprintf("%v%v", coin.Amount, coin.Name)
+}
+
+type TransItem struct {
+	Address Address `json:"addr"` // 账户地址
+	QOS     BigInt  `json:"qos"`  // QOS
+	QSCs    QSCs    `json:"qscs"` // QSCs
+}
+
+type TransferTx struct {
+	Senders   []TransItem `json:"senders"`   // 发送集合
+	Receivers []TransItem `json:"receivers"` // 接收集合
+}
+
+// 签名字节
+func (tx TransferTx) GetSignData() (ret []byte) {
+	for _, sender := range tx.Senders {
+		ret = append(ret, sender.Address...)
+		ret = append(ret, (sender.QOS.NilToZero()).String()...)
+		ret = append(ret, sender.QSCs.String()...)
+	}
+	for _, receiver := range tx.Receivers {
+		ret = append(ret, receiver.Address...)
+		ret = append(ret, (receiver.QOS.NilToZero()).String()...)
+		ret = append(ret, receiver.QSCs.String()...)
+	}
+
+	return ret
+}
+
+func warpperTransItem(addr Address, coins []BaseCoin) TransItem {
+	var ti TransItem
+	ti.Address = addr
+	ti.QOS = NewBigInt(0)
+
+	for _, coin := range coins {
+		if coin.Name == "qos" {
+			ti.QOS = ti.QOS.Add(coin.Amount)
+		} else {
+			ti.QSCs = append(ti.QSCs, &coin)
+		}
+	}
+
+	return ti
+}
+
+// NewTransfer ...
+func NewTransfer(sender Address, receiver Address, coin []BaseCoin) ITx {
+	var sendTx TransferTx
+
+	sendTx.Senders = append(sendTx.Senders, warpperTransItem(sender, coin))
+	sendTx.Receivers = append(sendTx.Receivers, warpperTransItem(receiver, coin))
+
+	return sendTx
+}
+
+func (coins Coins) Len() int           { return len(coins) }
+func (coins Coins) Less(i, j int) bool { return coins[i].Denom < coins[j].Denom }
+func (coins Coins) Swap(i, j int)      { coins[i], coins[j] = coins[j], coins[i] }
+
+var _ sort.Interface = Coins{}
+
+type Coins []Coin
+
+func (coins Coins) Sort() Coins {
+	sort.Sort(coins)
+	return coins
+}
+
+func (coins Coins) IsZero() bool {
+	for _, coin := range coins {
+		if !coin.IsZero() {
+			return false
+		}
+	}
+	return true
+}
+
+func (coins Coins) IsValid() bool {
+	switch len(coins) {
+	case 0:
+		return true
+	case 1:
+		return !coins[0].IsZero()
+	default:
+		lowDenom := coins[0].Denom
+		for _, coin := range coins[1:] {
+			if coin.Denom <= lowDenom {
+				return false
+			}
+			if coin.IsZero() {
+				return false
+			}
+			// we compare each coin against the last denom
+			lowDenom = coin.Denom
+		}
+		return true
+	}
+}
+
+func ParseCoins(coinsStr string) (coins Coins, err error) {
+	coinsStr = strings.TrimSpace(coinsStr)
+	if len(coinsStr) == 0 {
+		return nil, nil
+	}
+
+	coinStrs := strings.Split(coinsStr, ",")
+	for _, coinStr := range coinStrs {
+		coin, err := ParseCoin(coinStr)
+		if err != nil {
+			return nil, err
+		}
+		coins = append(coins, coin)
+	}
+
+	// Sort coins for determinism.
+	coins.Sort()
+
+	// Validate coins before returning.
+	if !coins.IsValid() {
+		return nil, fmt.Errorf("parseCoins invalid: %#v", coins)
+	}
+
+	return coins, nil
+}
+
+type Int struct {
+	i *big.Int
+}
+
+func (i Int) IsZero() bool {
+	return i.i.Sign() == 0
+}
+
+func (i Int) Int64() int64 {
+	if !i.i.IsInt64() {
+		panic("Int64() out of bound")
+	}
+	return i.i.Int64()
+}
+
+type Coin struct {
+	Denom  string `json:"denom"`
+	Amount Int    `json:"amount"`
+}
+
+func (coin Coin) IsZero() bool {
+	return coin.Amount.IsZero()
+}
+
+var (
+	// Denominations can be 3 ~ 16 characters long.
+	reDnm  = `[[:alpha:]][[:alnum:]]{2,15}`
+	reAmt  = `[[:digit:]]+`
+	reSpc  = `[[:space:]]*`
+	reCoin = regexp.MustCompile(fmt.Sprintf(`^(%s)%s(%s)$`, reAmt, reSpc, reDnm))
+)
+
+func ParseCoin(coinStr string) (coin Coin, err error) {
+	coinStr = strings.TrimSpace(coinStr)
+
+	matches := reCoin.FindStringSubmatch(coinStr)
+	if matches == nil {
+		err = fmt.Errorf("invalid coin expression: %s", coinStr)
+		return
+	}
+	denomStr, amountStr := matches[2], matches[1]
+
+	amount, err := strconv.Atoi(amountStr)
+	if err != nil {
+		return
+	}
+
+	return Coin{denomStr, NewInt(int64(amount))}, nil
+}
+
+func NewBigInt(n int64) BigInt {
+	return BigInt{big.NewInt(n)}
+}
+
+type BaseAccount struct {
+	AccountAddress Address             `json:"account_address"` // account address
+	Publickey      ed25519local.PubKey `json:"public_key"`      // public key
+	Nonce          int64               `json:"nonce"`           // identifies tx_status of an account
+}
+
+type QOSAccount struct {
+	BaseAccount `json:"base_account"` // inherits BaseAccount
+	QOS         BigInt                `json:"qos"`  // coins in public chain
+	QSCs        QSCs                  `json:"qscs"` // varied QSCs
 }
 
 //only need the following arguments, it`s enough!
 func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	//generate the receiver address, i.e. "addrto" with the following format
-	to, err := getAddrFromBech32(addrto)
-	if err != nil {
-		fmt.Println(err)
-	}
+	to := getAddrFromBech32(addrto)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	//generate the sender address, i.e. the "from" part as the input with privkey in hex string format
 	//_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cmCdc)
 
 	bz, _ := base64.StdEncoding.DecodeString(privkey)
-	var key ed25519.PrivKeyEd25519
+	var key ed25519local.PrivKeyEd25519
 	Cdc.MustUnmarshalBinaryBare(bz, &key)
 	priv := key
-	addrben32, _ := bech32.ConvertAndEncode(PREF_ADD, key.PubKey().Address().Bytes())
-
-	from, err := getAddrFromBech32(addrben32)
-
+	addrben32, _ := bech32local.ConvertAndEncode(PREF_ADD, key.PubKey().Address().Bytes())
+	from := getAddrFromBech32(addrben32)
 	//coins generate from input
-	var ccs []qbasetypes.BaseCoin
-	coins, err := types.ParseCoins(coinstr)
+	var ccs []BaseCoin
+	coins, err := ParseCoins(coinstr)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 	for _, coin := range coins {
-		ccs = append(ccs, qbasetypes.BaseCoin{
+		ccs = append(ccs, BaseCoin{
 			Name:   coin.Denom,
-			Amount: qbasetypes.NewInt(coin.Amount.Int64()),
+			Amount: NewBigInt(coin.Amount.Int64()),
 		})
 	}
 
@@ -114,7 +411,7 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	data := respwrap.RPCResponse{}
 	err = Cdc.UnmarshalJSON(accb, &data)
 	rawresp := data.Result
-	acc := qosaccount.QOSAccount{}
+	acc := QOSAccount{}
 	Cdc.UnmarshalJSON(rawresp, &acc)
 
 	//coins check to further improvement
@@ -134,7 +431,7 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	nn++
 
 	//New transfer for QOS transaction
-	t := tx.NewTransfer(from, to, ccs)
+	t := NewTransfer(from, to, ccs)
 	msg := genStdSendTx(Cdc, t, priv, chainid, nn)
 
 	jasonpayload, err := Cdc.MarshalJSON(msg)

@@ -2,7 +2,6 @@ package slim
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,6 +12,24 @@ type sendKVReq struct {
 	Value      string `json:"value"`
 	PrivateKey string `json:"privatekey"`
 	ChainID    string `json:"chainid"`
+}
+
+// IP initialization
+var (
+	HostIP     string
+	Accounturl string
+	KVurl      string
+)
+
+func GetIPfrom(host string) {
+	HostIP = host
+	Accounturl = "http://" + HostIP + "/accounts/"
+	KVurl = "http://" + HostIP + "/kv"
+}
+
+func init() {
+	var h string
+	GetIPfrom(h)
 }
 
 func QSCKVStoreSetPost(k, v, privkey, chain string) (result string) {
@@ -30,7 +47,7 @@ func QSCKVStoreSetPost(k, v, privkey, chain string) (result string) {
 	defer resp.Body.Close()
 	rep, _ := ioutil.ReadAll(resp.Body)
 	output := string(rep)
-	fmt.Println(output)
+	//fmt.Println(output)
 	return output
 }
 
@@ -41,7 +58,7 @@ func QSCKVStoreGetQuery(k string) string {
 	if resp.StatusCode == http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Println(err)
+			//		fmt.Println(err)
 			log.Fatal(err)
 		}
 		defer resp.Body.Close()
@@ -49,4 +66,21 @@ func QSCKVStoreGetQuery(k string) string {
 		return output
 	}
 	return "nil"
+}
+
+func QSCQueryAccountGet(addr string) string {
+	aurl := Accounturl + addr
+	resp, _ := http.Get(aurl)
+	var body []byte
+	var err error
+	if resp.StatusCode == http.StatusOK {
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	defer resp.Body.Close()
+	output := string(body)
+	return output
 }

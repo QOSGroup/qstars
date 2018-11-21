@@ -3,6 +3,7 @@ package bech32local
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 //ConvertAndEncode converts from a base64 encoded byte string to base32 encoded byte string and then to bech32
@@ -160,4 +161,108 @@ func toChars(data []byte) (string, error) {
 		result = append(result, charset[b])
 	}
 	return string(result), nil
+}
+
+//DecodeAndConvert decodes a bech32 encoded string and converts to base64 encoded bytes
+func DecodeAndConvert(bech string) (string, []byte, error) {
+	hrp, data, err := Decode(bech)
+	if err != nil {
+		return "", nil, errors.Wrap(err, "decoding bech32 failed")
+	}
+	converted, err := ConvertBits(data, 5, 8, false)
+	if err != nil {
+		return "", nil, errors.Wrap(err, "decoding bech32 failed")
+	}
+	return hrp, converted, nil
+}
+
+// Decode decodes a bech32 encoded string, returning the human-readable
+// part and the data part excluding the checksum.
+func Decode(bech string) (string, []byte, error) {
+	// The maximum allowed length for a bech32 string is 90. It must also
+	// be at least 8 characters, since it needs a non-empty HRP, a
+	// separator, and a 6 character checksum.
+	if len(bech) < 8 || len(bech) > 90 {
+		return "", nil, fmt.Errorf("invalid bech32 string length %d",
+			len(bech))
+	}
+	// Only	ASCII characters between 33 and 126 are allowed.
+	for i := 0; i < len(bech); i++ {
+		if bech[i] < 33 || bech[i] > 126 {
+			return "", nil, fmt.Errorf("invalid character in "+
+				"string: '%c'", bech[i])
+		}
+	}
+
+	// The characters must be either all lowercase or all uppercase.
+	lower := strings.ToLower(bech)
+	upper := strings.ToUpper(bech)
+	if bech != lower && bech != upper {
+		return "", nil, fmt.Errorf("string not all lowercase or all " +
+			"uppercase")
+	}
+
+	// We'll work with the lowercase string from now on.
+	bech = lower
+
+	// The string is invalid if the last '1' is non-existent, it is the
+	// first character of the string (no human-readable part) or one of the
+	// last 6 characters of the string (since checksum cannot contain '1'),
+	// or if the string is more than 90 characters in total.
+	one := strings.LastIndexByte(bech, '1')
+	if one < 1 || one+7 > len(bech) {
+		return "", nil, fmt.Errorf("invalid index of 1")
+	}
+
+	// The human-readable part is everything before the last '1'.
+	hrp := bech[:one]
+	data := bech[one+1:]
+
+	// Each character corresponds to the byte with value of the index in
+	// 'charset'.
+	decoded, err := toBytes(data)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed converting data to bytes: "+
+			"%v", err)
+	}
+
+	if !bech32VerifyChecksum(hrp, decoded) {
+		moreInfo := ""
+		checksum := bech[len(bech)-6:]
+		expected, err := toChars(bech32Checksum(hrp,
+			decoded[:len(decoded)-6]))
+		if err == nil {
+			moreInfo = fmt.Sprintf("Expected %v, got %v.",
+				expected, checksum)
+		}
+		return "", nil, fmt.Errorf("checksum failed. " + moreInfo)
+	}
+
+	// We exclude the last 6 bytes, which is the checksum.
+	return hrp, decoded[:len(decoded)-6], nil
+}
+
+// toBytes converts each character in the string 'chars' to the value of the
+// index of the correspoding character in 'charset'.
+func toBytes(chars string) ([]byte, error) {
+	decoded := make([]byte, 0, len(chars))
+	for i := 0; i < len(chars); i++ {
+		index := strings.IndexByte(charset, chars[i])
+		if index < 0 {
+			return nil, fmt.Errorf("invalid character not part of "+
+				"charset: %v", chars[i])
+		}
+		decoded = append(decoded, byte(index))
+	}
+	return decoded, nil
+}
+
+// For more details on the checksum verification, please refer to BIP 173.
+func bech32VerifyChecksum(hrp string, data []byte) bool {
+	integers := make([]int, len(data))
+	for i, b := range data {
+		integers[i] = int(b)
+	}
+	concat := append(bech32HrpExpand(hrp), integers...)
+	return bech32Polymod(concat) == 1
 }

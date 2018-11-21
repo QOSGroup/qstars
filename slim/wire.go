@@ -32,6 +32,7 @@ var Cdc *Codec
 func init() {
 	cdc := NewCodec()
 	RegisterAmino(cdc)
+	RegisterCodec(cdc)
 	Cdc = cdc.Seal()
 }
 
@@ -44,6 +45,13 @@ func RegisterAmino(cdc *amino.Codec) {
 	cdc.RegisterInterface((*ed25519local.PrivKey)(nil), nil)
 	cdc.RegisterConcrete(ed25519local.PrivKeyEd25519{},
 		ed25519local.Ed25519PrivKeyAminoRoute, nil)
+}
+
+func RegisterCodec(cdc *amino.Codec) {
+	cdc.RegisterConcrete(&Signature{}, "qbase/txs/signature", nil)
+	cdc.RegisterConcrete(&TxStd{}, "qbase/txs/stdtx", nil)
+	cdc.RegisterInterface((*ITx)(nil), nil)
+	cdc.RegisterConcrete(&TransferTx{}, "qos/txs/TransferTx", nil)
 }
 
 // amino codec to marshal/unmarshal
