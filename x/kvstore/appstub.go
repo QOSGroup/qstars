@@ -25,6 +25,9 @@ func (kv KVStub) StartX(base *baseapp.QstarsBaseApp) error {
 
 	return nil
 }
+func (kv KVStub) EndBlockNotify(ctx context.Context){
+
+}
 
 func (kv KVStub) RegisterCdc(cdc *go_amino.Codec) {
 	cdc.RegisterConcrete(&kv.KvTx, "kvstore/KvstoreTx", nil)

@@ -98,3 +98,7 @@ func (mock *MockABCI )ResultNotify(ctx context.Context, txQcpResult interface{})
 func (mock MockABCI )Del(key []byte){
 
 }
+
+func (mock MockABCI )EndBlockNotify(ctx context.Context){
+
+}

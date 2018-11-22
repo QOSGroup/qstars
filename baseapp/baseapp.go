@@ -17,6 +17,8 @@ import (
 	bctypes "github.com/QOSGroup/qbase/example/basecoin/types"
 	go_amino "github.com/tendermint/go-amino"
 	dbm "github.com/tendermint/tendermint/libs/db"
+	ctx "github.com/QOSGroup/qbase/context"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 type QStarsContext struct {
@@ -121,5 +123,12 @@ func (base *QstarsBaseApp) Start() error {
 	//qbase need register qstar(QCP) signer
 	base.Baseapp.RegisterTxQcpSigner(GetServerContext().QStarsSignerPriv)
 
+	base.Baseapp.SetEndBlocker(func(ctx ctx.Context, req abci.RequestEndBlock) abci.ResponseEndBlock{
+		for _, c := range base.TransactionList {
+			c.EndBlockNotify(ctx)
+		}
+		return abci.ResponseEndBlock{}
+	})
 	return base.loadX()
 }
+
