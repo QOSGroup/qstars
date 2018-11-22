@@ -1,4 +1,4 @@
-package iosapp
+package starsdkapp
 
 import (
 	"github.com/QOSGroup/qstars/slim"
