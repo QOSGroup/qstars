@@ -12,4 +12,5 @@ type BaseXTransaction interface {
 	RegisterCdc(cdc *go_amino.Codec)
 	StartX(base *QstarsBaseApp) error
 	ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result
+	EndBlockNotify(ctx context.Context)
 }

@@ -34,6 +34,10 @@ func (kv BankStub) RegisterCdc(cdc *go_amino.Codec) {
 	qosapp.RegisterCodec(cdc)
 }
 
+func (kv BankStub) EndBlockNotify(ctx context.Context){
+
+}
+
 func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	in := txQcpResult.(*txs.QcpTxResult)
 	log.Debugf("ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
