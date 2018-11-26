@@ -2,6 +2,7 @@ package slim
 
 import (
 	"encoding/base64"
+	"fmt"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/bech32local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/bip39local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/ed25519local"
@@ -91,11 +92,15 @@ type PubAddrRetrieval struct {
 }
 
 func PubAddrRetrievalStr(s string) string {
-	//the privkey output was in hex string format, decode it with the same decoding
-	//bz, _ := hex.DecodeString(s[2:])
-	bz, _ := base64.StdEncoding.DecodeString(s)
+	//change the private unmarshal format according to the other pack
+	ts := "{\"type\": \"tendermint/PrivKeyEd25519\",\"value\": \"" + s + "\"}"
 	var key ed25519local.PrivKeyEd25519
-	Cdc.MustUnmarshalBinaryBare(bz, &key)
+	//bz, _ := base64.StdEncoding.DecodeString(s)
+	//Cdc.MustUnmarshalBinaryBare(bz, &key)
+	err := Cdc.UnmarshalJSON([]byte(ts), &key)
+	if err != nil {
+		fmt.Println(err)
+	}
 	pub := key.PubKey().Bytes()
 	addr := key.PubKey().Address()
 	bech32Pub, _ := bech32local.ConvertAndEncode(Bech32PrefixAccPub, pub)

@@ -14,7 +14,7 @@ func TestAccountRecoverStr(t *testing.T) {
 }
 
 func TestPubAddrRetrievalStr(t *testing.T) {
-	s := "oyiJEECFjzYxyq47liWtzFyxEldTauWJaUBAfcmchfIDwEIcVlnlgXcC9Ev+S7Jc7L0l4AI9E1E1hTHH3fp+V0yGUoLp"
+	s := "rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA=="
 	output := PubAddrRetrievalStr(s)
 	t.Log(output)
 }

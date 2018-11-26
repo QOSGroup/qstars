@@ -5,7 +5,9 @@ import (
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/spf13/viper"
 	"os"
+	"os/user"
 	"path/filepath"
+	"runtime"
 )
 
 var Clictx QStarsClientContext
@@ -17,12 +19,12 @@ type QStarsClientContext struct {
 }
 
 type CLIConfig struct {
-	QOSChainID    string `mapstructure:"qos_chain_id"`
-	QSCChainID    string `mapstructure:"qsc_chain_id"`
-	RootDir       string `mapstructure:"home"`
-	QOSNodeURI    string `mapstructure:"qos_node_uri"`
-	QSTARSNodeURI string `mapstructure:"qstars_node_uri"`
-	DirectTOQOS   bool   `mapstructure:"direct_to_qos"`
+	QOSChainID          string `mapstructure:"qos_chain_id"`
+	QSCChainID          string `mapstructure:"qsc_chain_id"`
+	RootDir             string `mapstructure:"home"`
+	QOSNodeURI          string `mapstructure:"qos_node_uri"`
+	QSTARSNodeURI       string `mapstructure:"qstars_node_uri"`
+	DirectTOQOS         bool   `mapstructure:"direct_to_qos"`
 	WaitingForQosResult string `mapstructure:"waiting_for_qos_result"`
 }
 
@@ -50,16 +52,18 @@ func CreateCLIContextTwo(cdc *wire.Codec, cfg *CLIConfig) QStarsClientContext {
 
 // If a new config is created, change some of the default tendermint settings
 func InterceptLoadConfig() (conf *CLIConfig, err error) {
+
 	tmpConf := DefaultConfig()
 	err = viper.Unmarshal(tmpConf)
 	if err != nil {
 		panic(err)
 	}
 	rootDir := tmpConf.RootDir
+
 	configFilePath := filepath.Join(rootDir, "config/config.toml")
 	// Intercept only if the file doesn't already exist
 
-	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) { //
 		// the following parse config is needed to create directories
 		conf, _ = ParseConfig()
 		conf.QSCChainID = "qstars-test"
@@ -78,7 +82,20 @@ func InterceptLoadConfig() (conf *CLIConfig, err error) {
 }
 
 func DefaultConfig() *CLIConfig {
-	return &CLIConfig{}
+	var result *CLIConfig
+	result = &CLIConfig{} //RootDir:"~/.qstarscli"
+	if len(result.RootDir) == 0 {
+		usr, err := user.Current()
+		if nil == err {
+			if "windows" == runtime.GOOS {
+				result.RootDir = usr.HomeDir + "\\.qstarscli"
+			} else {
+				result.RootDir = usr.HomeDir + "/.qstarscli"
+			}
+		}
+
+	}
+	return result
 }
 
 // ParseConfig retrieves the default environment configuration,
