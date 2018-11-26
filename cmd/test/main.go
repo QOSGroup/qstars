@@ -21,6 +21,13 @@ import (
 )
 
 func main(){
+	InitJNI()
+	//send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
+	r := SendByJNI("rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA==","address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355","2qos")
+	print(r)
+}
+
+func main1(){
 	cdc := star.MakeCodec()
 	to, err := sdk.AccAddressFromBech32("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355")
 	if err != nil {
