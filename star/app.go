@@ -3,9 +3,11 @@ package star
 import (
 	"github.com/QOSGroup/qbase/baseabci"
 	"github.com/QOSGroup/qstars/baseapp"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/bank"
-	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/x/jianqian/buyad"
+	"github.com/QOSGroup/qstars/x/jianqian/investad"
 	"github.com/QOSGroup/qstars/x/kvstore"
 	"io"
 	"os"
@@ -21,24 +23,28 @@ import (
    Because golang doesn't support reflect a name of structure to struct instance
    developer has to modify source code below to add their defined transaction
    there is only one place to register developer's transaction
- */
+*/
 
 var _ baseapp.BaseXTransaction = bank.BankStub{}
 var _ baseapp.BaseXTransaction = kvstore.KVStub{}
+var _ baseapp.BaseXTransaction = investad.Stub{}
+var _ baseapp.BaseXTransaction = buyad.Stub{}
 
 func init() {
 	registerType((*bank.BankStub)(nil))
 	registerType((*kvstore.KVStub)(nil))
+	registerType((*investad.Stub)(nil))
+	registerType((*buyad.Stub)(nil))
 }
 
 /**
-	startup a qstar chain instance
- */
-func NewApp(logger log.Logger, db dbm.DB, io io.Writer) (abci.Application) {
+startup a qstar chain instance
+*/
+func NewApp(logger log.Logger, db dbm.DB, io io.Writer) abci.Application {
 	//cfg := ctx.Config
 	//rootDir := cfg.RootDir
 	rootDir := os.ExpandEnv("$HOME/.qstarsd")
-	sconf, err := config.Init(rootDir + "/config/qstarsconf.toml",rootDir)
+	sconf, err := config.Init(rootDir+"/config/qstarsconf.toml", rootDir)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil
@@ -58,7 +64,7 @@ func NewApp(logger log.Logger, db dbm.DB, io io.Writer) (abci.Application) {
 	//app.Register(bank.NewBankStub())
 
 	err = app.Start()
-	if err!=nil{
+	if err != nil {
 		logger.Error(err.Error())
 		return nil
 	}
@@ -67,12 +73,12 @@ func NewApp(logger log.Logger, db dbm.DB, io io.Writer) (abci.Application) {
 
 /*
 Both client and server can get a well-setting cdc via the funcation
- */
+*/
 func MakeCodec() *wire.Codec {
 	cdc := baseabci.MakeQBaseCodec()
 	for k, _ := range typeRegistry {
 		txs, err := newStruct(k)
-		if err==false {
+		if err == false {
 			panic("reflect transaction is error.")
 		}
 		t := txs.(baseapp.BaseXTransaction)

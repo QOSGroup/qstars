@@ -144,7 +144,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 
 	result := &SendResult{}
-	if err!=nil{
+	if err != nil {
 		result.Hash = ""
 		result.Error = err.Error()
 		result.Code = "1"
@@ -153,15 +153,15 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	result.Hash = response
 	height := strconv.FormatInt(commitresult.Height, 10)
 	result.Heigth = height
-	waittime,err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
-	if err!=nil {
+	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
+	if err != nil {
 		panic("WaitingForQosResult should be able to convert to integer." + err.Error())
 	}
 
 	if directTOQOS == false {
 		counter := 0
 		for {
-			if counter >= waittime{
+			if counter >= waittime {
 				fmt.Println("time out")
 				result.Error = "time out"
 				break
@@ -339,13 +339,13 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 
 	// TODO qbase还没实现
 	//qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
-	qstarskey := GetResultKey(heigth1,tx1)
+	qstarskey := GetResultKey(heigth1, tx1)
 	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), QSCResultMapperName)
 	log.Infof("QueryStore: %+v, %+v\n", d, err)
 	if err != nil {
 		return "", err
 	}
-	if d==nil {
+	if d == nil {
 		return "", nil
 	}
 	var res []byte
