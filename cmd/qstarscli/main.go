@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/QOSGroup/qstars/star"
+	"github.com/QOSGroup/qstars/x/jianqian/buyad"
+	"github.com/QOSGroup/qstars/x/jianqian/investad"
 	"os"
 
 	"github.com/QOSGroup/qbase/version"
@@ -79,6 +81,11 @@ func main() {
 	//	keys.Commands(),
 	//	client.LineBreak,
 	//	version.VersionCmd,
+	)
+
+	rootCmd.AddCommand(
+		buyad.BuyadCmd(cdc),
+		investad.InvestadCmd(cdc),
 	)
 
 	// prepare and add flags
