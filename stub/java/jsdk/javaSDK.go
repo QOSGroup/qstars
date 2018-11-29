@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/QOSGroup/qstars/x/jianqian/buyad"
+	"github.com/QOSGroup/qstars/x/jianqian/investad"
 	"io/ioutil"
 	"net/http"
 )
@@ -87,4 +89,23 @@ func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOrig
 	output := string(rep)
 	//fmt.Println(output)
 	return output
+}
+
+func InvestAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
+	result := investad.InvestAd(CDC, chainId, articleHash, coins, privatekey, nonce)
+	output, err := CDC.MarshalJSON(result)
+	if err != nil {
+		return err.Error()
+	}
+	return string(output)
+
+}
+
+func BuyAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
+	result := buyad.BuyAd(CDC,chainId, articleHash, coins, privatekey,nonce)
+	output, err := CDC.MarshalJSON(result)
+	if err != nil {
+		return err.Error()
+	}
+	return string(output)
 }
