@@ -11,6 +11,8 @@ import (
 	"github.com/prometheus/common/log"
 	go_amino "github.com/tendermint/go-amino"
 	"strconv"
+	abci "github.com/tendermint/tendermint/abci/types"
+	ctx "github.com/QOSGroup/qbase/context"
 )
 
 type BankStub struct {
@@ -36,6 +38,10 @@ func (kv BankStub) RegisterCdc(cdc *go_amino.Codec) {
 
 func (kv BankStub) EndBlockNotify(ctx context.Context){
 
+}
+
+func (kv BankStub) CustomerQuery(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
+	return nil,nil
 }
 
 func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {

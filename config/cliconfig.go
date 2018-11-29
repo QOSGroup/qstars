@@ -5,9 +5,7 @@ import (
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/spf13/viper"
 	"os"
-	"os/user"
 	"path/filepath"
-	"runtime"
 )
 
 var Clictx QStarsClientContext
@@ -81,20 +79,23 @@ func InterceptLoadConfig() (conf *CLIConfig, err error) {
 	return
 }
 
-func DefaultConfig() *CLIConfig {
+func
+
+
+DefaultConfig() *CLIConfig {
 	var result *CLIConfig
 	result = &CLIConfig{} //RootDir:"~/.qstarscli"
-	if len(result.RootDir) == 0 {
-		usr, err := user.Current()
-		if nil == err {
-			if "windows" == runtime.GOOS {
-				result.RootDir = usr.HomeDir + "\\.qstarscli"
-			} else {
-				result.RootDir = usr.HomeDir + "/.qstarscli"
-			}
-		}
-
-	}
+	//if len(result.RootDir) == 0 {
+	//	usr, err := user.Current()
+	//	if nil == err {
+	//		if "windows" == runtime.GOOS {
+	//			result.RootDir = usr.HomeDir + "\\.qstarscli"
+	//		} else {
+	//			result.RootDir = usr.HomeDir + "/.qstarscli"
+	//		}
+	//	}
+	//
+	//}
 	return result
 }
 

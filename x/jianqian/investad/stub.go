@@ -7,6 +7,8 @@ import (
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	go_amino "github.com/tendermint/go-amino"
+	abci "github.com/tendermint/tendermint/abci/types"
+	ctx "github.com/QOSGroup/qbase/context"
 )
 
 type Stub struct {
@@ -30,4 +32,7 @@ func (s Stub) RegisterCdc(cdc *go_amino.Codec) {
 
 func (s Stub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	return nil
+}
+func (kv Stub) CustomerQuery(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
+	return nil,nil
 }

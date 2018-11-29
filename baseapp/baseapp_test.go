@@ -12,6 +12,8 @@ import (
 
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	ctx "github.com/QOSGroup/qbase/context"
 )
 
 // TODO update
@@ -101,4 +103,7 @@ func (mock MockABCI )Del(key []byte){
 
 func (mock MockABCI )EndBlockNotify(ctx context.Context){
 
+}
+func (mock MockABCI) CustomerQuery(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
+	return nil,nil
 }
