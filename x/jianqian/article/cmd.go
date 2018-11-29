@@ -2,6 +2,7 @@ package article
 
 import (
 	"fmt"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -43,7 +44,7 @@ func NewArticleCmd(cdc *wire.Codec) *cobra.Command {
 			endBuyDate := viper.GetString(flag_endBuyDate)
 
 
-			result := NewArticle(cdc,authorAddress,originalAuthor,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,
+			result := NewArticle(cdc,config.GetCLIContext().Config,authorAddress,originalAuthor,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,
 				shareInvestor,endInvestDate,endBuyDate)
 			fmt.Println(result)
 			return nil

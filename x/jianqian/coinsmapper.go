@@ -3,6 +3,7 @@ package jianqian
 import (
 	"github.com/QOSGroup/qbase/mapper"
 )
+const CoinsMapperName = "CoinsMapper"
 
 type CoinsMapper struct {
 	*mapper.BaseMapper

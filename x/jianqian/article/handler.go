@@ -6,8 +6,9 @@ import (
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/x/jianqian"
-     "errors"
+	"errors"
 	"strings"
+	"time"
 )
 
 
@@ -19,8 +20,8 @@ type ArticleTx struct {
 	ShareOriginalAuthor int   //原创收入比例(转载作品必填)
 	ShareCommunity      int   //社区收入比例(必填)
 	ShareInvestor       int   //投资者收入比例(必填)
-	EndInvestDate       string   //投资结束时间(必填)
-	EndBuyDate          string   //广告位购买结果时间(必填)
+	InvestDays          int   //可供投资的天数(必填)
+	BuyDays             int          //可供购买广告位的天数(必填)
 	Gas                 types.BigInt
 }
 
@@ -41,9 +42,8 @@ func (tx *ArticleTx) ValidateData(ctx context.Context) error {
 	if tx.ShareInvestor>100 {
 		return errors.New("Article ShareInvestor Cannot be greater than 100")
 	}
-	key:=[]byte(tx.ArticleHash)
-	articleMapper := ctx.Mapper(ArticlesMapper).(*jianqian.ArticlesMapper)
-	if articleMapper.Get(key,nil){
+	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
+	if articleMapper.GetArticle(tx.ArticleHash)!=nil{
 		return errors.New("Article already exist!")
 	}
 
@@ -55,10 +55,13 @@ func (tx *ArticleTx) ValidateData(ctx context.Context) error {
 // 业务端实现中crossTxQcp只需包含`to` 和 `txStd`
 func (tx *ArticleTx) Exec(ctx context.Context) (result types.Result, crossTxQcp *txs.TxQcp) {
 	//本地存储
-	articleMapper := ctx.Mapper(ArticlesMapper).(*jianqian.ArticlesMapper)
+	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
+
+	buydays:=ctx.BlockHeader().Time.Add(time.Hour*(24*time.Duration(tx.BuyDays)))
+	investdays:=ctx.BlockHeader().Time.Add(time.Hour*(24*time.Duration(tx.InvestDays)))
 
 	art:=jianqian.Articles{tx.Authoraddress,tx.OriginalAuthor,tx.ArticleHash,tx.ShareAuthor,tx.ShareOriginalAuthor,
-	tx.ShareCommunity,tx.ShareInvestor,tx.EndInvestDate,tx.EndBuyDate,tx.Gas}
+		tx.ShareCommunity,tx.ShareInvestor,tx.InvestDays,investdays,tx.BuyDays,buydays,tx.Gas}
 
 	if !articleMapper.SetArticle(tx.ArticleHash,&art){
 		result.Log = "Error: Save Article  error"
@@ -93,7 +96,7 @@ func (tx *ArticleTx) GetSignData() (ret []byte) {
 }
 
 func NewArticlesTx(authoraddress, originalAuthor types.Address,  articleHash string,  shareAuthor, shareOriginalAuthor,
-     shareCommunity,  shareInvestor int,  endInvestDate,  endBuyDate string, gas types.BigInt) *ArticleTx {
+shareCommunity,  shareInvestor , endInvestDate,  endBuyDate  int, gas types.BigInt) *ArticleTx {
 	return &ArticleTx{authoraddress, originalAuthor,  articleHash,  shareAuthor, shareOriginalAuthor,
 		shareCommunity,  shareInvestor,  endInvestDate,  endBuyDate, gas}
 }
