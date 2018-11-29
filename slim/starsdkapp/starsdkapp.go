@@ -34,9 +34,8 @@ func AccountRecover(mncode string) string {
 }
 
 //for IP input
-func GetIPfromInput(ip string) {
-	//	fmt.Println("Please input host including IP and port for initialization on Qstar deamon:")
-	slim.GetIPfrom(ip)
+func SetBlockchainEntrance(sh, mh string) {
+	slim.SetBlockchainEntrance(sh, mh)
 }
 
 //for PubAddrRetrieval

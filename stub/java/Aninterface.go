@@ -49,14 +49,37 @@ func SendByJNI(fromStr, toStr1, coinstr string) string {
 //	return output
 //}
 
+
+//export InvestAd
+//func InvestAd(chainId, articleHash, coins, privatekey *C.char, nonce int64) *C.char {
+//	output := jsdk.InvestAd(C.GoString(chainId), C.GoString(articleHash), C.GoString(coins), C.GoString(privatekey),nonce)
+//	return C.CString(output)
+//}
+
+//for InvestAd
+func InvestAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
+	output := jsdk.InvestAd(chainId, articleHash, coins, privatekey,nonce)
+	return output
+}
+
+//export BuyAd
+//func BuyAd(chainId, articleHash, coins, privatekey *C.char, nonce int64) *C.char {
+//	output := jsdk.InvestAd(C.GoString(chainId), C.GoString(articleHash), C.GoString(coins), C.GoString(privatekey),nonce)
+//	return C.CString(output)
+//}
+
+//for BuyAd
+func BuyAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
+	output := jsdk.BuyAd(chainId, articleHash, coins, privatekey, nonce)
+	return output
+}
+
 func main() {
 	//InitJNI()
 	////send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
 	//r := SendByJNI("rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA==", "address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos")
 	//fmt.Println(r)
 
-	//q := jsdk.QueryAccbyJNI("address1k0m8ucnqug974maa6g36zw7g2wvfd4sug6uxay")
-	//fmt.Println(q)
 	//disout := DispatchCoins("a12adc23|18671eab2", "1aoe|10aoe|30aoe", "1|2|1", "signin,invited,abc", "0QOS")
 	//fmt.Println(disout)
 	//newout := NewArticle("a12f87bc", "a12f87bc", "a12f87bc2", "20", "20", "20", "20", "20days", "20days")

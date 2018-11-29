@@ -16,20 +16,25 @@ type sendKVReq struct {
 
 // IP initialization
 var (
-	HostIP     string
+	Shost      string
+	Mhost      string
 	Accounturl string
 	KVurl      string
 )
 
-func GetIPfrom(host string) {
-	HostIP = host
-	Accounturl = "http://" + HostIP + "/accounts/"
-	KVurl = "http://" + HostIP + "/kv"
+//set Block Chain entrance hosts for both Qstars and Qmoon
+func SetBlockchainEntrance(qstarshost, qmoonhost string) {
+	Shost = qstarshost
+	Mhost = qmoonhost
+	Accounturl = "http://" + Shost + "/accounts/"
+	KVurl = "http://" + Shost + "/kv"
+
 }
 
 func init() {
-	var h string
-	GetIPfrom(h)
+	var sh string
+	var mh string
+	SetBlockchainEntrance(sh, mh)
 }
 
 func QSCKVStoreSetPost(k, v, privkey, chain string) (result string) {
