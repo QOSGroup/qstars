@@ -84,9 +84,3 @@ func SendByJNI(fromStr string, toStr1 string, coinstr string) string {
 	return string(output)
 }
 
-//test JNI by QueryAccount function at first
-//func QueryAccbyJNI(addr string) string {
-//	acc, _ := auth.QueryAccount(CDC, addr)
-//	output, _ := wire.MarshalJSONIndent(CDC, acc)
-//	return string(output)
-//}

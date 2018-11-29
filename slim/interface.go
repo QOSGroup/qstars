@@ -2,7 +2,6 @@ package slim
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -480,10 +479,14 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	//}
 	//generate the sender address, i.e. the "from" part as the input with privkey in hex string format
 	//_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cmCdc)
-
-	bz, _ := base64.StdEncoding.DecodeString(privkey)
 	var key ed25519local.PrivKeyEd25519
-	Cdc.MustUnmarshalBinaryBare(bz, &key)
+	ts := "{\"type\": \"tendermint/PrivKeyEd25519\",\"value\": \"" + privkey + "\"}"
+	//bz, _ := base64.StdEncoding.DecodeString(privkey)
+	//Cdc.MustUnmarshalBinaryBare(bz, &key)
+	err := Cdc.UnmarshalJSON([]byte(ts), &key)
+	if err != nil {
+		fmt.Println(err)
+	}
 	priv := key
 	addrben32, _ := bech32local.ConvertAndEncode(PREF_ADD, key.PubKey().Address().Bytes())
 	from := getAddrFromBech32(addrben32)
@@ -543,3 +546,25 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	output := string(body)
 	return output
 }
+
+//const QSCResultMapperName = "qstarsResult"
+//
+//func QOSCommitResultCheck(txhash, height string) string {
+//	qstarskey := "heigth:" + height + ",hash:" + txhash
+//	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), QSCResultMapperName)
+//
+//	log.Fatalf("QueryStore: %+v, %+v\n", d, err)
+//	if err != nil {
+//		return "null"
+//	}
+//	if d == nil {
+//		return "null"
+//	}
+//	var res []byte
+//	err = Cdc.UnmarshalBinaryBare(d, &res)
+//	if err != nil {
+//		return "null"
+//	}
+//
+//	return string(res)
+//}
