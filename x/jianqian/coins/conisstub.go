@@ -12,12 +12,9 @@ import (
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/prometheus/common/log"
 	go_amino "github.com/tendermint/go-amino"
-	abci "github.com/tendermint/tendermint/abci/types"
-	ctx "github.com/QOSGroup/qbase/context"
 )
 
 const QSCResultMapperName = "coinsResult"
-const CoinsMapper = "CoinsMapper"
 const COINNAME = "AOE"
 
 type CoinsStub struct {
@@ -29,7 +26,7 @@ func NewCoinsStub() CoinsStub {
 }
 
 func (cstub CoinsStub) StartX(base *baseapp.QstarsBaseApp) error {
-	var coinsMapper = jianqian.NewCoinsMapper(CoinsMapper)
+	var coinsMapper = jianqian.NewCoinsMapper(jianqian.CoinsMapperName)
 	base.Baseapp.RegisterMapper(coinsMapper)
 
 	var qosMapper = jianqian.NewCoinsMapper(QSCResultMapperName)
@@ -75,7 +72,4 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 		Code: resultCode,
 	}
 	return &rr
-}
-func (kv CoinsStub) CustomerQuery(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
-	return nil,nil
 }

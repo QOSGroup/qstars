@@ -2,6 +2,8 @@ package article
 
 import (
 	"fmt"
+	"github.com/QOSGroup/qbase/client/account"
+	"github.com/QOSGroup/qbase/client/context"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/client/utils"
@@ -27,8 +29,8 @@ import (
 //shareInvestor          投资者收入比例(必填)
 //endInvestDate          投资结束时间(必填)
 //endBuyDate             广告位购买结果时间(必填)
-func NewArticle ( cdc *amino.Codec, authorAddress, originalAuthor,  articleHash,  shareAuthor, shareOriginalAuthor,
-	shareCommunity,  shareInvestor,  endInvestDate,  endBuyDate string)string {
+func NewArticle ( cdc *amino.Codec,ctx *config.CLIConfig,authorAddress, originalAuthor,  articleHash,  shareAuthor, shareOriginalAuthor,
+shareCommunity,  shareInvestor,  endInvestDate,  endBuyDate string)string {
 	privkey:=tx.GetConfig().Dappowner
 	authorAddr,err:=qstartypes.AccAddressFromBech32(authorAddress)
 	if err!=nil{
@@ -46,27 +48,31 @@ func NewArticle ( cdc *amino.Codec, authorAddress, originalAuthor,  articleHash,
 	origshare,_:=strconv.Atoi(shareOriginalAuthor)
 	commushare,_:=strconv.Atoi(shareCommunity)
 	invesshare,_:=strconv.Atoi(shareInvestor)
+	investDays,_:=strconv.Atoi(endInvestDate)
+	buydays,_:=strconv.Atoi(endBuyDate)
 
-	tx:=NewArticlesTx(authorAddr,originaladdr,articleHash,authshare,origshare,commushare,invesshare,endInvestDate,endBuyDate,types.ZeroInt())
-
-	fmt.Println("tx",tx)
+	tx:=NewArticlesTx(authorAddr,originaladdr,articleHash,authshare,origshare,commushare,invesshare,investDays,buydays,types.ZeroInt())
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
-	fmt.Println("from=",from)
 	//key := account.AddressStoreKey(from)
 	//acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
 	if err != nil {
 		return "{Code:\"1\",Reason:\""+err.Error()+"\"}"
 	}
-	var nn int64=0
-	//nn = int64(acc.Nonce)
-	nn++
-	chainid := config.GetCLIContext().Config.QOSChainID
+	//nn := int64(acc.Nonce)
+	//nn++
 
-	fmt.Println("chainid",chainid)
-	txsd:=genStdSendTx(cdc,tx,priv,chainid,nn)
+	uri:=strings.Split(ctx.QSTARSNodeURI,":")
+	ip:=uri[0]
+	port,_:=strconv.Atoi(uri[1])
+	noncectx:=context.NewCLIContext().WithCodec(cdc).WithNodeIPAndPort(ip,port)
+	var nonce int64=0
+	nonce,_=account.GetAccountNonce(noncectx, from.Bytes())
+	fmt.Println("nonce=",nonce,noncectx.NodeURI)
+	nonce++
+	chainid := ctx.QOSChainID
+	txsd:=genStdSendTx(cdc,tx,priv,chainid,nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext
-
 	_,_,err1:=utils.SendTx(cliCtx,cdc,txsd)
 
 	if err1!=nil{

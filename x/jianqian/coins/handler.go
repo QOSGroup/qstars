@@ -149,7 +149,7 @@ func (tx DispatchAOETx) ValidateData(ctx context.Context) error {
 // 业务端实现中crossTxQcp只需包含`to` 和 `txStd`
 func (tx DispatchAOETx) Exec(ctx context.Context) (result types.Result, crossTxQcp *txs.TxQcp) {
 	//本地存储
-	coinsMapper := ctx.Mapper(CoinsMapper).(*jianqian.CoinsMapper)
+	coinsMapper := ctx.Mapper(jianqian.CoinsMapperName).(*jianqian.CoinsMapper)
 	for i, v := range tx.Address {
 		amountstr := fmt.Sprint(tx.CoinAmount[i])
 		key := make([]byte, len(v)+len(ctx.TxBytes())+1)
