@@ -5,6 +5,7 @@ import (
 	"github.com/QOSGroup/qbase/baseabci"
 	"github.com/QOSGroup/qbase/server"
 	"github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qos/account"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/tendermint/tendermint/crypto"
@@ -14,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/QOSGroup/qbase/context"
-	bctypes "github.com/QOSGroup/qbase/example/basecoin/types"
+
 	go_amino "github.com/tendermint/go-amino"
 	dbm "github.com/tendermint/tendermint/libs/db"
 	ctx "github.com/QOSGroup/qbase/context"
@@ -117,12 +118,28 @@ func (base *QstarsBaseApp) Start() error {
 	base.Baseapp = baseabci.NewBaseApp("qstarstore", base.Logger, db, base.RegisterCDC)
 
 	//qbase need register account
-	base.Baseapp.RegisterAccountProto(bctypes.NewAppAccount)
+	base.Baseapp.RegisterAccountProto(account.ProtoQOSAccount)
 	//qbase need register result handler
 	base.Baseapp.RegisterTxQcpResultHandler(base.TxQcpResultHandler)
 	//qbase need register qstar(QCP) signer
 	base.Baseapp.RegisterTxQcpSigner(GetServerContext().QStarsSignerPriv)
 
+	var handler baseabci.CustomQueryHandler
+	handler = func(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
+		for _, c := range base.TransactionList {
+			response,err:=c.CustomerQuery(ctx,route,req)
+			if ((response!=nil)&&(err==nil)){
+				return response,nil
+			}else{
+				if ((response==nil)&&(err!=nil)){
+					return response,err
+				}
+			}
+		}
+		return nil,nil
+	}
+
+	base.Baseapp.RegisterCustomQueryHandler(handler)
 	base.Baseapp.SetEndBlocker(func(ctx ctx.Context, req abci.RequestEndBlock) abci.ResponseEndBlock{
 		for _, c := range base.TransactionList {
 			c.EndBlockNotify(ctx)
