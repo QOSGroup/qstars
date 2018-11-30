@@ -37,6 +37,5 @@ func ListInvestors(ctx *context.CLIContext, cdc *amino.Codec, articleHash string
 	if err := cdc.UnmarshalBinaryBare(d, &investors); err != nil {
 		return nil, err
 	}
-
 	return investors, nil
 }
