@@ -2,6 +2,7 @@ package coins
 
 import (
 	"fmt"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -31,7 +32,7 @@ func DispatchAOECmd(cdc *wire.Codec) *cobra.Command {
 			causecode:=viper.GetString("causecode")
 			causestrings:=viper.GetString("causestrings")
 
-			result := DispatchAOE(cdc,toStr,coin,causecode,causestrings,"0")
+			result := DispatchAOE(cdc,config.GetCLIContext().Config,toStr,coin,causecode,causestrings,"0")
 			fmt.Println(result)
 			return nil
 		},

@@ -12,6 +12,8 @@ import (
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/prometheus/common/log"
 	go_amino "github.com/tendermint/go-amino"
+	abci "github.com/tendermint/tendermint/abci/types"
+
 )
 
 const QSCResultMapperName = "coinsResult"
@@ -73,3 +75,8 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 	}
 	return &rr
 }
+
+func (cstub CoinsStub) CustomerQuery(ctx context.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
+	return nil,nil
+}
+
