@@ -1,7 +1,6 @@
 package slim
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/bech32local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/bip39local"
@@ -25,10 +24,15 @@ type PrivkeyAmino struct {
 	Value string `json:"value"`
 }
 
+type PubkeyAmino struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
 const (
 	// Bech32 prefixes
-	Bech32PrefixAccPub = "cosmosaccpub"
-	AccountResultType  = "local"
+	//Bech32PrefixAccPub = "cosmosaccpub"
+	AccountResultType = "local"
 )
 
 func AccountCreate() *ResultCreateAccount {
@@ -37,23 +41,32 @@ func AccountCreate() *ResultCreateAccount {
 	seedo := bip39local.NewSeed(mnemonic, "qstars")
 
 	key := ed25519local.GenPrivKeyFromSecret(seedo)
-	pub := key.PubKey().Bytes()
+	//pub := key.PubKey().Bytes()
+	pub := key.PubKey()
+	pubkeyAmino, _ := Cdc.MarshalJSON(pub)
+	var pubkeyAminoStc PubkeyAmino
+	err := Cdc.UnmarshalJSON(pubkeyAmino, &pubkeyAminoStc)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	pubkeyAminoStr := pubkeyAminoStc.Value
+
 	addr := key.PubKey().Address()
-	bech32Pub, _ := bech32local.ConvertAndEncode(Bech32PrefixAccPub, pub)
+	//bech32Pub, _ := bech32local.ConvertAndEncode(Bech32PrefixAccPub, pub)
 	bech32Addr, _ := bech32local.ConvertAndEncode(PREF_ADD, addr.Bytes())
 
 	privkeyAmino, _ := Cdc.MarshalJSON(key)
 	var privkeyAminoStc PrivkeyAmino
-	err := json.Unmarshal(privkeyAmino, &privkeyAminoStc)
-	if err != nil {
-		log.Fatalln(err.Error())
+	err1 := Cdc.UnmarshalJSON(privkeyAmino, &privkeyAminoStc)
+	if err1 != nil {
+		log.Fatalln(err1.Error())
 	}
-	privkeyAminoStr := string(privkeyAminoStc.Value)
+	privkeyAminoStr := privkeyAminoStc.Value
 
 	Type := AccountResultType
 
 	result := &ResultCreateAccount{}
-	result.PubKey = bech32Pub
+	result.PubKey = pubkeyAminoStr
 	result.PrivKey = privkeyAminoStr
 	result.Addr = bech32Addr
 	result.Mnemonic = mnemonic
@@ -74,22 +87,30 @@ func AccountCreateStr() string {
 func AccountRecoverStr(mncode string) string {
 	seed := bip39local.NewSeed(mncode, "qstars")
 	key := ed25519local.GenPrivKeyFromSecret(seed)
-	pub := key.PubKey().Bytes()
+	pub := key.PubKey()
+	pubkeyAmino, _ := Cdc.MarshalJSON(pub)
+	var pubkeyAminoStc PubkeyAmino
+	err := Cdc.UnmarshalJSON(pubkeyAmino, &pubkeyAminoStc)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	pubkeyAminoStr := pubkeyAminoStc.Value
+
 	addr := key.PubKey().Address()
-	bech32Pub, _ := bech32local.ConvertAndEncode("cosmosaccpub", pub)
+	//bech32Pub, _ := bech32local.ConvertAndEncode("cosmosaccpub", pub)
 	bech32Addr, _ := bech32local.ConvertAndEncode(PREF_ADD, addr.Bytes())
 
 	privkeyAmino, _ := Cdc.MarshalJSON(key)
 	var privkeyAminoStc PrivkeyAmino
-	err := json.Unmarshal(privkeyAmino, &privkeyAminoStc)
-	if err != nil {
-		log.Fatalln(err.Error())
+	err1 := Cdc.UnmarshalJSON(privkeyAmino, &privkeyAminoStc)
+	if err1 != nil {
+		log.Fatalln(err1.Error())
 	}
-	privkeyAminoStr := string(privkeyAminoStc.Value)
+	privkeyAminoStr := privkeyAminoStc.Value
 
 	Type := AccountResultType
 	result := &ResultCreateAccount{}
-	result.PubKey = bech32Pub
+	result.PubKey = pubkeyAminoStr
 	result.PrivKey = privkeyAminoStr
 	result.Addr = bech32Addr
 	result.Mnemonic = mncode
@@ -114,13 +135,21 @@ func PubAddrRetrievalStr(s string) string {
 	if err != nil {
 		fmt.Println(err)
 	}
-	pub := key.PubKey().Bytes()
+	pub := key.PubKey()
+	pubkeyAmino, _ := Cdc.MarshalJSON(pub)
+	var pubkeyAminoStc PubkeyAmino
+	err1 := Cdc.UnmarshalJSON(pubkeyAmino, &pubkeyAminoStc)
+	if err1 != nil {
+		log.Fatalln(err1.Error())
+	}
+	pubkeyAminoStr := pubkeyAminoStc.Value
+
 	addr := key.PubKey().Address()
-	bech32Pub, _ := bech32local.ConvertAndEncode(Bech32PrefixAccPub, pub)
+	//bech32Pub, _ := bech32local.ConvertAndEncode(Bech32PrefixAccPub, pub)
 	bech32Addr, _ := bech32local.ConvertAndEncode(PREF_ADD, addr.Bytes())
 
 	result := &PubAddrRetrieval{}
-	result.PubKey = bech32Pub
+	result.PubKey = pubkeyAminoStr
 	result.Addr = bech32Addr
 
 	resp, _ := respwrap.ResponseWrapper(Cdc, result, nil)

@@ -8,13 +8,13 @@ func TestAccountCreate(t *testing.T) {
 }
 
 func TestAccountRecoverStr(t *testing.T) {
-	mncode := "ginger heavy absorb annual act two open negative science elite possible blur quantum deer start shove width vacant power tomato nut absurd family rocket"
+	mncode := "walk board image invite route below uncle toss celery negative hamster ordinary pink swift round student tip dragon rich such video sheriff just pull"
 	output := AccountRecoverStr(mncode)
 	t.Log(output)
 }
 
 func TestPubAddrRetrievalStr(t *testing.T) {
-	s := "4UWd8jmHYjSye6rnhbGHqmZj9Mr8vb3BaGbstyERpjPL683/nAd1x/piZI6/2JFTXb0Grf17HKgCsBVFRjbtCg=="
+	s := "Me7Ts4jHgytbyq5ctu/lzgT630jKVxGt/Yb14HvHU4zfRHBf1KkdI7uo8H/vWQRFqJVLZeo5MEjUjDL08BWcPw=="
 	output := PubAddrRetrievalStr(s)
 	t.Log(output)
 }
