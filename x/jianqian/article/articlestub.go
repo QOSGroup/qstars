@@ -35,6 +35,8 @@ func (astub AricleStub) ResultNotify(ctx context.Context, txQcpResult interface{
 
 	return nil
 }
+
 func (cstub AricleStub) CustomerQuery(ctx context.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
 	return nil,nil
 }
+

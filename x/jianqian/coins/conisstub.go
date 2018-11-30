@@ -75,6 +75,8 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 	}
 	return &rr
 }
+
 func (cstub CoinsStub) CustomerQuery(ctx context.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
 	return nil,nil
 }
+
