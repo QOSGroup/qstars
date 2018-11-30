@@ -31,8 +31,8 @@ func (cstub CoinsStub) StartX(base *baseapp.QstarsBaseApp) error {
 	var coinsMapper = jianqian.NewCoinsMapper(jianqian.CoinsMapperName)
 	base.Baseapp.RegisterMapper(coinsMapper)
 
-	var qosMapper = jianqian.NewCoinsMapper(QSCResultMapperName)
-	base.Baseapp.RegisterMapper(qosMapper)
+	//var qosMapper = jianqian.NewCoinsMapper(QSCResultMapperName)
+	//base.Baseapp.RegisterMapper(qosMapper)
 	return nil
 }
 func (cstub CoinsStub) EndBlockNotify(ctx context.Context) {
@@ -40,7 +40,6 @@ func (cstub CoinsStub) EndBlockNotify(ctx context.Context) {
 }
 
 func (cstub CoinsStub) RegisterCdc(cdc *go_amino.Codec) {
-	cdc.RegisterConcrete(&CoinAOETx{}, "jianqian/CoinAOETx", nil)
 	cdc.RegisterConcrete(&DispatchAOETx{}, "jianqian/DispatchAOETx", nil)
 }
 
@@ -54,7 +53,6 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 		resultCode = types.ABCICodeType(types.CodeTxDecode)
 	} else {
 		log.Errorf("ResultNotify update status")
-
 		orginalTxHash := in.QcpOriginalExtends //orginalTx.abc
 		kvMapper := ctx.Mapper(QSCResultMapperName).(*common.KvMapper)
 		initValue := ""
@@ -68,6 +66,11 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 		c = c + " " + qcpTxResult.Result.Log
 		log.Errorf("--------update key:" + QSCResultMapperName + " key:" + orginalTxHash + " value:" + c)
 		kvMapper.Set([]byte(orginalTxHash), c)
+
+		//根据跨链结果 更新记录结果
+		coinsMapper := ctx.Mapper(jianqian.CoinsMapperName).(*jianqian.CoinsMapper)
+		coinsMapper.UpdateCoins(ctx.TxBytes(),c)
+
 		resultCode = types.ABCICodeType(types.CodeOK)
 	}
 	rr := types.Result{

@@ -67,7 +67,7 @@ shareCommunity,  shareInvestor,  endInvestDate,  endBuyDate string)string {
 	}
 	fmt.Println("nonce=",nonce)
 	nonce++
-	chainid := ctx.QOSChainID
+	chainid := ctx.QSCChainID
 	txsd:=genStdSendTx(cdc,tx,priv,chainid,nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	_,_,err1:=utils.SendTx(cliCtx,cdc,txsd)
