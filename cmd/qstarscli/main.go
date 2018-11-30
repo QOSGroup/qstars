@@ -85,7 +85,7 @@ func main() {
 			coins.DispatchAOECmd(cdc),
 			article.NewArticleCmd(cdc),
 			article.QueryArticleCmd(cdc),
-
+			coins.QueryCoinsCmd(cdc),
 		)...)
 
 	// add proxy, version and key info
