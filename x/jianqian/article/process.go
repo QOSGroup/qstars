@@ -2,14 +2,14 @@ package article
 
 import (
 	"fmt"
-	"github.com/QOSGroup/qbase/client/account"
-	"github.com/QOSGroup/qbase/client/context"
+	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	qstartypes "github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
+	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/QOSGroup/qstars/x/jianqian/tx"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -54,21 +54,18 @@ shareCommunity,  shareInvestor,  endInvestDate,  endBuyDate string)string {
 	tx:=NewArticlesTx(authorAddr,originaladdr,articleHash,authshare,origshare,commushare,invesshare,investDays,buydays,types.ZeroInt())
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
-	//key := account.AddressStoreKey(from)
-	//acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
 	if err != nil {
 		return "{Code:\"1\",Reason:\""+err.Error()+"\"}"
 	}
-	//nn := int64(acc.Nonce)
-	//nn++
-
-	uri:=strings.Split(ctx.QSTARSNodeURI,":")
-	ip:=uri[0]
-	port,_:=strconv.Atoi(uri[1])
-	noncectx:=context.NewCLIContext().WithCodec(cdc).WithNodeIPAndPort(ip,port)
+	key:=account.AddressStoreKey(from)
 	var nonce int64=0
-	nonce,_=account.GetAccountNonce(noncectx, from.Bytes())
-	fmt.Println("nonce=",nonce,noncectx.NodeURI)
+	acc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
+	if err != nil {
+		nonce=0
+	}else{
+		nonce=int64(acc.Nonce)
+	}
+	fmt.Println("nonce=",nonce)
 	nonce++
 	chainid := ctx.QOSChainID
 	txsd:=genStdSendTx(cdc,tx,priv,chainid,nonce)
@@ -96,20 +93,8 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 }
 
 
-
-
 // GetArticle process of get Article
-func GetArticle(cdc *amino.Codec, key string) (string, error) {
-
-	//cliCtx := *config.GetCLIContext().QSCCliContext
-	//value, err := cliCtx.QueryArticle([]byte(key))
-	//if err != nil {
-	//	return "", err
-	//}
-	//var articles jianqian.Articles
-	//cdc.UnmarshalJSON(value,&articles)
-	//
-	//fmt.Println(articles)
-	//result:=string(value)
-	return "", nil
+func GetArticle(cdc *amino.Codec, key string) (article *jianqian.Articles, err error) {
+	article,err=jianqian.QueryArticle(cdc,config.GetCLIContext().QSCCliContext,key)
+	return article, err
 }
