@@ -37,6 +37,7 @@ func (tx DispatchAOETx) ValidateData(ctx context.Context) error {
 
 	tx.Wrapper.ITx.ValidateData(ctx)
 	return nil
+	tx.Wrapper.ITx.ValidateData(ctx)
 }
 
 //执行业务逻辑,
