@@ -8,6 +8,7 @@ import (
 	"github.com/bartekn/go-bip39"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/bech32"
+	"log"
 )
 
 type ResultCreateAccount struct {
@@ -24,6 +25,16 @@ const (
 	AccountResultType  = "local"
 )
 
+type PubkeyAmino struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+type PrivkeyAmino struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
 func AccountCreate() *ResultCreateAccount {
 	//from the QOS generation methods
 	//	cdc := star.MakeCodec()
@@ -34,13 +45,27 @@ func AccountCreate() *ResultCreateAccount {
 	//seedh := hex.EncodeToString(seedo)
 
 	key := ed25519.GenPrivKeyFromSecret(seedo)
-	pub := key.PubKey().Bytes()
+	pub := key.PubKey()
+	pubkeyAmino, _ := cmCdc.MarshalJSON(pub)
+	var pubkeyAminoStc PubkeyAmino
+	err := cmCdc.UnmarshalJSON(pubkeyAmino, &pubkeyAminoStc)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	pubkeyAminoStr := pubkeyAminoStc.Value
+
 	addr := key.PubKey().Address()
-	bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
+	//bech32Pub, _ := bech32.ConvertAndEncode(Bech32PrefixAccPub, pub)
 	bech32Addr, _ := bech32.ConvertAndEncode(qbasetypes.PREF_ADD, addr.Bytes())
 	//according to #92, return base64 format output
-	privkeybase64 := base64.StdEncoding.EncodeToString(key.Bytes())
-
+	//privkeybase64 := base64.StdEncoding.EncodeToString(key.Bytes())
+	privkeyAmino, _ := cmCdc.MarshalJSON(key)
+	var privkeyAminoStc PrivkeyAmino
+	err1 := cmCdc.UnmarshalJSON(privkeyAmino, &privkeyAminoStc)
+	if err1 != nil {
+		log.Fatalln(err1.Error())
+	}
+	privkeyAminoStr := privkeyAminoStc.Value
 	//to be discarded, change privkey output to hex string format, from the QOS mechanism
 	//privkeyhex := "0x" + hex.EncodeToString(key.Bytes())
 
@@ -48,8 +73,8 @@ func AccountCreate() *ResultCreateAccount {
 	Type := AccountResultType
 
 	result := &ResultCreateAccount{}
-	result.PubKey = bech32Pub
-	result.PrivKey = privkeybase64
+	result.PubKey = pubkeyAminoStr
+	result.PrivKey = privkeyAminoStr
 	result.Addr = bech32Addr
 	result.Mnemonic = mnemonic
 	result.Type = Type

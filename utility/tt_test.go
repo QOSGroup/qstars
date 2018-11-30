@@ -4,6 +4,8 @@ package utility
 
 import (
 	"encoding/hex"
+	"fmt"
+	"github.com/QOSGroup/qstars/wire"
 	"testing"
 )
 
@@ -23,6 +25,22 @@ func TestDecbase64(t *testing.T) {
 	s := "rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA=="
 	bz := Decbase64(s)
 	t.Log(bz)
+}
+
+func TestPubAddrRetrievalFromHex1(t *testing.T) {
+	s := "0xa328891040b7c4ca726ee42e46e0c6cc76f1d68c0e06f9c2894c48289f570dae64d0e05c533b45e7a573d8927e23597c013e01b5c29d5a0b1d2dbae83d6257345870679794"
+	_, addr, key := PubAddrRetrievalFromHex1(s, wire.Cdc)
+
+	Pub := key.PubKey()
+	privKey, err := wire.Cdc.MarshalJSON(key)
+
+	bz, err := wire.Cdc.MarshalJSON(Pub)
+	if err != nil {
+		t.Log(err.Error())
+	}
+
+	fmt.Println(string(bz), addr)
+	fmt.Println(string(privKey))
 }
 
 //func TestPubAddrRetrievalFromAmino(t *testing.T) {
