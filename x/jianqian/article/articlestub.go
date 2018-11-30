@@ -6,6 +6,7 @@ import (
 	"github.com/QOSGroup/qstars/baseapp"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	go_amino "github.com/tendermint/go-amino"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 
@@ -33,4 +34,7 @@ func (astub AricleStub) RegisterCdc(cdc *go_amino.Codec) {
 func (astub AricleStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 
 	return nil
+}
+func (cstub AricleStub) CustomerQuery(ctx context.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
+	return nil,nil
 }

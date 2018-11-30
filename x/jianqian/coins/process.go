@@ -3,14 +3,12 @@ package coins
 import (
 	"encoding/json"
 	"fmt"
-	//"github.com/QOSGroup/qstars/star"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
-	qostx "github.com/QOSGroup/qos/txs"
 
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/client/utils"
@@ -33,70 +31,72 @@ type SendResult struct {
 	Heigth string `json:"heigth"`
 }
 
-//创建QSC
-func CreateAOE(cdc *amino.Codec, privkey string, caqsc *[]byte, cabank *[]byte,
-	createAddr types.Address, addr []types.Address, amount []types.BigInt,
-	extrate string, dsp string) (*SendResult, error) {
-	//初始化账户
-	addrCoins := make([]qostx.AddrCoin, len(addr))
-	for i, v := range addr {
-		addrCoins = append(addrCoins, qostx.AddrCoin{v, amount[i]})
-	}
-	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
-	from, err := qstartypes.AccAddressFromBech32(addrben32)
-	key := account.AddressStoreKey(from)
-	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
-	if err != nil {
-		return nil, err
-	}
-	var nonce int64
-	nonce = int64(acc.Nonce)
-	nonce++
-	chainid := config.GetCLIContext().Config.QOSChainID
-	txCreateQSC := qostx.NewCreateQsc(cdc, caqsc, cabank, createAddr, &addrCoins, extrate, dsp)
-	stx := genCoinsWrapTx(cdc, txCreateQSC, priv, chainid, nonce)
-	return wrapperResult(cdc, stx)
-}
+////创建QSC
+//func CreateAOE(cdc *amino.Codec, privkey string, caqsc *[]byte, cabank *[]byte,
+//	createAddr types.Address, addr []types.Address, amount []types.BigInt,
+//	extrate string, dsp string) (*SendResult, error) {
+//	//初始化账户
+//	addrCoins := make([]qostx.AddrCoin, len(addr))
+//	for i, v := range addr {
+//		addrCoins = append(addrCoins, qostx.AddrCoin{v, amount[i]})
+//	}
+//	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
+//	from, err := qstartypes.AccAddressFromBech32(addrben32)
+//	key := account.AddressStoreKey(from)
+//	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
+//	if err != nil {
+//		return nil, err
+//	}
+//	var nonce int64
+//	nonce = int64(acc.Nonce)
+//	nonce++
+//	chainid := config.GetCLIContext().Config.QOSChainID
+//	txCreateQSC := qostx.NewCreateQsc(cdc, caqsc, cabank, createAddr, &addrCoins, extrate, dsp)
+//	stx := genCoinsWrapTx(cdc, txCreateQSC, priv, chainid, nonce)
+//	return wrapperResult(cdc, stx)
+//}
 
-//发币
-func IssueAOE(cdc *wire.Codec, privkey, qscName string, amount types.BigInt, banker types.Address) (*SendResult, error) {
-	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
-	from, err := qstartypes.AccAddressFromBech32(addrben32)
-	key := account.AddressStoreKey(from)
-	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
-	if err != nil {
-		return nil, err
-	}
-	var nonce int64
-	nonce = int64(acc.Nonce)
-	nonce++
-	chainid := config.GetCLIContext().Config.QOSChainID
-	issueQscTx := qostx.TxIssueQsc{QscName: qscName, Amount: amount, Banker: banker}
-	stx := genCoinsWrapTx(cdc, &issueQscTx, priv, chainid, nonce)
-	return wrapperResult(cdc, stx)
-}
+////发币
+//func IssueAOE(cdc *wire.Codec, privkey, qscName string, amount types.BigInt, banker types.Address) (*SendResult, error) {
+//	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
+//	from, err := qstartypes.AccAddressFromBech32(addrben32)
+//	key := account.AddressStoreKey(from)
+//	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
+//	if err != nil {
+//		return nil, err
+//	}
+//	var nonce int64
+//	nonce = int64(acc.Nonce)
+//	nonce++
+//	chainid := config.GetCLIContext().Config.QOSChainID
+//	issueQscTx := qostx.TxIssueQsc{QscName: qscName, Amount: amount, Banker: banker}
+//	stx := genCoinsWrapTx(cdc, &issueQscTx, priv, chainid, nonce)
+//	return wrapperResult(cdc, stx)
+//}
 
 //发放活动奖励 一转多
-func DispatchSend(cdc *wire.Codec, privkey string, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) (*SendResult, error) {
+func DispatchSend(cdc *wire.Codec,ctx *config.CLIConfig, privkey string, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) (*SendResult, error) {
 	tolen := len(to)
 	//判断长度是否一致
 	if tolen != len(amount) || tolen != len(causecode) || tolen != len(causeStr) {
 		return nil, errors.New("Array parameter length is inconsistent")
 	}
 
-
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
 	fmt.Println("from=",from)
-	//key := account.AddressStoreKey(from)
-	//acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
 	if err != nil {
 		return nil, err
 	}
-	var nn int64=0
-	//nn = int64(acc.Nonce)
-	nn++
-
+	key:=account.AddressStoreKey(from)
+	var nonce int64=0
+	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
+	if err != nil {
+		nonce=0
+	}else{
+		nonce=int64(acc.Nonce)
+	}
+	nonce++
 	var ccs []types.BaseCoin
 	for _, coin := range amount {
 		ccs = append(ccs, types.BaseCoin{
@@ -106,9 +106,7 @@ func DispatchSend(cdc *wire.Codec, privkey string, to []types.Address, amount []
 	}
 	transtx := tx.NewTransfer([]types.Address{from}, to, ccs)
 	chainid := config.GetCLIContext().Config.QOSChainID
-	msg := genStdWrapTx(cdc, transtx, priv, chainid, nn, from, to, amount, causecode, causeStr)
-
-
+	msg := genStdWrapTx(cdc, transtx, priv, chainid, nonce, from, to, amount, causecode, causeStr)
 	return wrapperResult(cdc, msg)
 }
 
@@ -237,7 +235,7 @@ func IssueAOETx(privatekey,qscname,amount,bankeraddr string)string{
 //causecodes    奖励类型(必填) 多个地址用|隔开
 //causestrings  奖励类型描述(必填) 多个地址用|隔开
 //gas           gas费 默认为0
-func DispatchAOE(cdc *wire.Codec ,address , coins, causecodes,  causestrings,  gas string)string{
+func DispatchAOE(cdc *wire.Codec,ctx *config.CLIConfig,address , coins, causecodes,  causestrings,  gas string)string{
 	if address==""||coins==""||causecodes==""||causestrings==""{
 		return "{Code:\"1\",Reason:\"Parameter cannot be empty \"}"
 	}
@@ -271,7 +269,7 @@ func DispatchAOE(cdc *wire.Codec ,address , coins, causecodes,  causestrings,  g
 	}
 	//cdc := star.MakeCodec()
 	privkey:=tx.GetConfig().Dappowner
-	result,err:= DispatchSend(cdc,privkey,toaddrss,amounts,codes,cstrs)
+	result,err:= DispatchSend(cdc,ctx,privkey,toaddrss,amounts,codes,cstrs)
 	if err!=nil{
 		return err.Error()
 	}
