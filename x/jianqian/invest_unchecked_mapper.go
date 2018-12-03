@@ -24,6 +24,7 @@ type InvestUnchecked struct {
 	Address    qbasetypes.Address `json:"address"`    // 投资者地址
 	Invest     qbasetypes.BigInt  `json:"invest"`     // 投资金额
 	InvestTime time.Time          `json:"investTime"` // 投资时间
+	IsChecked  bool               `json:"isChecked"`  // 已确认
 }
 
 type InvestUncheckeds []InvestUnchecked

@@ -51,6 +51,7 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 	buyMapper := ctx.Mapper(jianqian.BuyMapperName).(*jianqian.BuyMapper)
 	buyer, ok := buyMapper.GetBuyer([]byte(key))
 	if !ok || buyer == nil {
+
 		fmt.Printf("unexpected buyer.")
 		result.Code = types.ABCICodeType(types.CodeTxDecode)
 		return result
