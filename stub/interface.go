@@ -58,7 +58,7 @@ func QSCQueryAccountGet(addr string) string {
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64) *txs.TxStd {
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(sendTx, chainid, gas)
-	signature, _ := stx.SignTx(priKey, nonce)
+	signature, _ := stx.SignTx(priKey, nonce,chainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,

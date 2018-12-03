@@ -7,7 +7,7 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs"
+	qostxs "github.com/QOSGroup/qos/txs/transfer"
 	"log"
 
 	qostypes "github.com/QOSGroup/qos/types"
@@ -70,7 +70,7 @@ func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQ
 	tx1 := (common.HexBytes)(tmhash.Sum(ctx.TxBytes()))
 	key := "heigth:" + heigth1 + ",hash:" + tx1.String()
 
-	transferTx, _ := it.Std.ITx.(*qostxs.TransferTx)
+	transferTx, _ := it.Std.ITx.(*qostxs.TxTransfer)
 	var values jianqian.InvestUncheckeds
 	for _, v := range transferTx.Senders {
 		values = append(values, jianqian.InvestUnchecked{
