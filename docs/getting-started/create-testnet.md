@@ -9,7 +9,11 @@ you will get qsc key pair and relay key pair
 
 ### Ask QOS public chain administrator to create your alien chain on QOS
 see qos/docs/txcreateqsc_txissue_test.md
+see QOS documment:
 
+[QOS installation](https://github.com/QOSGroup/qos/blob/master/docs/install/networks.md)
+
+[create QSC on QOS](https://github.com/QOSGroup/qos/blob/master/docs/client/qsc.md)
 ### setup a your relay server
 see xxx
 it will requires the relay key pair

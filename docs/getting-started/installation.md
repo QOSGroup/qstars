@@ -19,7 +19,7 @@ echo "export PATH=$PATH:$GOBIN" >> ~/.bash_profile
 
 ## Install Qstars
 
-Next, let's install the testnet's version of the Cosmos SDK.
+Next, let's install the testnet's version of the QSTARS SDK.
 You can find information about the latest testnet and the right
 version of the QStars for it in the [testnets
 repo](https://github.com/QOSGroup/qstars/testnets#testnet-status).
@@ -27,12 +27,16 @@ Here we'll use the `master` branch, which contains the latest stable release.
 If necessary, make sure you `git checkout` the correct 
 [released version](https://github.com/QOSGroup/qstars/releases).
 
+Make sure that you have GO version above 11, we use go module to compile
 ```bash
-mkdir -p $GOPATH/src/github.com/QOSGroup
-cd $GOPATH/src/github.com/QOSGroup/
+mkdir codedir
+cd codedir
 git clone https://github.com/QOSGroup/qstars
 cd qstars && git checkout master
-make get_tools && make get_vendor_deps && make install
+export GO111MODULE=on
+cd cmd/qstarsd && go build
+cd ../..
+cd cmd/qstarscls && go build
 ```
 
 That will install the `qstarsd` and `qstarscli` binaries. Verify that everything is OK:
