@@ -5,7 +5,7 @@ package tx
 import (
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs"
+	qostxs "github.com/QOSGroup/qos/txs/transfer"
 )
 
 func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qostxs.TransItem {
@@ -26,7 +26,7 @@ func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qost
 
 // NewTransfer ...
 func NewTransfer(sender qbasetypes.Address, receiver qbasetypes.Address, coin []qbasetypes.BaseCoin) txs.ITx {
-	var sendTx qostxs.TransferTx
+	var sendTx qostxs.TxTransfer
 
 	sendTx.Senders = append(sendTx.Senders, warpperTransItem(sender, coin))
 	sendTx.Receivers = append(sendTx.Receivers, warpperTransItem(receiver, coin))

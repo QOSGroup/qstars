@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs"
+	qostxs "github.com/QOSGroup/qos/txs/transfer"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
@@ -177,12 +177,12 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, nonc
 		})
 	}
 	nonce++
-	var transferTx qostxs.TransferTx
+	var transferTx qostxs.TxTransfer
 	transferTx.Senders = []qostxs.TransItem{warpperTransItem(buyer, ccs)}
 	transferTx.Receivers = warpperReceivers(articleHash, amount)
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(transferTx, chainId, gas)
-	signature, _ := stx.SignTx(priv, nonce)
+	signature, _ := stx.SignTx(priv, nonce,chainId)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature,

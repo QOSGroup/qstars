@@ -22,7 +22,7 @@ func NewApproveTx(from qbasetypes.Address, to qbasetypes.Address) *ApproveTx {
 
 func (at *ApproveTx) Create(coins []qbasetypes.BaseCoin) txs.ITx {
 	ti := warpperTransItem(nil, coins)
-	return approve.ApproveCreateTx{
+	return approve.TxCreateApprove{
 		Approve: approve.Approve{
 			From: at.from,
 			To:   at.to,
@@ -35,7 +35,7 @@ func (at *ApproveTx) Create(coins []qbasetypes.BaseCoin) txs.ITx {
 func (at *ApproveTx) Increase(coins []qbasetypes.BaseCoin) txs.ITx {
 	ti := warpperTransItem(nil, coins)
 
-	return approve.ApproveIncreaseTx{
+	return approve.TxIncreaseApprove{
 		Approve: approve.Approve{
 			From: at.from,
 			To:   at.to,
@@ -48,7 +48,7 @@ func (at *ApproveTx) Increase(coins []qbasetypes.BaseCoin) txs.ITx {
 func (at *ApproveTx) Decrease(coins []qbasetypes.BaseCoin) txs.ITx {
 	ti := warpperTransItem(nil, coins)
 
-	return approve.ApproveDecreaseTx{
+	return approve.TxDecreaseApprove{
 		Approve: approve.Approve{
 			From: at.from,
 			To:   at.to,
@@ -61,7 +61,7 @@ func (at *ApproveTx) Decrease(coins []qbasetypes.BaseCoin) txs.ITx {
 func (at *ApproveTx) Use(coins []qbasetypes.BaseCoin) txs.ITx {
 	ti := warpperTransItem(nil, coins)
 
-	return approve.ApproveUseTx{
+	return approve.TxUseApprove{
 		Approve: approve.Approve{
 			From: at.from,
 			To:   at.to,
@@ -72,7 +72,7 @@ func (at *ApproveTx) Use(coins []qbasetypes.BaseCoin) txs.ITx {
 }
 
 func (at *ApproveTx) Cancel() txs.ITx {
-	return approve.ApproveCancelTx{
+	return approve.TxCancelApprove{
 		From: at.from,
 		To:   at.to,
 	}
