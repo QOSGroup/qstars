@@ -33,19 +33,18 @@ import (
 var _ baseapp.BaseXTransaction = bank.BankStub{}
 var _ baseapp.BaseXTransaction = kvstore.KVStub{}
 
-var _ baseapp.BaseXTransaction = investad.Stub{}
-var _ baseapp.BaseXTransaction = buyad.Stub{}
+var _ baseapp.BaseXTransaction = investad.InvestadStub{}
+var _ baseapp.BaseXTransaction = buyad.BuyadStub{}
 
 var _ baseapp.BaseXTransaction = coins.CoinsStub{}
 var _ baseapp.BaseXTransaction = article.AricleStub{}
-
 
 func init() {
 	registerType((*bank.BankStub)(nil))
 	registerType((*kvstore.KVStub)(nil))
 
-	registerType((*investad.Stub)(nil))
-	registerType((*buyad.Stub)(nil))
+	registerType((*investad.InvestadStub)(nil))
+	registerType((*buyad.BuyadStub)(nil))
 
 	registerType((*coins.CoinsStub)(nil))
 	registerType((*article.AricleStub)(nil))

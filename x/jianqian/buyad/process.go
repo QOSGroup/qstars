@@ -14,6 +14,7 @@ import (
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/x/jianqian"
 	"log"
 )
 
@@ -59,6 +60,8 @@ func (ri ResultBuy) Marshal() string {
 const coinsName = "QOS"
 const tempAddr = "address1wmrup5xemdxzx29jalp5c98t7mywulg8wgxxxx"
 
+var shareCommunityAddr = qbasetypes.Address("address1wmrup5xemdxzx29jalp5c98t7mywulg8wgxxxx")
+
 // BuyAdBackground 提交到链上
 func BuyAdBackground(cdc *wire.Codec, txb string) string {
 	result := &ResultBuy{}
@@ -85,6 +88,7 @@ func BuyAdBackground(cdc *wire.Codec, txb string) string {
 // BuyAd 投资广告
 func BuyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, nonce int64) string {
 	var result ResultBuy
+	result.Code = "0"
 
 	tx, err := buyAd(cdc, chainId, articleHash, coins, privatekey, nonce)
 	if err != nil {
@@ -106,8 +110,42 @@ func BuyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, nonc
 	return result.Marshal()
 }
 
-func getReceivers(articleHash string, amount int64) []qostxs.TransItem {
-	return nil
+func warpperInvestorTx(articleHash string, amount int64) []qostxs.TransItem {
+	var result []qostxs.TransItem
+
+	return result
+}
+
+func warpperReceivers(articleHash string, amount int64) []qostxs.TransItem {
+	var result []qostxs.TransItem
+	article := &jianqian.Articles{}
+
+	// 作者地址
+	result = append(
+		result,
+		warpperTransItem(
+			article.Authoraddress,
+			[]qbasetypes.BaseCoin{{Name: coinsName, Amount: qbasetypes.NewInt(amount * int64(article.ShareAuthor) / 100)}}))
+
+	// 原创作者地址
+	result = append(
+		result,
+		warpperTransItem(
+			article.OriginalAuthor,
+			[]qbasetypes.BaseCoin{{Name: coinsName, Amount: qbasetypes.NewInt(amount * int64(article.ShareOriginalAuthor) / 100)}}))
+
+	// 社区收入比例
+	result = append(
+		result,
+		warpperTransItem(
+			shareCommunityAddr,
+			[]qbasetypes.BaseCoin{{Name: coinsName, Amount: qbasetypes.NewInt(amount * int64(article.ShareCommunity) / 100)}}))
+
+	// 投资者收入分配
+	shareInvestorTotal := amount * int64(article.ShareCommunity) / 100
+	result = append(result, warpperInvestorTx(articleHash, shareInvestorTotal)...)
+
+	return result
 }
 
 // buyAd 投资广告
@@ -141,7 +179,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, nonc
 	nonce++
 	var transferTx qostxs.TransferTx
 	transferTx.Senders = []qostxs.TransItem{warpperTransItem(buyer, ccs)}
-	transferTx.Receivers = getReceivers(articleHash, amount)
+	transferTx.Receivers = warpperReceivers(articleHash, amount)
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(transferTx, chainId, gas)
 	signature, _ := stx.SignTx(priv, nonce)

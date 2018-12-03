@@ -15,16 +15,15 @@ import (
 	"strings"
 
 	"github.com/QOSGroup/qbase/context"
-
-	go_amino "github.com/tendermint/go-amino"
-	dbm "github.com/tendermint/tendermint/libs/db"
 	ctx "github.com/QOSGroup/qbase/context"
+	go_amino "github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
+	dbm "github.com/tendermint/tendermint/libs/db"
 )
 
 type QStarsContext struct {
-	ServerContext    *server.Context
-	QStarsSignerPriv crypto.PrivKey
+	ServerContext      *server.Context
+	QStarsSignerPriv   crypto.PrivKey
 	QStarsTransactions []string
 }
 
@@ -41,9 +40,9 @@ func InitApp() {
 }
 
 /**
-	startup a qstar chain instance
- */
-func NewAPP(sconf *config.ServerConf , cdc *go_amino.Codec) (QstarsBaseApp, error) {
+startup a qstar chain instance
+*/
+func NewAPP(sconf *config.ServerConf, cdc *go_amino.Codec) (QstarsBaseApp, error) {
 	_, _, qCtx.QStarsSignerPriv = utility.PubAddrRetrievalFromAmino(sconf.QStarsPrivateKey, cdc)
 	qCtx.QStarsTransactions = strings.Split(sconf.QStarsTransactions, ",")
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "main")
@@ -56,10 +55,10 @@ func NewAPP(sconf *config.ServerConf , cdc *go_amino.Codec) (QstarsBaseApp, erro
 
 type QstarsBaseApp struct {
 	Transactions    BaseXTransaction
-	Baseapp      *baseabci.BaseApp
+	Baseapp         *baseabci.BaseApp
 	TransactionList []BaseXTransaction
-	Logger       log.Logger
-	RootDir      string
+	Logger          log.Logger
+	RootDir         string
 }
 
 //call every transaction to register
@@ -105,8 +104,8 @@ func (base *QstarsBaseApp) TxQcpResultHandler(ctx context.Context, txQcpResult i
 }
 
 /**
-	start transaction
- */
+start transaction
+*/
 func (base *QstarsBaseApp) Start() error {
 	//this store used to store chain information
 	db, err := dbm.NewGoLevelDB("qstarstore", filepath.Join(base.RootDir, "data"))
@@ -125,22 +124,22 @@ func (base *QstarsBaseApp) Start() error {
 	base.Baseapp.RegisterTxQcpSigner(GetServerContext().QStarsSignerPriv)
 
 	var handler baseabci.CustomQueryHandler
-	handler = func(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
+	handler = func(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error) {
 		for _, c := range base.TransactionList {
-			response,err:=c.CustomerQuery(ctx,route,req)
-			if ((response!=nil)&&(err==nil)){
-				return response,nil
-			}else{
-				if ((response==nil)&&(err!=nil)){
-					return response,err
+			response, err := c.CustomerQuery(ctx, route, req)
+			if (response != nil) && (err == nil) {
+				return response, nil
+			} else {
+				if (response == nil) && (err != nil) {
+					return response, err
 				}
 			}
 		}
-		return nil,nil
+		return nil, nil
 	}
 
 	base.Baseapp.RegisterCustomQueryHandler(handler)
-	base.Baseapp.SetEndBlocker(func(ctx ctx.Context, req abci.RequestEndBlock) abci.ResponseEndBlock{
+	base.Baseapp.SetEndBlocker(func(ctx ctx.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 		for _, c := range base.TransactionList {
 			c.EndBlockNotify(ctx)
 		}
@@ -148,4 +147,3 @@ func (base *QstarsBaseApp) Start() error {
 	})
 	return base.loadX()
 }
-

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/wire"
@@ -13,6 +14,9 @@ import (
 // addition, it builds and signs a transaction with the supplied messages.
 // Finally, it broadcasts the signed transaction to a node.
 func SendTx(cliCtx context.CLIContext, cdc *wire.Codec, txStd *txs.TxStd) (string, *ctypes.ResultBroadcastTxCommit, error) {
+
+	fmt.Printf("[SendTx] txStd:%+v\n", txStd)
+	fmt.Printf("[SendTx] txStd.ITx:%+v\n", txStd.ITx)
 
 	txBytes, err := cdc.MarshalBinaryBare(txStd)
 	if err != nil {

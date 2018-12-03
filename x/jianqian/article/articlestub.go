@@ -9,7 +9,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-
 type AricleStub struct {
 	baseapp.BaseXTransaction
 }
@@ -36,7 +35,6 @@ func (astub AricleStub) ResultNotify(ctx context.Context, txQcpResult interface{
 	return nil
 }
 
-func (cstub AricleStub) CustomerQuery(ctx context.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
-	return nil,nil
+func (cstub AricleStub) CustomerQuery(ctx context.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error) {
+	return nil, nil
 }
-
