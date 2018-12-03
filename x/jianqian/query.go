@@ -28,6 +28,7 @@ func QueryCoins(cdc *amino.Codec, ctx *context.CLIContext, tx string) (coins *Co
 	return
 }
 
+
 func ListInvestors(ctx *context.CLIContext, cdc *amino.Codec, articleHash string) ([]Investor, error) {
 	d, err := ctx.QueryInvestadCustom([]byte(articleHash))
 	if err != nil {
