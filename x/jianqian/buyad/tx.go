@@ -9,7 +9,6 @@ import (
 	qostxs "github.com/QOSGroup/qos/txs"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/x/jianqian"
-	"time"
 )
 
 type BuyTx struct {
@@ -37,28 +36,35 @@ func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps
 	}
 	//set for qos result
 	buyMapper := ctx.Mapper(jianqian.BuyMapperName).(*jianqian.BuyMapper)
-	now := time.Now()
+
 	transferTx, _ := it.Std.ITx.(*qostxs.TransferTx)
 	if len(transferTx.Senders) != 1 {
 		result.Code = qbasetypes.ToABCICode(qbasetypes.CodespaceRoot, qbasetypes.CodeInternal)
 		return result, nil
 	}
 
+	qos := transferTx.Senders[0].QOS
+	buyerAddr := transferTx.Senders[0].Address
 	buyer, ok := buyMapper.GetBuyer(it.ArticleHash)
 	if ok {
-		buyMapper.SetBuyer(it.ArticleHash, buyer)
-	} else {
-		buyer = jianqian.Buyer{
-			Address: transferTx.Senders[0].Address,
-			Buy:     transferTx.Senders[0].QOS,
-			BuyTime: now,
+		if buyer.CheckStatus != jianqian.CheckStatusFail {
+			result.Code = qbasetypes.ToABCICode(qbasetypes.CodespaceRoot, qbasetypes.CodeInternal)
+			return result, nil
 		}
-		buyMapper.SetBuyer(it.ArticleHash, buyer)
+	} else {
+		buyer = &jianqian.Buyer{}
 	}
+
+	buyer.Address = buyerAddr
+	buyer.Buy = qos
+	buyer.BuyTime = ctx.BlockHeader().Time
+	buyer.CheckStatus = jianqian.CheckStatusInit
+	buyMapper.SetBuyer(it.ArticleHash, *buyer)
 
 	crossTxQcps = &txs.TxQcp{}
 	crossTxQcps.TxStd = it.Std
 	crossTxQcps.To = config.GetServerConf().QOSChainName
+	crossTxQcps.Extends = string(it.ArticleHash)
 
 	return
 }

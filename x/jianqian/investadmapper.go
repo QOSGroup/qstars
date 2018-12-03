@@ -14,7 +14,7 @@ const (
 	InvestMapperName = "investad"
 )
 
-func getInvestKey(article []byte, user qbasetypes.Address) []byte {
+func GetInvestKey(article []byte, user qbasetypes.Address) []byte {
 	return append(article, user...)
 }
 
@@ -46,16 +46,14 @@ func NewInvestMapper(cdc *amino.Codec) *InvestMapper {
 }
 
 // Get 查询用户投资情况
-func (im *InvestMapper) GetInvestor(article []byte, user qbasetypes.Address) (Investor, bool) {
-	key := getInvestKey(article, user)
+func (im *InvestMapper) GetInvestor(key []byte) (Investor, bool) {
 	var result Investor
 	ok := im.Get(key, &result)
 	return result, ok
 }
 
 // Set 添加用户投资
-func (im *InvestMapper) SetInvestor(article []byte, i Investor) {
-	key := getInvestKey(article, i.Address)
+func (im *InvestMapper) SetInvestor(key []byte, i Investor) {
 	im.Set(key, i)
 	return
 }

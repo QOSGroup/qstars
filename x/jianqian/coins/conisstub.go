@@ -5,6 +5,7 @@ import (
 
 	"github.com/QOSGroup/qbase/baseabci"
 	"github.com/QOSGroup/qbase/context"
+	ctx "github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/baseapp"
@@ -13,7 +14,6 @@ import (
 	"github.com/prometheus/common/log"
 	go_amino "github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
-
 )
 
 const QSCResultMapperName = "coinsResult"
@@ -79,7 +79,6 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 	return &rr
 }
 
-func (cstub CoinsStub) CustomerQuery(ctx context.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error){
-	return nil,nil
+func (cstub CoinsStub) CustomerQuery(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error) {
+	return nil, nil
 }
-

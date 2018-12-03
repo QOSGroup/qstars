@@ -5,6 +5,7 @@ package investad
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
 	qostxs "github.com/QOSGroup/qos/txs"
@@ -56,7 +57,8 @@ func (ri ResultInvest) Marshal() string {
 }
 
 const coinsName = "AOE"
-const tempAddr = "address1wmrup5xemdxzx29jalp5c98t7mywulg8wgxxxx"
+
+var tempAddr = qbasetypes.Address("address1wmrup5xemdxzx29jalp5c98t7mywulg8wgxxxx")
 
 // InvestAdBackground 提交到链上
 func InvestAdBackground(cdc *wire.Codec, txb string) string {
@@ -65,12 +67,14 @@ func InvestAdBackground(cdc *wire.Codec, txb string) string {
 
 	ts := new(txs.TxStd)
 	err := cdc.UnmarshalJSON([]byte(txb), ts)
+	fmt.Printf("InvestAdBackground ts:%+v, txb:%s\n", ts, txb)
 	if err != nil {
 		return InternalError(err.Error()).Marshal()
 	}
 
-	cliCtx := *config.GetCLIContext().QOSCliContext
+	cliCtx := *config.GetCLIContext().QSCCliContext
 	_, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
+	fmt.Printf("SendTx commitresult:%+v, err:%+v \n", commitresult, err)
 	if err != nil {
 		return InternalError(err.Error()).Marshal()
 	}
@@ -84,6 +88,7 @@ func InvestAdBackground(cdc *wire.Codec, txb string) string {
 // InvestAd 投资广告
 func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, nonce int64) string {
 	var result ResultInvest
+	result.Code = "0"
 
 	tx, err := investAd(cdc, chainId, articleHash, coins, privatekey, nonce)
 	if err != nil {
@@ -129,7 +134,8 @@ func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, n
 	}
 	nonce++
 
-	transferTx := NewTransfer(investor, []byte(tempAddr), ccs)
+	transferTx := NewTransfer(investor, tempAddr, ccs)
+	// TODO set zero, temp
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(transferTx, chainId, gas)
 	signature, _ := stx.SignTx(priv, nonce)
@@ -142,7 +148,6 @@ func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, n
 	it := &InvestTx{}
 	it.ArticleHash = []byte(articleHash)
 	it.Std = stx
-	//tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
 	tx2 := txs.NewTxStd(it, chainId, stx.MaxGas)
 
 	return tx2, nil

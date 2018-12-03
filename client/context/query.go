@@ -36,6 +36,12 @@ func (ctx CLIContext) QueryStore(key cmn.HexBytes, storeName string) (res []byte
 
 // QueryStore performs a query from a Tendermint node with the provided key and
 // store name.
+func (ctx CLIContext) QueryInvestadCustom(key cmn.HexBytes) (res []byte, err error) {
+	return ctx.query("/custom/jianqian/investad", key)
+}
+
+// QueryStore performs a query from a Tendermint node with the provided key and
+// store name.
 func (ctx CLIContext) QueryQOSAccount(key cmn.HexBytes) (res []byte, err error) {
 
 	return ctx.query("/store/acc/key", key)
