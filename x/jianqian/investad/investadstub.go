@@ -59,22 +59,28 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 			}
 
 			investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
-			for _, v := range investUncheckeds {
-				key := jianqian.GetInvestKey(v.Article, v.Address)
-				investor, ok := investMapper.GetInvestor(key)
-				if ok {
-					investor.Invest = investor.Invest.Add(v.Invest)
-					investor.InvestTime = v.InvestTime
-					investMapper.SetInvestor(key, investor)
-				} else {
-					investor = jianqian.Investor{
-						Address:    v.Address,
-						InvestTime: v.InvestTime,
-						Invest:     v.Invest,
+			for k, v := range investUncheckeds {
+				if !v.IsChecked {
+					key := jianqian.GetInvestKey(v.Article, v.Address)
+					investor, ok := investMapper.GetInvestor(key)
+					if ok {
+						investor.Invest = investor.Invest.Add(v.Invest)
+						investor.InvestTime = v.InvestTime
+						investMapper.SetInvestor(key, investor)
+					} else {
+						investor = jianqian.Investor{
+							Address:    v.Address,
+							InvestTime: v.InvestTime,
+							Invest:     v.Invest,
+						}
+						investMapper.SetInvestor(key, investor)
 					}
-					investMapper.SetInvestor(key, investor)
+
+					investUncheckeds[k].IsChecked = true
 				}
 			}
+
+			investUncheckedMapper.SetInvestUncheckeds([]byte(key), investUncheckeds)
 
 			resultCode = types.ABCICodeType(types.CodeOK)
 		}

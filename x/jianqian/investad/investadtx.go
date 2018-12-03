@@ -78,6 +78,7 @@ func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQ
 			Address:    v.Address,
 			InvestTime: ctx.BlockHeader().Time,
 			Invest:     getInvestAmount(v.QSCs),
+			IsChecked:  false,
 		})
 	}
 	investUncheckedMapper.Set([]byte(key), values)
