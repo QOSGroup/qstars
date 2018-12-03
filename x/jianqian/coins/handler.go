@@ -35,8 +35,8 @@ func (tx DispatchAOETx) ValidateData(ctx context.Context) error {
 		return errors.New("DispatchAOE address|amount|causes nnequal length")
 	}
 
-	return nil
 	tx.Wrapper.ITx.ValidateData(ctx)
+	return nil
 }
 
 //执行业务逻辑,
