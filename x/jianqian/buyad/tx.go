@@ -6,7 +6,7 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs"
+	qostxs "github.com/QOSGroup/qos/txs/transfer"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/x/jianqian"
 )
@@ -36,8 +36,7 @@ func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps
 	}
 	//set for qos result
 	buyMapper := ctx.Mapper(jianqian.BuyMapperName).(*jianqian.BuyMapper)
-
-	transferTx, _ := it.Std.ITx.(*qostxs.TransferTx)
+	transferTx, _ := it.Std.ITx.(*qostxs.TxTransfer)
 	if len(transferTx.Senders) != 1 {
 		result.Code = qbasetypes.ToABCICode(qbasetypes.CodespaceRoot, qbasetypes.CodeInternal)
 		return result, nil

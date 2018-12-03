@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs"
+	qostxs "github.com/QOSGroup/qos/txs/transfer"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
@@ -138,7 +138,7 @@ func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, n
 	// TODO set zero, temp
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(transferTx, chainId, gas)
-	signature, _ := stx.SignTx(priv, nonce)
+	signature, _ := stx.SignTx(priv, nonce,chainId)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature,
@@ -170,8 +170,8 @@ func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qost
 }
 
 // NewTransfer ...
-func NewTransfer(sender qbasetypes.Address, receiver qbasetypes.Address, coin []qbasetypes.BaseCoin) qostxs.TransferTx {
-	var sendTx qostxs.TransferTx
+func NewTransfer(sender qbasetypes.Address, receiver qbasetypes.Address, coin []qbasetypes.BaseCoin) qostxs.TxTransfer {
+	var sendTx qostxs.TxTransfer
 
 	sendTx.Senders = append(sendTx.Senders, warpperTransItem(sender, coin))
 	sendTx.Receivers = append(sendTx.Receivers, warpperTransItem(receiver, coin))
