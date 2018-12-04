@@ -4,6 +4,7 @@ import (
 	"github.com/QOSGroup/qbase/mapper"
 )
 
+const QSCResultMapperName = "qstarsResult"
 
 type KvMapper struct {
 	*mapper.BaseMapper

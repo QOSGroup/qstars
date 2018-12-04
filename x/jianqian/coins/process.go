@@ -6,6 +6,7 @@ import (
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client/context"
+	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/prometheus/common/log"
 	"strconv"
@@ -190,7 +191,7 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 	// TODO qbase还没实现
 	//qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
 	qstarskey := GetResultKey(heigth1, tx1)
-	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), QSCResultMapperName)
+	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), common.QSCResultMapperName)
 	log.Infof("QueryStore: %+v, %+v\n", d, err)
 	if err != nil {
 		return "", err
