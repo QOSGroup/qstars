@@ -16,7 +16,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-const QSCResultMapperName = "coinsResult"
 const COINNAME = "AOE"
 
 type CoinsStub struct {
@@ -30,9 +29,6 @@ func NewCoinsStub() CoinsStub {
 func (cstub CoinsStub) StartX(base *baseapp.QstarsBaseApp) error {
 	var coinsMapper = jianqian.NewCoinsMapper(jianqian.CoinsMapperName)
 	base.Baseapp.RegisterMapper(coinsMapper)
-
-	//var qosMapper = jianqian.NewCoinsMapper(QSCResultMapperName)
-	//base.Baseapp.RegisterMapper(qosMapper)
 	return nil
 }
 func (cstub CoinsStub) EndBlockNotify(ctx context.Context) {
@@ -54,7 +50,7 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 	} else {
 		log.Errorf("ResultNotify update status")
 		orginalTxHash := in.QcpOriginalExtends //orginalTx.abc
-		kvMapper := ctx.Mapper(QSCResultMapperName).(*common.KvMapper)
+		kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
 		initValue := ""
 		kvMapper.Get([]byte(orginalTxHash), &initValue)
 		if initValue != "-1" {
@@ -64,7 +60,7 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 		//put result to map for client query
 		c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
 		c = c + " " + qcpTxResult.Result.Log
-		log.Errorf("--------update key:" + QSCResultMapperName + " key:" + orginalTxHash + " value:" + c)
+		log.Errorf("--------update key:" + common.QSCResultMapperName + " key:" + orginalTxHash + " value:" + c)
 		kvMapper.Set([]byte(orginalTxHash), c)
 
 		//根据跨链结果 更新记录结果
