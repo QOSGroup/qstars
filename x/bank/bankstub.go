@@ -25,7 +25,7 @@ func NewBankStub() BankStub {
 
 func (kv BankStub) StartX(base *baseapp.QstarsBaseApp) error {
 
-	var qosMapper = common.NewKvMapper(QSCResultMapperName)
+	var qosMapper = common.NewKvMapper(common.QSCResultMapperName)
 	base.Baseapp.RegisterMapper(qosMapper)
 
 	return nil
@@ -65,7 +65,7 @@ func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *t
 		log.Errorf("ResultNotify update status")
 
 		orginalTxHash := in.QcpOriginalExtends //orginalTx.abc
-		kvMapper := ctx.Mapper(QSCResultMapperName).(*common.KvMapper)
+		kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
 		initValue :=""
 		kvMapper.Get([]byte(orginalTxHash),&initValue)
 		if initValue!="-1"{
@@ -75,7 +75,7 @@ func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *t
 		//put result to map for client query
 		c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
 		c = c+" "+qcpTxResult.Result.Log
-		log.Errorf("--------update key:"+QSCResultMapperName+" key:"+ orginalTxHash +" value:" + c)
+		log.Errorf("--------update key:"+common.QSCResultMapperName+" key:"+ orginalTxHash +" value:" + c)
 		kvMapper.Set([]byte(orginalTxHash), c)
 		resultCode = types.ABCICodeType(types.CodeOK)
 	}

@@ -13,7 +13,6 @@ import (
 	"github.com/QOSGroup/qstars/config"
 )
 
-const QSCResultMapperName = "qstarsResult"
 
 type WrapperSendTx struct {
 	Wrapper *txs.TxStd
@@ -45,7 +44,7 @@ func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTx
 	crossTxQcps = &cross
 
 	//set for qos result
-	kvMapper := ctx.Mapper(QSCResultMapperName).(*starcommon.KvMapper)
+	kvMapper := ctx.Mapper(starcommon.QSCResultMapperName).(*starcommon.KvMapper)
 	heigth1 := strconv.FormatInt(ctx.BlockHeight(), 10)
 	tx1 := (common.HexBytes)(tmhash.Sum(ctx.TxBytes()))
 	qstarskey := GetResultKey(heigth1,tx1.String())
