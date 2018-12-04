@@ -34,10 +34,7 @@ func (tx DispatchAOETx) ValidateData(ctx context.Context) error {
 	if len(tx.Address) != len(tx.CoinAmount) || len(tx.Address) != len(tx.CausesCode) || len(tx.Address) != len(tx.CausesStr) {
 		return errors.New("DispatchAOE address|amount|causes nnequal length")
 	}
-
-	tx.Wrapper.ITx.ValidateData(ctx)
-	return nil
-	tx.Wrapper.ITx.ValidateData(ctx)
+	return tx.Wrapper.ITx.ValidateData(ctx)
 }
 
 //执行业务逻辑,
