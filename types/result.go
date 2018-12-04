@@ -1,5 +1,5 @@
 package types
-
+import "github.com/QOSGroup/qbase/types"
 // Result is the union of ResponseDeliverTx and ResponseCheckTx.
 type Result struct {
 
@@ -23,7 +23,7 @@ type Result struct {
 	FeeDenom  string
 
 	// Tags are used for transaction indexing and pubsub.
-	Tags Tags
+	Tags types.Tags
 }
 
 // TODO: In the future, more codes may be OK.

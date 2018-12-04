@@ -63,7 +63,7 @@ func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTx
 }
 
 func (tx WrapperSendTx) GetSigner() []btypes.Address {
-	return nil
+	return tx.Wrapper.ITx.GetSigner()
 }
 
 func (tx WrapperSendTx) CalcGas() btypes.BigInt {
@@ -71,9 +71,9 @@ func (tx WrapperSendTx) CalcGas() btypes.BigInt {
 }
 
 func (tx WrapperSendTx) GetGasPayer() btypes.Address {
-	return nil
+	return tx.Wrapper.ITx.GetGasPayer()
 }
 
 func (tx WrapperSendTx) GetSignData() []byte {
-	return nil
+	return tx.Wrapper.ITx.GetSignData()
 }
