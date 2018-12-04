@@ -5,7 +5,6 @@ import (
 )
 
 const QSCResultMapperName = "qstarsResult"
-
 type KvMapper struct {
 	*mapper.BaseMapper
 }
