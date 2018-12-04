@@ -8,13 +8,14 @@ import (
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
 	qostxs "github.com/QOSGroup/qos/txs/transfer"
+	"github.com/QOSGroup/qstars/x/common"
 	"log"
 
 	qostypes "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/tendermint/tendermint/crypto/tmhash"
-	"github.com/tendermint/tmlibs/common"
+	tmcommon "github.com/tendermint/tendermint/libs/common"
 
 	"strconv"
 )
@@ -67,7 +68,7 @@ func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQ
 	//set for qos result
 	investUncheckedMapper := ctx.Mapper(jianqian.InvestUncheckedMapperName).(*jianqian.InvestUncheckedMapper)
 	heigth1 := strconv.FormatInt(ctx.BlockHeight(), 10)
-	tx1 := (common.HexBytes)(tmhash.Sum(ctx.TxBytes()))
+	tx1 := (tmcommon.HexBytes)(tmhash.Sum(ctx.TxBytes()))
 	key := "heigth:" + heigth1 + ",hash:" + tx1.String()
 
 	transferTx, _ := it.Std.ITx.(*qostxs.TxTransfer)
@@ -82,6 +83,9 @@ func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQ
 		})
 	}
 	investUncheckedMapper.Set([]byte(key), values)
+
+	kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
+	kvMapper.Set([]byte(key), "-1")
 
 	crossTxQcps = &txs.TxQcp{}
 	crossTxQcps.TxStd = it.Std

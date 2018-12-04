@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
+	"time"
 
 	types "github.com/QOSGroup/qstars/types"
 )
@@ -51,7 +52,7 @@ func BuyadCmd(cdc *wire.Codec) *cobra.Command {
 			nonce++
 
 			tx := BuyAd(cdc, chainid, articleHash, coins, buyer, nonce)
-			result := BuyAdBackground(cdc, tx)
+			result := BuyAdBackground(cdc, tx, time.Second*60)
 
 			log.Printf(result)
 

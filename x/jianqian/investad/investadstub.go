@@ -10,8 +10,10 @@ import (
 	"github.com/QOSGroup/qstars/baseapp"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
+	"github.com/prometheus/common/log"
 	go_amino "github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"strconv"
 )
 
 type InvestadStub struct {
@@ -23,10 +25,10 @@ func NewStub() InvestadStub {
 }
 
 func (s InvestadStub) StartX(base *baseapp.QstarsBaseApp) error {
-	var investMapper = common.NewKvMapper(jianqian.InvestMapperName)
+	var investMapper = jianqian.NewInvestMapper(jianqian.InvestMapperName)
 	base.Baseapp.RegisterMapper(investMapper)
 
-	var investUncheckedMapper = common.NewKvMapper(jianqian.InvestUncheckedMapperName)
+	var investUncheckedMapper = jianqian.NewInvestUncheckedMapper(jianqian.InvestUncheckedMapperName)
 	base.Baseapp.RegisterMapper(investUncheckedMapper)
 
 	return nil
@@ -46,11 +48,22 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 		resultCode = types.ABCICodeType(types.CodeTxDecode)
 	} else {
 		resultCode = qcpTxResult.Result.Code
+		key := in.QcpOriginalExtends //orginalTx.abc
+
+		kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
+		initValue := ""
+		kvMapper.Get([]byte(key), &initValue)
+		if initValue != "-1" {
+			log.Info("This is not my response.")
+			return nil
+		}
+		c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
+		c = c + " " + qcpTxResult.Result.Log
+		kvMapper.Set([]byte(key), c)
 
 		if qcpTxResult.Result.IsOK() {
 			fmt.Printf("investad.InvestadStub ResultNotify update status")
 
-			key := in.QcpOriginalExtends //orginalTx.abc
 			investUncheckedMapper := ctx.Mapper(jianqian.InvestUncheckedMapperName).(*jianqian.InvestUncheckedMapper)
 			investUncheckeds, ok := investUncheckedMapper.GetInvestUncheckeds([]byte(key))
 			if !ok || investUncheckeds == nil {
@@ -79,7 +92,6 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 					investUncheckeds[k].IsChecked = true
 				}
 			}
-
 			investUncheckedMapper.SetInvestUncheckeds([]byte(key), investUncheckeds)
 
 			resultCode = types.ABCICodeType(types.CodeOK)

@@ -5,8 +5,6 @@ package jianqian
 import (
 	"github.com/QOSGroup/qbase/mapper"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	"github.com/tendermint/go-amino"
-
 	"time"
 )
 
@@ -38,11 +36,19 @@ func (im *InvestMapper) Copy() mapper.IMapper {
 	return cpyMapper
 }
 
-func NewInvestMapper(cdc *amino.Codec) *InvestMapper {
-	var im InvestMapper
-	im.BaseMapper = mapper.NewBaseMapper(nil, InvestMapperName)
+func NewInvestMapper(mapperName string) *InvestMapper {
+	var investMapper = InvestMapper{}
+	investMapper.BaseMapper = mapper.NewBaseMapper(nil, mapperName)
+	return &investMapper
+}
 
-	return &im
+func (im *InvestMapper) SaveKV(key string, value string) {
+	im.BaseMapper.Set([]byte(key), value)
+}
+
+func (im *InvestMapper) GetKey(key string) (v string) {
+	im.BaseMapper.Get([]byte(key), &v)
+	return
 }
 
 // Get 查询用户投资情况

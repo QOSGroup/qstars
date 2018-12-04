@@ -5,8 +5,6 @@ package jianqian
 import (
 	"github.com/QOSGroup/qbase/mapper"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	"github.com/tendermint/go-amino"
-
 	"time"
 )
 
@@ -35,28 +33,36 @@ type InvestUncheckedMapper struct {
 
 var _ mapper.IMapper = (*InvestUncheckedMapper)(nil)
 
-func (im *InvestUncheckedMapper) Copy() mapper.IMapper {
+func (ium *InvestUncheckedMapper) Copy() mapper.IMapper {
 	cpyMapper := &InvestUncheckedMapper{}
-	cpyMapper.BaseMapper = im.BaseMapper.Copy()
+	cpyMapper.BaseMapper = ium.BaseMapper.Copy()
 	return cpyMapper
 }
 
-func NewInvestUncheckedMapper(cdc *amino.Codec) *InvestUncheckedMapper {
-	var im InvestUncheckedMapper
-	im.BaseMapper = mapper.NewBaseMapper(nil, InvestUncheckedMapperName)
+func NewInvestUncheckedMapper(mapperName string) *InvestUncheckedMapper {
+	var investUncheckedMapper = InvestUncheckedMapper{}
+	investUncheckedMapper.BaseMapper = mapper.NewBaseMapper(nil, mapperName)
+	return &investUncheckedMapper
+}
 
-	return &im
+func (ium *InvestUncheckedMapper) SaveKV(key string, value string) {
+	ium.BaseMapper.Set([]byte(key), value)
+}
+
+func (ium *InvestUncheckedMapper) GetKey(key string) (v string) {
+	ium.BaseMapper.Get([]byte(key), &v)
+	return
 }
 
 // Get 查询用户投资情况
-func (im *InvestUncheckedMapper) GetInvestUncheckeds(key []byte) (InvestUncheckeds, bool) {
+func (ium *InvestUncheckedMapper) GetInvestUncheckeds(key []byte) (InvestUncheckeds, bool) {
 	var result InvestUncheckeds
-	ok := im.Get(key, &result)
+	ok := ium.Get(key, &result)
 	return result, ok
 }
 
 // Set 添加用户投资
-func (im *InvestUncheckedMapper) SetInvestUncheckeds(key []byte, i InvestUncheckeds) {
-	im.Set(key, i)
+func (ium *InvestUncheckedMapper) SetInvestUncheckeds(key []byte, i InvestUncheckeds) {
+	ium.Set(key, i)
 	return
 }
