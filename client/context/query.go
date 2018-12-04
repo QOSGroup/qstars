@@ -13,6 +13,7 @@ import (
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
+const ACCOUNT_NOT_EXIST = "Account is not exsit."
 // GetNode returns an RPC client. If the context's client is not defined, an
 // error is returned.
 func (ctx CLIContext) GetNode() (rpcclient.Client, error) {
@@ -93,7 +94,7 @@ func (ctx CLIContext) GetAccount(address []byte, cdc *wire.Codec) (*account.QOSA
 	if err != nil {
 		return nil, err
 	} else if len(result) == 0 {
-		return nil, errors.New("Account is not exsit.")
+		return nil, errors.New(ACCOUNT_NOT_EXIST)
 	}
 
 	var acc *account.QOSAccount
