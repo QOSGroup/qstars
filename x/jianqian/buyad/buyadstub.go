@@ -10,8 +10,10 @@ import (
 	"github.com/QOSGroup/qstars/baseapp"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
+	"github.com/prometheus/common/log"
 	go_amino "github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"strconv"
 )
 
 type BuyadStub struct {
@@ -23,8 +25,8 @@ func NewStub() BuyadStub {
 }
 
 func (bs BuyadStub) StartX(base *baseapp.QstarsBaseApp) error {
-	var qosMapper = common.NewKvMapper(jianqian.BuyMapperName)
-	base.Baseapp.RegisterMapper(qosMapper)
+	var buyMapper = jianqian.NewBuyMapper(jianqian.BuyMapperName)
+	base.Baseapp.RegisterMapper(buyMapper)
 
 	return nil
 }
@@ -48,6 +50,19 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 	fmt.Printf("buyad.BuyadStub ResultNotify update status")
 
 	key := in.QcpOriginalExtends //orginalTx.abc
+
+	kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
+	initValue := ""
+	kvMapper.Get([]byte(key), &initValue)
+	if initValue != "-1" {
+		log.Info("This is not my response.")
+		return nil
+	}
+
+	c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
+	c = c + " " + qcpTxResult.Result.Log
+	kvMapper.Set([]byte(key), c)
+
 	buyMapper := ctx.Mapper(jianqian.BuyMapperName).(*jianqian.BuyMapper)
 	buyer, ok := buyMapper.GetBuyer([]byte(key))
 	if !ok || buyer == nil {

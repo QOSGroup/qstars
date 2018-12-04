@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
+	"time"
 )
 
 const (
@@ -75,7 +76,7 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 				return fmt.Errorf("InvestAd tx error:%s ", ri.Reason)
 			}
 
-			result := InvestAdBackground(cdc, string(ri.Result))
+			result := InvestAdBackground(cdc, string(ri.Result), time.Second*60)
 
 			log.Printf(result)
 

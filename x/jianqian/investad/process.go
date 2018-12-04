@@ -14,7 +14,11 @@ import (
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/x/common"
 	"log"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type ResultInvest struct {
@@ -61,10 +65,7 @@ const coinsName = "AOE"
 var tempAddr = qbasetypes.Address("address1wmrup5xemdxzx29jalp5c98t7mywulg8wgxxxx")
 
 // InvestAdBackground 提交到链上
-func InvestAdBackground(cdc *wire.Codec, txb string) string {
-	result := &ResultInvest{}
-	result.Code = "0"
-
+func InvestAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) string {
 	ts := new(txs.TxStd)
 	err := cdc.UnmarshalJSON([]byte(txb), ts)
 	fmt.Printf("InvestAdBackground ts:%+v, txb:%s\n", ts, txb)
@@ -79,10 +80,54 @@ func InvestAdBackground(cdc *wire.Codec, txb string) string {
 		return InternalError(err.Error()).Marshal()
 	}
 
-	//result.Result = []byte(response)
-	//height := strconv.FormatInt(commitresult.Height, 10)
-	//result.Heigth = height
-	return NewResultInvest(cdc, "0", "", commitresult).Marshal()
+	tick := time.NewTicker(timeout)
+	height := strconv.FormatInt(commitresult.Height, 10)
+
+	var code, reason string
+	var result interface{}
+ForEnd:
+	for {
+		select {
+		case <-tick.C:
+			break ForEnd
+		default:
+		}
+
+		resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
+		if err != nil {
+			fmt.Println("get result error:" + err.Error())
+			reason = err.Error()
+		}
+		if resultstr != "" && resultstr != "-1" {
+			fmt.Printf("get result:[%+v]\n", resultstr)
+			rs := []rune(resultstr)
+			index1 := strings.Index(resultstr, " ")
+
+			reason = ""
+			result = string(rs[index1+1:])
+			code = string(rs[:index1])
+			break
+		}
+	}
+
+	return NewResultInvest(cdc, code, reason, result).Marshal()
+}
+
+func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
+	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
+	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), common.QSCResultMapperName)
+	if err != nil {
+		return "", err
+	}
+	if d == nil {
+		return "", nil
+	}
+	var res []byte
+	err = cdc.UnmarshalBinaryBare(d, &res)
+	if err != nil {
+		return "", err
+	}
+	return string(res), err
 }
 
 // InvestAd 投资广告
@@ -138,7 +183,7 @@ func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, n
 	// TODO set zero, temp
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(transferTx, chainId, gas)
-	signature, _ := stx.SignTx(priv, nonce,chainId)
+	signature, _ := stx.SignTx(priv, nonce, chainId)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature,

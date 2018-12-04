@@ -8,7 +8,12 @@ import (
 	qbasetypes "github.com/QOSGroup/qbase/types"
 	qostxs "github.com/QOSGroup/qos/txs/transfer"
 	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
+	"github.com/tendermint/tendermint/crypto/tmhash"
+	tmcommon "github.com/tendermint/tendermint/libs/common"
+
+	"strconv"
 )
 
 type BuyTx struct {
@@ -59,6 +64,12 @@ func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps
 	buyer.BuyTime = ctx.BlockHeader().Time
 	buyer.CheckStatus = jianqian.CheckStatusInit
 	buyMapper.SetBuyer(it.ArticleHash, *buyer)
+
+	heigth1 := strconv.FormatInt(ctx.BlockHeight(), 10)
+	tx1 := (tmcommon.HexBytes)(tmhash.Sum(ctx.TxBytes()))
+	key := "heigth:" + heigth1 + ",hash:" + tx1.String()
+	kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
+	kvMapper.Set([]byte(key), "-1")
 
 	crossTxQcps = &txs.TxQcp{}
 	crossTxQcps.TxStd = it.Std

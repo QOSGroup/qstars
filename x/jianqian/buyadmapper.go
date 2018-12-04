@@ -5,8 +5,6 @@ package jianqian
 import (
 	"github.com/QOSGroup/qbase/mapper"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	"github.com/tendermint/go-amino"
-
 	"time"
 )
 
@@ -40,37 +38,45 @@ type BuyMapper struct {
 
 var _ mapper.IMapper = (*BuyMapper)(nil)
 
-func (im *BuyMapper) Copy() mapper.IMapper {
+func (bm *BuyMapper) Copy() mapper.IMapper {
 	cpyMapper := &BuyMapper{}
-	cpyMapper.BaseMapper = im.BaseMapper.Copy()
+	cpyMapper.BaseMapper = bm.BaseMapper.Copy()
 	return cpyMapper
 }
 
-func NewBuyMapper(cdc *amino.Codec) *BuyMapper {
-	var im BuyMapper
-	im.BaseMapper = mapper.NewBaseMapper(nil, BuyMapperName)
+func NewBuyMapper(mapperName string) *BuyMapper {
+	var buyMapper = BuyMapper{}
+	buyMapper.BaseMapper = mapper.NewBaseMapper(nil, mapperName)
+	return &buyMapper
+}
 
-	return &im
+func (bm *BuyMapper) SaveKV(key string, value string) {
+	bm.BaseMapper.Set([]byte(key), value)
+}
+
+func (bm *BuyMapper) GetKey(key string) (v string) {
+	bm.BaseMapper.Get([]byte(key), &v)
+	return
 }
 
 // Get 查询用户投资情况
-func (im *BuyMapper) GetBuyer(article []byte) (*Buyer, bool) {
+func (bm *BuyMapper) GetBuyer(article []byte) (*Buyer, bool) {
 	key := getBuyKey(article)
 	var result Buyer
-	ok := im.Get(key, &result)
+	ok := bm.Get(key, &result)
 	return &result, ok
 }
 
 // Set 添加用户投资
-func (im *BuyMapper) SetBuyer(article []byte, i Buyer) {
+func (bm *BuyMapper) SetBuyer(article []byte, i Buyer) {
 	key := getBuyKey(article)
-	im.Set(key, i)
+	bm.Set(key, i)
 	return
 }
 
 // Set 删除用户投资
-func (im *BuyMapper) DeleteBuyer(article []byte) {
+func (bm *BuyMapper) DeleteBuyer(article []byte) {
 	key := getBuyKey(article)
-	im.Del(key)
+	bm.Del(key)
 	return
 }
