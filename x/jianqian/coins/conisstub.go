@@ -19,7 +19,6 @@ import (
 const COINNAME = "AOE"
 
 type CoinsStub struct {
-	baseapp.BaseXTransaction
 }
 
 func NewCoinsStub() CoinsStub {
@@ -53,7 +52,7 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 		kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
 		initValue := ""
 		kvMapper.Get([]byte(orginalTxHash), &initValue)
-		if initValue != "-1" {
+		if initValue != cstub.Name() {
 			log.Info("This is not my response.")
 			return nil
 		}
@@ -65,7 +64,7 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 
 		//根据跨链结果 更新记录结果
 		coinsMapper := ctx.Mapper(jianqian.CoinsMapperName).(*jianqian.CoinsMapper)
-		coinsMapper.UpdateCoins(ctx.TxBytes(),c)
+		coinsMapper.UpdateCoins(ctx.TxBytes(), c)
 
 		resultCode = types.ABCICodeType(types.CodeOK)
 	}
@@ -77,4 +76,8 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 
 func (cstub CoinsStub) CustomerQuery(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error) {
 	return nil, nil
+}
+
+func (cstub CoinsStub) Name() string {
+	return "CoinsStub"
 }

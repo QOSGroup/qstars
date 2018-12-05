@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qbase/baseabci"
 	"github.com/QOSGroup/qbase/server"
+	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qos/account"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
+	"github.com/QOSGroup/qstars/x/common"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 	"os"
@@ -93,11 +95,27 @@ func (base *QstarsBaseApp) RegisterCDC(cdc *go_amino.Codec) {
 }
 
 func (base *QstarsBaseApp) TxQcpResultHandler(ctx context.Context, txQcpResult interface{}) types.Result {
+	defer func() {
+		if msg := recover(); msg != nil {
+			fmt.Printf("baseapp TxQcpResultHandler panic %+v\n", msg)
+		}
+	}()
+
 	var rr types.Result
+	fmt.Printf("baseapp TransactionList %+v\n", base.TransactionList)
 	for _, c := range base.TransactionList {
-		tmprr := c.ResultNotify(ctx, txQcpResult)
-		if tmprr != nil {
-			rr = *tmprr
+		fmt.Printf("baseapp kvMapper c:%+v\n", c)
+		initValue := ""
+		fmt.Printf("baseapp txQcpResult %+v\n", txQcpResult)
+		in := txQcpResult.(*txs.QcpTxResult)
+		key := in.QcpOriginalExtends
+		fmt.Printf("baseapp kvMapper-1 key:%s, value:%s, name:%s\n", key, initValue, c.Name())
+		kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
+		kvMapper.Get([]byte(key), &initValue)
+		fmt.Printf("baseapp kvMapper-2 key:%s, value:%s, name:%s\n", key, initValue, c.Name())
+		if initValue == c.Name() {
+			tmprr := c.ResultNotify(ctx, txQcpResult)
+			return *tmprr
 		}
 	}
 	return rr

@@ -26,7 +26,7 @@ func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOrig
 }
 
 func InvestAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
-	result := investad.InvestAd(CDC, chainId, articleHash, coins, privatekey, nonce)
+	result := investad.InvestAd(CDC, chainId, articleHash, coins, privatekey, nonce, nonce)
 	output, err := CDC.MarshalJSON(result)
 	if err != nil {
 		return err.Error()
@@ -36,7 +36,7 @@ func InvestAd(chainId, articleHash, coins, privatekey string, nonce int64) strin
 }
 
 func BuyAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
-	result := buyad.BuyAd(CDC, chainId, articleHash, coins, privatekey, nonce)
+	result := buyad.BuyAd(CDC, chainId, articleHash, coins, privatekey, nonce, nonce)
 	output, err := CDC.MarshalJSON(result)
 	if err != nil {
 		return err.Error()

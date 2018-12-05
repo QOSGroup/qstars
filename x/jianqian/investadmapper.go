@@ -5,6 +5,7 @@ package jianqian
 import (
 	"github.com/QOSGroup/qbase/mapper"
 	qbasetypes "github.com/QOSGroup/qbase/types"
+	"log"
 	"time"
 )
 
@@ -53,6 +54,7 @@ func (im *InvestMapper) GetKey(key string) (v string) {
 
 // Get 查询用户投资情况
 func (im *InvestMapper) GetInvestor(key []byte) (Investor, bool) {
+	log.Printf("jianqian.GetInvestor key:%+v", key)
 	var result Investor
 	ok := im.Get(key, &result)
 	return result, ok
@@ -60,17 +62,23 @@ func (im *InvestMapper) GetInvestor(key []byte) (Investor, bool) {
 
 // Set 添加用户投资
 func (im *InvestMapper) SetInvestor(key []byte, i Investor) {
+	log.Printf("jianqian.SetInvestor key:%+v, v:%+v", key, i)
 	im.Set(key, i)
 	return
 }
 
 // Iterator
 func (im *InvestMapper) AllInvestors(article []byte) []Investor {
+	log.Printf("jianqian.AllInvestors article:%+v", article)
+
 	var investors []Investor
 
 	im.Iterator(article, func(val []byte) (stop bool) {
+		log.Printf("jianqian.AllInvestors Iterator")
 		var investor Investor
 		im.DecodeObject(val, &investor)
+		log.Printf("jianqian.AllInvestors Iterator val:%+v, investor:%+v", val, investor)
+		investors = append(investors, investor)
 		return false
 	})
 

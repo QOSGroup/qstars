@@ -11,7 +11,6 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 )
 
-
 //活动奖励
 type DispatchAOETx struct {
 	Wrapper *txs.TxStd //已封装好的 TxCreateQSC 结构体
@@ -21,7 +20,7 @@ type DispatchAOETx struct {
 	CoinAmount []types.BigInt
 	CausesCode []string
 	CausesStr  []string
-	Gas types.BigInt
+	Gas        types.BigInt
 }
 
 func (tx DispatchAOETx) ValidateData(ctx context.Context) error {
@@ -42,15 +41,15 @@ func (tx DispatchAOETx) ValidateData(ctx context.Context) error {
 // 业务端实现中crossTxQcp只需包含`to` 和 `txStd`
 func (tx DispatchAOETx) Exec(ctx context.Context) (result types.Result, crossTxQcps *txs.TxQcp) {
 
-	awards:=make([]jianqian.ActivityAward,0)
+	awards := make([]jianqian.ActivityAward, 0)
 	coinsMapper := ctx.Mapper(jianqian.CoinsMapperName).(*jianqian.CoinsMapper)
 	for i, v := range tx.Address {
-		award:=jianqian.ActivityAward{v,tx.CoinAmount[i],tx.CausesCode[i],tx.CausesStr[i]}
-		awards=append(awards,award)
+		award := jianqian.ActivityAward{v, tx.CoinAmount[i], tx.CausesCode[i], tx.CausesStr[i]}
+		awards = append(awards, award)
 	}
 	tx1 := (common.HexBytes)(tmhash.Sum(ctx.TxBytes()))
 
-	coins:=jianqian.Coins{tx1.String(),tx.From,awards,"-1"}
+	coins := jianqian.Coins{tx1.String(), tx.From, awards, "-1"}
 	coinsMapper.SetCoins(&coins)
 	//跨链
 	crossTxQcps = &txs.TxQcp{}
@@ -81,6 +80,10 @@ func (tx DispatchAOETx) GetSignData() (ret []byte) {
 		ret = append(ret, tx.CausesStr[i]...)
 	}
 	return ret
+}
+
+func (tx DispatchAOETx) Name() string {
+	return "DispatchAOETx"
 }
 
 func NewDispatchAOE(Wrapper *txs.TxStd, From types.Address, to []types.Address, coinAmount []types.BigInt, causecode, causestr []string, gas types.BigInt) DispatchAOETx {

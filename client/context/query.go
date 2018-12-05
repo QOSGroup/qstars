@@ -14,6 +14,7 @@ import (
 )
 
 const ACCOUNT_NOT_EXIST = "Account is not exsit."
+
 // GetNode returns an RPC client. If the context's client is not defined, an
 // error is returned.
 func (ctx CLIContext) GetNode() (rpcclient.Client, error) {

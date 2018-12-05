@@ -5,14 +5,13 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	btypes "github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qstars/config"
 	starcommon "github.com/QOSGroup/qstars/x/common"
 	"github.com/prometheus/common/log"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/common"
 	"strconv"
-	"github.com/QOSGroup/qstars/config"
 )
-
 
 type WrapperSendTx struct {
 	Wrapper *txs.TxStd
@@ -28,7 +27,7 @@ func (tx WrapperSendTx) ValidateData(ctx context.Context) error {
 
 	return nil
 }
-func GetResultKey(heigth1 string, tx1 string) string{
+func GetResultKey(heigth1 string, tx1 string) string {
 	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
 	return qstarskey
 }
@@ -47,10 +46,10 @@ func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTx
 	kvMapper := ctx.Mapper(starcommon.QSCResultMapperName).(*starcommon.KvMapper)
 	heigth1 := strconv.FormatInt(ctx.BlockHeight(), 10)
 	tx1 := (common.HexBytes)(tmhash.Sum(ctx.TxBytes()))
-	qstarskey := GetResultKey(heigth1,tx1.String())
-	log.Info("new request key:"+qstarskey)
+	qstarskey := GetResultKey(heigth1, tx1.String())
+	log.Info("new request key:" + qstarskey)
 	qk := []byte(qstarskey)
-	kvMapper.Set(qk, "-1")
+	kvMapper.Set(qk, BankStub{}.Name())
 
 	crossTxQcps.TxStd = tx.Wrapper
 	crossTxQcps.To = config.GetServerConf().QOSChainName
@@ -76,4 +75,8 @@ func (tx WrapperSendTx) GetGasPayer() btypes.Address {
 
 func (tx WrapperSendTx) GetSignData() []byte {
 	return tx.Wrapper.ITx.GetSignData()
+}
+
+func (tx WrapperSendTx) Name() string {
+	return "WrapperSendTx"
 }

@@ -26,10 +26,11 @@ const (
 
 // Buyer 买家
 type Buyer struct {
-	Address     qbasetypes.Address `json:"address"`   // 买家地址
-	Buy         qbasetypes.BigInt  `json:"buyad"`     // 购买金额
-	BuyTime     time.Time          `json:"buyTime"`   // 购买时间
-	CheckStatus CheckStatus        `json:"isChecked"` // 验证状态
+	ArticleHash []byte             `json:"articleHash"` // 文章hash
+	Address     qbasetypes.Address `json:"address"`     // 买家地址
+	Buy         qbasetypes.BigInt  `json:"buyad"`       // 购买金额
+	BuyTime     time.Time          `json:"buyTime"`     // 购买时间
+	CheckStatus CheckStatus        `json:"isChecked"`   // 验证状态
 }
 
 type BuyMapper struct {

@@ -62,7 +62,7 @@ func (ri ResultInvest) Marshal() string {
 
 const coinsName = "AOE"
 
-var tempAddr = qbasetypes.Address("address1wmrup5xemdxzx29jalp5c98t7mywulg8wgxxxx")
+var tempAddr = qbasetypes.Address("99999999999999999999")
 
 // InvestAdBackground 提交到链上
 func InvestAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) string {
@@ -80,26 +80,32 @@ func InvestAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) stri
 		return InternalError(err.Error()).Marshal()
 	}
 
-	tick := time.NewTicker(timeout)
 	height := strconv.FormatInt(commitresult.Height, 10)
-
 	var code, reason string
 	var result interface{}
-ForEnd:
+
+	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
+	if err != nil {
+		panic("WaitingForQosResult should be able to convert to integer." + err.Error())
+	}
+	counter := 0
+
 	for {
-		select {
-		case <-tick.C:
-			break ForEnd
-		default:
+		if counter >= waittime {
+			log.Println("time out")
+			result = "time out"
+			break
+		}
+		resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
+		log.Printf("fetchResult result:%s, err:%+v\n", resultstr, err)
+		if err != nil {
+			log.Printf("fetchResult error:%s\n", err.Error())
+			reason = err.Error()
+			break
 		}
 
-		resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
-		if err != nil {
-			fmt.Println("get result error:" + err.Error())
-			reason = err.Error()
-		}
-		if resultstr != "" && resultstr != "-1" {
-			fmt.Printf("get result:[%+v]\n", resultstr)
+		if resultstr != "" && resultstr != (InvestadStub{}).Name() {
+			log.Printf("fetchResult result:[%+v]\n", resultstr)
 			rs := []rune(resultstr)
 			index1 := strings.Index(resultstr, " ")
 
@@ -108,6 +114,8 @@ ForEnd:
 			code = string(rs[:index1])
 			break
 		}
+		time.Sleep(500 * time.Millisecond)
+		counter++
 	}
 
 	return NewResultInvest(cdc, code, reason, result).Marshal()
@@ -131,11 +139,11 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 }
 
 // InvestAd 投资广告
-func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, nonce int64) string {
+func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosnonce, qscnonce int64) string {
 	var result ResultInvest
 	result.Code = "0"
 
-	tx, err := investAd(cdc, chainId, articleHash, coins, privatekey, nonce)
+	tx, err := investAd(cdc, chainId, articleHash, coins, privatekey, qosnonce, qscnonce)
 	if err != nil {
 		log.Printf("investAd err:%s", err.Error())
 		result.Code = "-1"
@@ -156,7 +164,7 @@ func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, n
 }
 
 // investAd 投资广告
-func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, nonce int64) (*txs.TxStd, error) {
+func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosnonce, qscnonce int64) (*txs.TxStd, error) {
 	cs, err := types.ParseCoins(coins)
 	if err != nil {
 		return nil, err
@@ -177,23 +185,30 @@ func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, n
 			Amount: qbasetypes.NewInt(coin.Amount.Int64()),
 		})
 	}
-	nonce++
+	qosnonce += 1
 
 	transferTx := NewTransfer(investor, tempAddr, ccs)
 	// TODO set zero, temp
 	gas := qbasetypes.NewInt(int64(0))
-	stx := txs.NewTxStd(transferTx, chainId, gas)
-	signature, _ := stx.SignTx(priv, nonce, chainId)
+	stx := txs.NewTxStd(transferTx, config.GetCLIContext().Config.QOSChainID, gas)
+	signature, _ := stx.SignTx(priv, qosnonce, config.GetCLIContext().Config.QSCChainID)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature,
-		Nonce:     nonce,
+		Nonce:     qosnonce,
 	}}
 
+	qscnonce += 1
 	it := &InvestTx{}
 	it.ArticleHash = []byte(articleHash)
 	it.Std = stx
-	tx2 := txs.NewTxStd(it, chainId, stx.MaxGas)
+	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
+	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID)
+	tx2.Signature = []txs.Signature{txs.Signature{
+		Pubkey:    priv.PubKey(),
+		Signature: signature2,
+		Nonce:     qscnonce,
+	}}
 
 	return tx2, nil
 }
@@ -204,7 +219,7 @@ func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qost
 	ti.QOS = qbasetypes.NewInt(0)
 
 	for _, coin := range coins {
-		if coin.Name == "qos" {
+		if strings.ToUpper(coin.Name) == "QOS" {
 			ti.QOS = ti.QOS.Add(coin.Amount)
 		} else {
 			ti.QSCs = append(ti.QSCs, &coin)
