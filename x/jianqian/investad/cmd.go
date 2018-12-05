@@ -4,7 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/QOSGroup/qbase/account"
+	qosaccount "github.com/QOSGroup/qos/account"
+
 	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/types"
+	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/spf13/cobra"
@@ -35,6 +40,14 @@ func InvestadCmd(cdc *wire.Codec) *cobra.Command {
 	return cmd
 }
 
+func getQOSAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
+	return config.GetCLIContext().QOSCliContext.GetAccount(address, cdc)
+}
+
+func getQSCAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
+	return config.GetCLIContext().QSCCliContext.GetAccount(address, cdc)
+}
+
 func investadCmd(cdc *wire.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "invest",
@@ -51,21 +64,25 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 			investor := viper.GetString(flagInvestor) //Teddy changes
 			coins := viper.GetString(flagCoins)
 
-			//_, addrben32, _ := utility.PubAddrRetrievalFromAmino(investor, cdc)
-			//from, err := types.AccAddressFromBech32(addrben32)
-			//key := account.AddressStoreKey(from)
-			//if err != nil {
-			//	return err
-			//}
-			//acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
-			//if err != nil {
-			//	return err
-			//}
-			//nonce := int64(acc.Nonce)
-			//nonce++
-			nonce := int64(0)
+			_, addrben32, _ := utility.PubAddrRetrievalFromAmino(investor, cdc)
+			from, err := types.AccAddressFromBech32(addrben32)
+			key := account.AddressStoreKey(from)
+			if err != nil {
+				return err
+			}
+			qosacc, err := getQOSAcc(key, cdc)
+			if err != nil {
+				return err
+			}
+			qosnonce := int64(qosacc.Nonce)
 
-			tx := InvestAd(cdc, chainid, articleHash, coins, investor, nonce)
+			qscacc, err := getQSCAcc(key, cdc)
+			if err != nil {
+				return err
+			}
+			qscnonce := int64(qscacc.Nonce)
+
+			tx := InvestAd(cdc, chainid, articleHash, coins, investor, qosnonce, qscnonce)
 			fmt.Printf("InvestAd:%s\n", tx)
 			var ri ResultInvest
 			if err := json.Unmarshal([]byte(tx), &ri); err != nil {

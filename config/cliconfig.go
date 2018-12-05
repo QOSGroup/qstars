@@ -24,6 +24,12 @@ type CLIConfig struct {
 	QSTARSNodeURI       string `mapstructure:"qstars_node_uri"`
 	DirectTOQOS         bool   `mapstructure:"direct_to_qos"`
 	WaitingForQosResult string `mapstructure:"waiting_for_qos_result"`
+
+	Community   string `mapstructure:"community"`
+	Authormock  string `mapstructure:"authormock"`
+	Adbuyermock string `mapstructure:"adbuyermock"`
+	Banker      string `mapstructure:"banker"`
+	Dappowner   string `mapstructure:"dappowner"`
 }
 
 func GetCLIContext() QStarsClientContext {
@@ -79,10 +85,7 @@ func InterceptLoadConfig() (conf *CLIConfig, err error) {
 	return
 }
 
-func
-
-
-DefaultConfig() *CLIConfig {
+func DefaultConfig() *CLIConfig {
 	var result *CLIConfig
 	result = &CLIConfig{} //RootDir:"~/.qstarscli"
 	//if len(result.RootDir) == 0 {

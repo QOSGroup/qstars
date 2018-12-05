@@ -6,6 +6,7 @@ import (
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/wire"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+	"log"
 )
 
 // SendTx implements a auxiliary handler that facilitates sending a series of
@@ -22,6 +23,10 @@ func SendTx(cliCtx context.CLIContext, cdc *wire.Codec, txStd *txs.TxStd) (strin
 	if err != nil {
 		panic("use cdc encode object fail")
 	}
+
+	tmpStd := new(txs.TxStd)
+	err = cdc.UnmarshalBinaryBare(txBytes, tmpStd)
+	log.Printf("[SendTx] tmpStd:%+v,err:%+v", tmpStd, err)
 
 	// broadcast to a Tendermint node
 	resJSON, err := cliCtx.EnsureBroadcastTx(txBytes)
