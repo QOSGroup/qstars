@@ -3,6 +3,7 @@ package buyad
 import (
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
+	qosaccount "github.com/QOSGroup/qos/account"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
@@ -20,6 +21,14 @@ const (
 	flagArticleHash = "articleHash"
 	flagChainid     = "chainid"
 )
+
+func getQOSAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
+	return config.GetCLIContext().QOSCliContext.GetAccount(address, cdc)
+}
+
+func getQSCAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
+	return config.GetCLIContext().QSCCliContext.GetAccount(address, cdc)
+}
 
 // BuyadCmd will create a send tx and sign it with the given key.
 func BuyadCmd(cdc *wire.Codec) *cobra.Command {
@@ -44,14 +53,19 @@ func BuyadCmd(cdc *wire.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
+			qosacc, err := getQOSAcc(key, cdc)
 			if err != nil {
 				return err
 			}
-			nonce := int64(acc.Nonce)
-			nonce++
+			qosnonce := int64(qosacc.Nonce)
 
-			tx := BuyAd(cdc, chainid, articleHash, coins, buyer, nonce)
+			qscacc, err := getQSCAcc(key, cdc)
+			if err != nil {
+				return err
+			}
+			qscnonce := int64(qscacc.Nonce)
+
+			tx := BuyAd(cdc, chainid, articleHash, coins, buyer, qosnonce, qscnonce)
 			result := BuyAdBackground(cdc, tx, time.Second*60)
 
 			log.Printf(result)

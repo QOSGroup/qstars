@@ -69,7 +69,7 @@ func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps
 	tx1 := (tmcommon.HexBytes)(tmhash.Sum(ctx.TxBytes()))
 	key := "heigth:" + heigth1 + ",hash:" + tx1.String()
 	kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
-	kvMapper.Set([]byte(key), "-1")
+	kvMapper.Set([]byte(key), it.Name())
 
 	crossTxQcps = &txs.TxQcp{}
 	crossTxQcps.TxStd = it.Std
@@ -95,4 +95,8 @@ func (it BuyTx) GetSignData() []byte {
 	sd := it.Std.ITx.GetSignData()
 
 	return append(sd, it.ArticleHash...)
+}
+
+func (it BuyTx) Name() string {
+	return "BuyTx"
 }

@@ -65,7 +65,7 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 
 		//根据跨链结果 更新记录结果
 		coinsMapper := ctx.Mapper(jianqian.CoinsMapperName).(*jianqian.CoinsMapper)
-		coinsMapper.UpdateCoins(ctx.TxBytes(),c)
+		coinsMapper.UpdateCoins(ctx.TxBytes(), c)
 
 		resultCode = types.ABCICodeType(types.CodeOK)
 	}

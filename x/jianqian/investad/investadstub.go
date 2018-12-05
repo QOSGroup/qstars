@@ -1,7 +1,6 @@
 package investad
 
 import (
-	"fmt"
 	"github.com/QOSGroup/qbase/baseabci"
 	"github.com/QOSGroup/qbase/context"
 	ctx "github.com/QOSGroup/qbase/context"
@@ -10,9 +9,9 @@ import (
 	"github.com/QOSGroup/qstars/baseapp"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
-	"github.com/prometheus/common/log"
 	go_amino "github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"log"
 	"strconv"
 )
 
@@ -40,11 +39,11 @@ func (s InvestadStub) RegisterCdc(cdc *go_amino.Codec) {
 
 func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	in := txQcpResult.(*txs.QcpTxResult)
-	fmt.Printf("investad.InvestadStub ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
+	log.Printf("investad.InvestadStub ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
 	var resultCode types.ABCICodeType
 	qcpTxResult, ok := baseabci.ConvertTxQcpResult(txQcpResult)
 	if ok == false {
-		fmt.Printf("ResultNotify ConvertTxQcpResult error.")
+		log.Printf("investad.InvestadStub ResultNotify ConvertTxQcpResult error.")
 		resultCode = types.ABCICodeType(types.CodeTxDecode)
 	} else {
 		resultCode = qcpTxResult.Result.Code
@@ -53,21 +52,24 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 		kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
 		initValue := ""
 		kvMapper.Get([]byte(key), &initValue)
-		if initValue != "-1" {
-			log.Info("This is not my response.")
+		log.Printf("investad.InvestadStub kvMapper-1 key:[%s], value:[%s]", key, initValue)
+		if initValue != (InvestTx{}).Name() {
+			log.Printf("investad.InvestadStub This is not my response.")
 			return nil
 		}
 		c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
 		c = c + " " + qcpTxResult.Result.Log
+		log.Printf("investad.InvestadStub kvMapper-2 key:[%s], value:[%s]", key, c)
+
 		kvMapper.Set([]byte(key), c)
 
 		if qcpTxResult.Result.IsOK() {
-			fmt.Printf("investad.InvestadStub ResultNotify update status")
+			log.Printf("investad.InvestadStub ResultNotify update status")
 
 			investUncheckedMapper := ctx.Mapper(jianqian.InvestUncheckedMapperName).(*jianqian.InvestUncheckedMapper)
 			investUncheckeds, ok := investUncheckedMapper.GetInvestUncheckeds([]byte(key))
 			if !ok || investUncheckeds == nil {
-				fmt.Printf("This is not my response.")
+				log.Printf("investad.InvestadStub This is not my response.")
 				return nil
 			}
 
@@ -121,7 +123,7 @@ func (s InvestadStub) CustomerQuery(ctx ctx.Context, route []string, req abci.Re
 	key := route[2]
 
 	investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
-	fmt.Printf("%+v", investMapper)
+	log.Printf("%+v", investMapper)
 	result := investMapper.AllInvestors([]byte(key))
 
 	return investMapper.EncodeObject(result), nil

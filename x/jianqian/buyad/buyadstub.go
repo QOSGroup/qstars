@@ -54,7 +54,7 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 	kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
 	initValue := ""
 	kvMapper.Get([]byte(key), &initValue)
-	if initValue != "-1" {
+	if initValue != (BuyTx{}).Name() {
 		log.Info("This is not my response.")
 		return nil
 	}

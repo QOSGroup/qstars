@@ -93,8 +93,28 @@ func (base *QstarsBaseApp) RegisterCDC(cdc *go_amino.Codec) {
 }
 
 func (base *QstarsBaseApp) TxQcpResultHandler(ctx context.Context, txQcpResult interface{}) types.Result {
+	defer func() {
+		if msg := recover(); msg != nil {
+			fmt.Printf("baseapp TxQcpResultHandler panic %+v\n", msg)
+		}
+	}()
+
 	var rr types.Result
 	for _, c := range base.TransactionList {
+		//fmt.Printf("baseapp kvMapper\n")
+		//initValue := ""
+		//fmt.Printf("baseapp %+v\n", txQcpResult)
+		//in := txQcpResult.(*txs.QcpTxResult)
+		//key := in.QcpOriginalExtends
+		//fmt.Printf("baseapp kvMapper-1 key:%s, value:%s, name:%s\n", key, initValue, c.Name())
+		//kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
+		//kvMapper.Get([]byte(key), &initValue)
+		//fmt.Printf("baseapp kvMapper-2 key:%s, value:%s, name:%s\n", key, initValue, c.Name())
+		//if initValue == c.Name() {
+		//tmprr := c.ResultNotify(ctx, txQcpResult)
+		//return *tmprr
+		//}
+
 		tmprr := c.ResultNotify(ctx, txQcpResult)
 		if tmprr != nil {
 			rr = *tmprr

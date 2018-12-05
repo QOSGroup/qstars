@@ -47,11 +47,11 @@ func (it InvestTx) ValidateData(ctx context.Context) error {
 		return err
 	}
 
-	return it.Std.ITx.ValidateData(ctx)
+	return nil
 }
 
 func getInvestAmount(qscs qostypes.QSCs) qbasetypes.BigInt {
-	var amount qbasetypes.BigInt
+	amount := qbasetypes.NewInt(0)
 	for _, v := range qscs {
 		if v.Name == coinsName {
 			amount = amount.Add(v.Amount)
@@ -85,7 +85,9 @@ func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQ
 	investUncheckedMapper.Set([]byte(key), values)
 
 	kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
-	kvMapper.Set([]byte(key), "-1")
+	value := it.Name()
+	kvMapper.Set([]byte(key), value)
+	log.Printf("investad.handler kvMapper key:[%s], value:[%s]", key, value)
 
 	crossTxQcps = &txs.TxQcp{}
 	crossTxQcps.TxStd = it.Std
@@ -109,6 +111,9 @@ func (it InvestTx) GetGasPayer() qbasetypes.Address {
 
 func (it InvestTx) GetSignData() []byte {
 	sd := it.Std.ITx.GetSignData()
-
 	return append(sd, it.ArticleHash...)
+}
+
+func (it InvestTx) Name() string {
+	return "InvestTx"
 }
