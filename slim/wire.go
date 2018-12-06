@@ -51,7 +51,7 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(&Signature{}, "qbase/txs/signature", nil)
 	cdc.RegisterConcrete(&TxStd{}, "qbase/txs/stdtx", nil)
 	cdc.RegisterInterface((*ITx)(nil), nil)
-	cdc.RegisterConcrete(&TransferTx{}, "qos/txs/TransferTx", nil)
+	cdc.RegisterConcrete(&TxTransfer{}, "qos/txs/TxTransfer", nil)
 	cdc.RegisterConcrete(&QOSAccount{}, "qbase/account/QOSAccount", nil)
 	cdc.RegisterConcrete(&BaseAccount{}, "qbase/account/BaseAccount", nil)
 }

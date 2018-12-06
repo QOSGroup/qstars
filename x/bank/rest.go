@@ -1,6 +1,8 @@
 package bank
 
 import (
+	"github.com/QOSGroup/qstars/config"
+	"github.com/prometheus/common/log"
 	"io/ioutil"
 	"net/http"
 
@@ -37,6 +39,14 @@ func RegisterRoutes(cdc *wire.Codec, r *mux.Router) {
 
 		lib.HttpResponseWrapper(w, cdc, result, err)
 	}).Methods("POST")
+
+	//Restful interface for Query commit result function
+	r.HandleFunc("/commits/{qstarskey}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qstarskey := vars["qstarskey"]
+		result, err := queryCommitResult(qstarskey)
+		lib.HttpResponseWrapper(w, cdc, result, err)
+	}).Methods("GET")
 }
 
 type sendBody struct {
@@ -94,4 +104,22 @@ func (sb *sendBody) Send(cdc *wire.Codec) (*SendResult, error) {
 		fee(viper.GetString("fee"))))
 
 	return result, err
+}
+
+func queryCommitResult(qk string) (string, error) {
+	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qk), QSCResultMapperName)
+	log.Infof("QueryStore: %+v, %+v\n", d, err)
+	if err != nil {
+		return "", err
+	}
+	if d == nil {
+		return "", nil
+	}
+	var res []byte
+	err = msgCdc.UnmarshalBinaryBare(d, &res)
+	if err != nil {
+		return "", err
+	}
+
+	return string(res), err
 }

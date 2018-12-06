@@ -51,6 +51,17 @@ func QSCtransferSend(addrto, coinstr, privkey, chainid string) string {
 	return output
 }
 
+//for QOSCommitResultCheck
+func QOSCommitResultCheck(txhash, height string) string {
+	output := slim.QOSCommitResultCheck(txhash, height)
+	return output
+}
+
+func JQInvestAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
+	output := slim.JQInvestAd(chainId, articleHash, coins, privatekey, nonce)
+	return output
+}
+
 //func QSCtransfer() {
 //	output := slim.QSCtransferSendStr("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "22qos", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "qos-testapp")
 //	fmt.Println(output)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -20,6 +21,7 @@ var (
 	Mhost      string
 	Accounturl string
 	KVurl      string
+	QResulturl string
 )
 
 //set Block Chain entrance hosts for both Qstars and Qmoon
@@ -28,6 +30,7 @@ func SetBlockchainEntrance(qstarshost, qmoonhost string) {
 	Mhost = qmoonhost
 	Accounturl = "http://" + Shost + "/accounts/"
 	KVurl = "http://" + Shost + "/kv"
+	QResulturl = "http://" + Shost + "/commits/"
 
 }
 
@@ -63,7 +66,7 @@ func QSCKVStoreGetQuery(k string) string {
 	if resp.StatusCode == http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			//log.Fatal(err)
 		}
 		defer resp.Body.Close()
@@ -81,11 +84,31 @@ func QSCQueryAccountGet(addr string) string {
 	if resp.StatusCode == http.StatusOK {
 		body, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}
 
 	defer resp.Body.Close()
 	output := string(body)
 	return output
+}
+
+//for QOSCommitResultCheck Restful interface
+func QOSCommitResultCheck(txhash, height string) string {
+	qstarskey := "heigth:" + height + ",hash:" + txhash
+	qrcurl := QResulturl + qstarskey
+	resp, _ := http.Get(qrcurl)
+	var body []byte
+	var err error
+	if resp.StatusCode == http.StatusOK {
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	defer resp.Body.Close()
+	output := fmt.Sprintf("This function has not been realized in QOS yet:%v", string(body))
+	return output
+
 }
