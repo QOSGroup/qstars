@@ -10,6 +10,7 @@ import (
 	"github.com/QOSGroup/qstars/slim/funcInlocal/respwrap"
 	"github.com/pkg/errors"
 	"io/ioutil"
+	"log"
 	"math/big"
 	"net/http"
 	"regexp"
@@ -134,7 +135,7 @@ func Int2Byte(in int64) []byte {
 	var ret = bytes.NewBuffer([]byte{})
 	err := binary.Write(ret, binary.BigEndian, in)
 	if err != nil {
-		fmt.Printf("Int2Byte error:%s", err.Error())
+		log.Printf("Int2Byte error:%s", err.Error())
 		return nil
 	}
 
@@ -167,18 +168,38 @@ func (tx *TxStd) GetSignData() []byte {
 }
 
 // 签名：每个签名者外部调用此方法
-func (tx *TxStd) SignTx(privkey ed25519local.PrivKey, nonce int64) (signedbyte []byte, err error) {
+func (tx *TxStd) SignTx(privkey ed25519local.PrivKey, nonce int64, fromChainID string) (signedbyte []byte, err error) {
 	if tx.ITx == nil {
 		return nil, errors.New("Signature txstd err(itx is nil)")
 	}
 
-	sigdata := append(tx.GetSignData(), Int2Byte(nonce)...)
-	signedbyte, err = privkey.Sign(sigdata)
+	bz := tx.BuildSignatureBytes(nonce, fromChainID)
+	signedbyte, err = privkey.Sign(bz)
 	if err != nil {
 		return nil, err
 	}
 
 	return
+}
+
+func (tx *TxStd) BuildSignatureBytes(nonce int64, qcpFromChainID string) []byte {
+	bz := tx.getSignData()
+	bz = append(bz, Int2Byte(nonce)...)
+	bz = append(bz, []byte(qcpFromChainID)...)
+
+	return bz
+}
+
+func (tx *TxStd) getSignData() []byte {
+	if tx.ITx == nil {
+		panic("ITx shouldn't be nil in TxStd.GetSignData()")
+	}
+
+	ret := tx.ITx.GetSignData()
+	ret = append(ret, []byte(tx.ChainID)...)
+	ret = append(ret, Int2Byte(tx.MaxGas.Int64())...)
+
+	return ret
 }
 
 type ITx interface {
@@ -208,7 +229,7 @@ func NewTxStd(itx ITx, cid string, mgas BigInt) (rTx *TxStd) {
 func genStdSendTx(sendTx ITx, priKey ed25519local.PrivKeyEd25519, chainid string, nonce int64) *TxStd {
 	gas := NewBigInt(int64(0))
 	stx := NewTxStd(sendTx, chainid, gas)
-	signature, _ := stx.SignTx(priKey, nonce)
+	signature, _ := stx.SignTx(priKey, nonce, chainid)
 	stx.Signature = []Signature{Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
@@ -287,13 +308,13 @@ type TransItem struct {
 	QSCs    QSCs    `json:"qscs"` // QSCs
 }
 
-type TransferTx struct {
+type TxTransfer struct {
 	Senders   []TransItem `json:"senders"`   // 发送集合
 	Receivers []TransItem `json:"receivers"` // 接收集合
 }
 
 // 签名字节
-func (tx TransferTx) GetSignData() (ret []byte) {
+func (tx TxTransfer) GetSignData() (ret []byte) {
 	for _, sender := range tx.Senders {
 		ret = append(ret, sender.Address...)
 		ret = append(ret, (sender.QOS.NilToZero()).String()...)
@@ -326,7 +347,7 @@ func warpperTransItem(addr Address, coins []BaseCoin) TransItem {
 
 // NewTransfer ...
 func NewTransfer(sender Address, receiver Address, coin []BaseCoin) ITx {
-	var sendTx TransferTx
+	var sendTx TxTransfer
 
 	sendTx.Senders = append(sendTx.Senders, warpperTransItem(sender, coin))
 	sendTx.Receivers = append(sendTx.Receivers, warpperTransItem(receiver, coin))
@@ -474,15 +495,8 @@ type QOSAccount struct {
 func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	//generate the receiver address, i.e. "addrto" with the following format
 	to := getAddrFromBech32(addrto)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//generate the sender address, i.e. the "from" part as the input with privkey in hex string format
-	//_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cmCdc)
 	var key ed25519local.PrivKeyEd25519
 	ts := "{\"type\": \"tendermint/PrivKeyEd25519\",\"value\": \"" + privkey + "\"}"
-	//bz, _ := base64.StdEncoding.DecodeString(privkey)
-	//Cdc.MustUnmarshalBinaryBare(bz, &key)
 	err := Cdc.UnmarshalJSON([]byte(ts), &key)
 	if err != nil {
 		fmt.Println(err)
@@ -547,24 +561,100 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	return output
 }
 
-//const QSCResultMapperName = "qstarsResult"
-//
-//func QOSCommitResultCheck(txhash, height string) string {
-//	qstarskey := "heigth:" + height + ",hash:" + txhash
-//	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), QSCResultMapperName)
-//
-//	log.Fatalf("QueryStore: %+v, %+v\n", d, err)
-//	if err != nil {
-//		return "null"
-//	}
-//	if d == nil {
-//		return "null"
-//	}
-//	var res []byte
-//	err = Cdc.UnmarshalBinaryBare(d, &res)
-//	if err != nil {
-//		return "null"
-//	}
-//
-//	return string(res)
-//}
+type InvestTx struct {
+	Std         *TxStd
+	ArticleHash []byte `json:"articleHash"` // 文章hash
+}
+
+func (it InvestTx) GetSignData() []byte {
+	sd := it.Std.ITx.GetSignData()
+
+	return append(sd, it.ArticleHash...)
+}
+
+var _ ITx = (*InvestTx)(nil)
+
+type ResultInvest struct {
+	Code   string          `json:"code"`
+	Reason string          `json:"reason,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
+}
+
+func InternalError(reason string) ResultInvest {
+	return ResultInvest{Code: "-1", Reason: reason}
+}
+
+func (ri ResultInvest) Marshal() string {
+	jsonBytes, err := json.MarshalIndent(ri, "", "  ")
+	if err != nil {
+		fmt.Printf("InvestAd err:%s", err.Error())
+		return InternalError(err.Error()).Marshal()
+	}
+	return string(jsonBytes)
+}
+
+const coinsName = "AOE"
+
+var tempAddr = Address("address1wmrup5xemdxzx29jalp5c98t7mywulg8wgxxxx")
+
+func JQInvestAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
+	var result ResultInvest
+	result.Code = "0"
+
+	tx, err := investAd(chainId, articleHash, coins, privatekey, nonce)
+	if err != nil {
+		fmt.Printf("investAd err:%s", err.Error())
+		result.Code = "-1"
+		result.Reason = err.Error()
+		return result.Marshal()
+	}
+
+	js, err := Cdc.MarshalJSON(tx)
+	if err != nil {
+		fmt.Printf("investAd err:%s", err.Error())
+		result.Code = "-1"
+		result.Reason = err.Error()
+		return result.Marshal()
+	}
+	result.Result = json.RawMessage(js)
+
+	return result.Marshal()
+}
+
+func investAd(chainId, articleHash, coins, privatekey string, nonce int64) (*TxStd, error) {
+	cs, err := ParseCoins(coins)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range cs {
+		if v.Denom != coinsName {
+			return nil, errors.New("only support AOE")
+		}
+	}
+
+	var key ed25519local.PrivKeyEd25519
+	ts := "{\"type\": \"tendermint/PrivKeyEd25519\",\"value\": \"" + privatekey + "\"}"
+	err1 := Cdc.UnmarshalJSON([]byte(ts), &key)
+	if err1 != nil {
+		fmt.Println(err1)
+	}
+	priv := key
+	addrben32, _ := bech32local.ConvertAndEncode(PREF_ADD, key.PubKey().Address().Bytes())
+	investor := getAddrFromBech32(addrben32)
+
+	var ccs []BaseCoin
+	for _, coin := range cs {
+		ccs = append(ccs, BaseCoin{
+			Name:   coin.Denom,
+			Amount: NewBigInt(coin.Amount.Int64()),
+		})
+	}
+	nonce++
+	t := NewTransfer(investor, tempAddr, ccs)
+	msg := genStdSendTx(t, priv, chainId, nonce)
+	it := &InvestTx{}
+	it.ArticleHash = []byte(articleHash)
+	it.Std = msg
+	tx2 := NewTxStd(it, chainId, msg.MaxGas)
+	return tx2, nil
+}

@@ -16,7 +16,6 @@ import (
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	tmcommon "github.com/tendermint/tendermint/libs/common"
-
 	"strconv"
 )
 

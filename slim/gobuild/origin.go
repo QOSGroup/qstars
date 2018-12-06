@@ -2,6 +2,7 @@ package main
 
 import "C"
 import (
+	"fmt"
 	"github.com/QOSGroup/qstars/slim"
 )
 
@@ -100,13 +101,13 @@ func QSCtransferSend(addrto, coinstr, privkey, chainid string) string {
 }
 
 //for QOSCommitResultCheck
-//func QOSCommitResultCheck(txhash, height string) string {
-//	output := slim.QOSCommitResultCheck(txhash, height)
-//	return output
-//}
+func QOSCommitResultCheck(txhash, height string) string {
+	output := slim.QOSCommitResultCheck(txhash, height)
+	return output
+}
 
 func main() {
-	//SetBlockchainEntrance("192.168.1.190:1317", "forQmoonAddr")
+	SetBlockchainEntrance("192.168.1.190:1317", "forQmoonAddr")
 	//output := AccountCreate()
 	//fmt.Println(output)
 	//out := QSCQueryAccount("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355")
@@ -118,6 +119,8 @@ func main() {
 	//AccountRecover("vague success fresh check remove banner music snap jelly medal bring mix eagle seat cash off winter mean comic turn always teach tiny wagon")
 	//puba := PubAddrRetrieval("oyiJEECum3c7zTAAUjX5mo1i3wOonk9pD5+gOrsb8icV/JygVhPy2AYUkun4FJUQtbZ9NA0Zn/JPNMhdu71+DfeA6abM")
 	//fmt.Println(puba)
-	//transoutb64 := QSCtransferSend("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos", "rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA==", "qos-testapp")
+	//transoutb64 := QSCtransferSend("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos", "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==", "qos-testapp")
 	//fmt.Println(transoutb64)
+	queryResult := QOSCommitResultCheck("1915BF14E0583E0F38D695F12EF122D017AAAA86", "341")
+	fmt.Println(queryResult)
 }
