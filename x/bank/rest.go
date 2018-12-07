@@ -2,6 +2,7 @@ package bank
 
 import (
 	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/x/common"
 	"github.com/prometheus/common/log"
 	"io/ioutil"
 	"net/http"
@@ -107,7 +108,7 @@ func (sb *sendBody) Send(cdc *wire.Codec) (*SendResult, error) {
 }
 
 func queryCommitResult(qk string) (string, error) {
-	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qk), QSCResultMapperName)
+	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qk), common.QSCResultMapperName)
 	log.Infof("QueryStore: %+v, %+v\n", d, err)
 	if err != nil {
 		return "", err

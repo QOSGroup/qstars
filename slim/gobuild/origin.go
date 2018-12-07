@@ -2,7 +2,6 @@ package main
 
 import "C"
 import (
-	"fmt"
 	"github.com/QOSGroup/qstars/slim"
 )
 
@@ -50,6 +49,12 @@ func QSCKVStoreGet(k *C.char) *C.char {
 //for QSCQueryAccount
 func QSCQueryAccount(addr string) string {
 	output := slim.QSCQueryAccountGet(addr)
+	return output
+}
+
+//for QOSQueryAccount
+func QOSQueryAccount(addr string) string {
+	output := slim.QOSQueryAccountGet(addr)
 	return output
 }
 
@@ -106,11 +111,17 @@ func QOSCommitResultCheck(txhash, height string) string {
 	return output
 }
 
+//for InvesAd in mobile app
+func JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) string {
+	output := slim.JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey)
+	return output
+}
+
 func main() {
-	SetBlockchainEntrance("192.168.1.190:1317", "forQmoonAddr")
+	//SetBlockchainEntrance("192.168.1.23:1317", "forQmoonAddr")
 	//output := AccountCreate()
 	//fmt.Println(output)
-	//out := QSCQueryAccount("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355")
+	//out := QSCQueryAccount("address13l90zvt26szkrquutwpgj7kef58mgyntfs46l2")
 	//fmt.Println(out)
 	//out := QSCKVStoreSet("14", "Merfer", "0xa328891040ae9b773bcd30005235f99a8d62df03a89e4f690f9fa03abb1bf22715fc9ca05613f2d8061492e9f8149510b5b67d340d199ff24f34c85dbbbd7e0df780e9a6cc", "test-chain-HfiBIx")
 	//fmt.Println(out)
@@ -119,8 +130,11 @@ func main() {
 	//AccountRecover("vague success fresh check remove banner music snap jelly medal bring mix eagle seat cash off winter mean comic turn always teach tiny wagon")
 	//puba := PubAddrRetrieval("oyiJEECum3c7zTAAUjX5mo1i3wOonk9pD5+gOrsb8icV/JygVhPy2AYUkun4FJUQtbZ9NA0Zn/JPNMhdu71+DfeA6abM")
 	//fmt.Println(puba)
-	//transoutb64 := QSCtransferSend("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos", "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==", "qos-testapp")
+	//transoutb64 := QSCtransferSend("address13l90zvt26szkrquutwpgj7kef58mgyntfs46l2", "2aoe", "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==", "qos-testapp")
 	//fmt.Println(transoutb64)
-	queryResult := QOSCommitResultCheck("1915BF14E0583E0F38D695F12EF122D017AAAA86", "341")
-	fmt.Println(queryResult)
+	//queryResult := QOSCommitResultCheck("1915BF14E0583E0F38D695F12EF122D017AAAA86", "341")
+	//fmt.Println(queryResult)
+
+	//jqresult := JQInvestAd("qos-testapp", "qstars-test", "abcd", "1AOE", "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==")
+	//fmt.Println(jqresult)
 }

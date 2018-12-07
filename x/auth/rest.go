@@ -12,11 +12,20 @@ import (
 // RegisterRoutes register REST routes
 func RegisterRoutes(cdc *wire.Codec, r *mux.Router) {
 	r.HandleFunc(
-		"/accounts/{address}",
+		"/QOSaccounts/{address}",
 		func(w http.ResponseWriter, r *http.Request) {
 			vars := mux.Vars(r)
 			bech32addr := vars["address"]
 			result, err := QueryAccount(cdc, bech32addr)
+			lib.HttpResponseWrapper(w, cdc, result, err)
+		}).Methods("GET")
+
+	r.HandleFunc(
+		"/QSCaccounts/{address}",
+		func(w http.ResponseWriter, r *http.Request) {
+			vars := mux.Vars(r)
+			bech32addr := vars["address"]
+			result, err := QSCQueryAccount(cdc, bech32addr)
 			lib.HttpResponseWrapper(w, cdc, result, err)
 		}).Methods("GET")
 

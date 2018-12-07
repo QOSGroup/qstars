@@ -517,8 +517,8 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 		})
 	}
 
-	//Get "nonce" from the func QSCQueryAccountGet
-	AccountStr := QSCQueryAccountGet(addrben32)
+	//Get "nonce" from the func QOSQueryAccountGet
+	AccountStr := QOSQueryAccountGet(addrben32)
 	accb := []byte(AccountStr)
 	data := respwrap.RPCResponse{}
 	err = Cdc.UnmarshalJSON(accb, &data)
@@ -595,13 +595,13 @@ func (ri ResultInvest) Marshal() string {
 
 const coinsName = "AOE"
 
-var tempAddr = Address("address1wmrup5xemdxzx29jalp5c98t7mywulg8wgxxxx")
+var tempAddr = Address("99999999999999999999")
 
-func JQInvestAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
+func JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) string {
 	var result ResultInvest
 	result.Code = "0"
 
-	tx, err := investAd(chainId, articleHash, coins, privatekey, nonce)
+	tx, err := investAd(QOSchainId, QSCchainId, articleHash, coins, privatekey)
 	if err != nil {
 		fmt.Printf("investAd err:%s", err.Error())
 		result.Code = "-1"
@@ -621,7 +621,7 @@ func JQInvestAd(chainId, articleHash, coins, privatekey string, nonce int64) str
 	return result.Marshal()
 }
 
-func investAd(chainId, articleHash, coins, privatekey string, nonce int64) (*TxStd, error) {
+func investAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) (*TxStd, error) {
 	cs, err := ParseCoins(coins)
 	if err != nil {
 		return nil, err
@@ -649,12 +649,43 @@ func investAd(chainId, articleHash, coins, privatekey string, nonce int64) (*TxS
 			Amount: NewBigInt(coin.Amount.Int64()),
 		})
 	}
-	nonce++
+	//qos nonce fetched from the qosaccount query
+	AccountStr1 := QOSQueryAccountGet(addrben32)
+	accb := []byte(AccountStr1)
+	data := respwrap.RPCResponse{}
+	err = Cdc.UnmarshalJSON(accb, &data)
+	rawresp := data.Result
+	acc := QOSAccount{}
+	Cdc.UnmarshalJSON(rawresp, &acc)
+	var qosnonce int64
+	qosnonce = int64(acc.Nonce)
+	qosnonce++
+	//the first sign with the QOS nonce
 	t := NewTransfer(investor, tempAddr, ccs)
-	msg := genStdSendTx(t, priv, chainId, nonce)
+	msg := genStdSendTx(t, priv, QOSchainId, qosnonce)
+
+	//qsc nonce fetched from the qscaccount query
+	AccountStr2 := QSCQueryAccountGet(addrben32)
+	accb2 := []byte(AccountStr2)
+	data2 := respwrap.RPCResponse{}
+	err = Cdc.UnmarshalJSON(accb2, &data2)
+	rawresp2 := data2.Result
+	acc2 := QOSAccount{}
+	Cdc.UnmarshalJSON(rawresp2, &acc2)
+	var qscnonce int64
+	qscnonce = int64(acc2.Nonce)
+	qscnonce++
+
 	it := &InvestTx{}
 	it.ArticleHash = []byte(articleHash)
 	it.Std = msg
-	tx2 := NewTxStd(it, chainId, msg.MaxGas)
+	tx2 := NewTxStd(it, QSCchainId, msg.MaxGas)
+	signature2, _ := tx2.SignTx(priv, qscnonce, QSCchainId)
+	tx2.Signature = []Signature{Signature{
+		Pubkey:    priv.PubKey(),
+		Signature: signature2,
+		Nonce:     qscnonce,
+	}}
+
 	return tx2, nil
 }

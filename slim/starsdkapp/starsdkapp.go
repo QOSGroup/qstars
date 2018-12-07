@@ -27,6 +27,12 @@ func QSCQueryAccount(addr string) string {
 	return output
 }
 
+//for QOSQueryAccount
+func QOSQueryAccount(addr string) string {
+	output := slim.QOSQueryAccountGet(addr)
+	return output
+}
+
 //for AccountRecovery
 func AccountRecover(mncode string) string {
 	output := slim.AccountRecoverStr(mncode)
@@ -57,8 +63,8 @@ func QOSCommitResultCheck(txhash, height string) string {
 	return output
 }
 
-func JQInvestAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
-	output := slim.JQInvestAd(chainId, articleHash, coins, privatekey, nonce)
+func JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) string {
+	output := slim.JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey)
 	return output
 }
 

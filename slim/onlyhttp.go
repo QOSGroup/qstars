@@ -17,19 +17,23 @@ type sendKVReq struct {
 
 // IP initialization
 var (
-	Shost      string
-	Mhost      string
-	Accounturl string
-	KVurl      string
-	QResulturl string
+	Shost         string
+	Mhost         string
+	QSCAccounturl string
+	QOSAccounturl string
+	Accounturl    string
+	KVurl         string
+	QResulturl    string
 )
 
 //set Block Chain entrance hosts for both Qstars and Qmoon
 func SetBlockchainEntrance(qstarshost, qmoonhost string) {
 	Shost = qstarshost
 	Mhost = qmoonhost
+	QSCAccounturl = "http://" + Shost + "/QSCaccounts/"
+	QOSAccounturl = "http://" + Shost + "/QOSaccounts/"
 	Accounturl = "http://" + Shost + "/accounts/"
-	KVurl = "http://" + Shost + "/kv"
+	KVurl = "http://" + Shost + "/kv/"
 	QResulturl = "http://" + Shost + "/commits/"
 
 }
@@ -60,7 +64,7 @@ func QSCKVStoreSetPost(k, v, privkey, chain string) (result string) {
 }
 
 func QSCKVStoreGetQuery(k string) string {
-	kvurl := KVurl + "/" + k
+	kvurl := KVurl + k
 	resp, _ := http.Get(kvurl)
 	//	fmt.Println(KVurl)
 	if resp.StatusCode == http.StatusOK {
@@ -77,7 +81,25 @@ func QSCKVStoreGetQuery(k string) string {
 }
 
 func QSCQueryAccountGet(addr string) string {
-	aurl := Accounturl + addr
+	aurl := QSCAccounturl + addr
+	resp, _ := http.Get(aurl)
+	var body []byte
+	var err error
+	if resp.StatusCode == http.StatusOK {
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	defer resp.Body.Close()
+	output := string(body)
+	return output
+}
+
+//for QOS account query function
+func QOSQueryAccountGet(addr string) string {
+	aurl := QOSAccounturl + addr
 	resp, _ := http.Get(aurl)
 	var body []byte
 	var err error

@@ -2,7 +2,6 @@ package main
 
 import "C"
 import (
-	"fmt"
 	"github.com/QOSGroup/qstars/stub/java/jsdk"
 )
 
@@ -57,8 +56,8 @@ func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOrig
 //}
 
 //for InvestAd
-func InvestAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
-	output := jsdk.InvestAd(chainId, articleHash, coins, privatekey, nonce)
+func InvestAdBackground(txb string) string {
+	output := jsdk.InvestAdBackground(txb)
 	return output
 }
 
@@ -74,14 +73,29 @@ func BuyAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
 	return output
 }
 
-func main() {
-	InitJNI()
-	//send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
-	r := SendByJNI("rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA==", "address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos")
-	fmt.Println(r)
+//for investAdbckaground testing
+//type ResultInvest struct {
+//	Code   string          `json:"code"`
+//	Reason string          `json:"reason,omitempty"`
+//	Result json.RawMessage `json:"result,omitempty"`
+//}
 
-	//disout := DispatchCoins("a12adc23|18671eab2", "1aoe|10aoe|30aoe", "1|2|1", "signin,invited,abc", "0QOS")
-	//fmt.Println(disout)
-	//newout := NewArticle("address1y9r4pjjnvkmpvw46de8tmwunw4nx4qnz2ax5ux", "address1zsqzn6wdecyar6c6nzem3e8qss2ws95csr8d0r", "a12f87bc2", "20", "20", "20", "20", "20", "3")
+func main() {
+	//InitJNI()
+	////send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
+	////r := SendByJNI("Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==", "address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos")
+	////fmt.Println(r)
+	//
+	////disout := DispatchCoins("a12adc23|18671eab2", "1aoe|10aoe|30aoe", "1|2|1", "signin,invited,abc", "0QOS")
+	////fmt.Println(disout)
+	//newout := NewArticle("address13mjc3n3xxj73dhkju9a0dfr4lrfvv3whxqg0dy", "address1zsqzn6wdecyar6c6nzem3e8qss2ws95csr8d0r", "a123", "20", "20", "20", "20", "20", "3")
 	//fmt.Println(newout)
+
+	//slim.SetBlockchainEntrance("192.168.1.23:1317", "forQmoonAddr")
+	//ad := slim.JQInvestAd("qos-testapp", "qstars-test", "abcd", "1AOE", "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==")
+	//var ri ResultInvest
+	//err := json.Unmarshal([]byte(ad), &ri)
+	//fmt.Printf("error is:%s\n ", err)
+	//Adout := InvestAdBackground(string(ri.Result))
+	//fmt.Println(Adout)
 }
