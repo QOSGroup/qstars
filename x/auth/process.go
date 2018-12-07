@@ -27,3 +27,21 @@ func QueryAccount(cdc *wire.Codec, addr string) (*qosaccount.QOSAccount, error) 
 
 	return acc, nil
 }
+
+//Query QSCAccount by addr
+func QSCQueryAccount(cdc *wire.Codec, addr string) (*qosaccount.QOSAccount, error) {
+	address, err := types.GetAddrFromBech32(addr)
+	if err != nil {
+		return nil, err
+	}
+	key := account.AddressStoreKey(address)
+
+	cliCtx := config.GetCLIContext().QSCCliContext
+
+	acc, err := cliCtx.GetAccount(key, cdc)
+	if err != nil {
+		return nil, err
+	}
+
+	return acc, nil
+}

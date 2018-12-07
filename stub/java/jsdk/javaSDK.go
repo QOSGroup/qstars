@@ -5,6 +5,7 @@ import (
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
 	"github.com/QOSGroup/qstars/x/jianqian/investad"
+	"time"
 )
 
 func DispatchCoins(addrs, cns, causecodes, causestrings, gas string) string {
@@ -25,8 +26,9 @@ func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOrig
 	return string(output)
 }
 
-func InvestAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
-	result := investad.InvestAd(CDC, chainId, articleHash, coins, privatekey, nonce, nonce)
+func InvestAdBackground(txb string) string {
+	timeout := time.Second * 60
+	result := investad.InvestAdBackground(CDC, txb, timeout)
 	output, err := CDC.MarshalJSON(result)
 	if err != nil {
 		return err.Error()
