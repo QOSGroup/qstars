@@ -9,6 +9,7 @@ import (
 	"github.com/QOSGroup/qstars/x/jianqian/article"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
 
+	qbasecli "github.com/QOSGroup/qbase/client"
 	"os"
 
 	"github.com/QOSGroup/qbase/version"
@@ -72,14 +73,13 @@ func main() {
 		)...)
 
 	//
-
 	rootCmd.AddCommand(
 		client.PostCommands(
 			kvstore.SendKVCmd(cdc),
 			kvstore.GetKVCmd(cdc),
 		)...)
 
-
+	//
 	rootCmd.AddCommand(
 		client.PostCommands(
 			coins.DispatchAOECmd(cdc),
@@ -101,6 +101,20 @@ func main() {
 		buyad.BuyadCmd(cdc),
 		investad.InvestadCmd(cdc),
 	)
+
+	// add commands provided by qbase
+	qbaseCmd := &cobra.Command{
+		Use:   "qbase",
+		Short: "qbase commands",
+	}
+
+	qbaseCmd.AddCommand(
+		qbasecli.QueryCommand(cdc),
+		qbasecli.KeysCommand(cdc),
+		qbasecli.TendermintCommand(cdc),
+		qbasecli.TxCommand(),
+	)
+	rootCmd.AddCommand(qbaseCmd)
 
 	// prepare and add flags
 	executor := cli.PrepareBaseCmd(rootCmd, "BC", os.ExpandEnv("$HOME/.qstarscli"))
