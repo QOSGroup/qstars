@@ -17,7 +17,8 @@ func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qost
 		if coin.Name == "qos" {
 			ti.QOS = ti.QOS.Add(coin.Amount)
 		} else {
-			ti.QSCs = append(ti.QSCs, &coin)
+			newcoin:=coin
+			ti.QSCs = append(ti.QSCs, &newcoin)
 		}
 	}
 

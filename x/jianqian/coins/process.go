@@ -65,20 +65,20 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 	}
 	transtx := tx.NewTransfer([]types.Address{from}, to, ccs)
 	//	chainid := ctx.QOSChainID
-	chainid := config.GetCLIContext().Config.QSCChainID
-	msg := genStdWrapTx(cdc, transtx, priv, chainid, nonce, from, to, amount, causecode, causeStr)
+	//chainid := config.GetCLIContext().Config.QSCChainID
+	msg := genStdWrapTx(cdc, transtx, priv, nonce, from, to, amount, causecode, causeStr)
 	return wrapperResult(cdc, msg)
 }
 
 //封装公链交易信息
-func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64) *txs.TxStd {
+func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519,   nonce int64) *txs.TxStd {
 	gas := types.NewInt(int64(0))
-	stx := txs.NewTxStd(sendTx, chainid, gas)
+	stx := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QOSChainID, gas)
 	//
 	//bz, _ := cdc.MarshalJSONIndent(stx, "", "")
 	//fmt.Println(string(bz))
 
-	signature, _ := stx.SignTx(priKey, nonce, chainid)
+	signature, _ := stx.SignTx(priKey, nonce, config.GetCLIContext().Config.QSCChainID)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
@@ -88,11 +88,11 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 }
 
 //封装奖励发放跨链交易信息
-func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64, from types.Address, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) *txs.TxStd {
-	stx := genStdSendTx(cdc, sendTx, priKey, chainid, nonce)
+func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519,  nonce int64, from types.Address, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) *txs.TxStd {
+	stx := genStdSendTx(cdc, sendTx, priKey,  nonce)
 	//tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
 	dispatchTx := NewDispatchAOE(stx, from, to, amount, causecode, causeStr, types.ZeroInt())
-	return genStdSendTx(cdc, dispatchTx, priKey, chainid, nonce)
+	return genStdSendTx(cdc, dispatchTx, priKey,  nonce)
 }
 
 func wrapperResult(cdc *wire.Codec, msg *txs.TxStd) (*SendResult, error) {
