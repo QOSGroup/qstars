@@ -34,7 +34,7 @@ type SendResult struct {
 }
 
 //发放活动奖励 一转多
-func DispatchSend(cdc *wire.Codec,ctx *config.CLIConfig, privkey string, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) (*SendResult, error) {
+func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) (*SendResult, error) {
 	tolen := len(to)
 	//判断长度是否一致
 	if tolen != len(amount) || tolen != len(causecode) || tolen != len(causeStr) {
@@ -43,17 +43,17 @@ func DispatchSend(cdc *wire.Codec,ctx *config.CLIConfig, privkey string, to []ty
 
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
-	fmt.Println("from=",from)
+	fmt.Println("from=", from)
 	if err != nil {
 		return nil, err
 	}
-	key:=account.AddressStoreKey(from)
-	var nonce int64=0
+	key := account.AddressStoreKey(from)
+	var nonce int64 = 0
 	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
 	if err != nil {
-		nonce=0
-	}else{
-		nonce=int64(acc.Nonce)
+		nonce = 0
+	} else {
+		nonce = int64(acc.Nonce)
 	}
 	nonce++
 	var ccs []types.BaseCoin
@@ -64,7 +64,8 @@ func DispatchSend(cdc *wire.Codec,ctx *config.CLIConfig, privkey string, to []ty
 		})
 	}
 	transtx := tx.NewTransfer([]types.Address{from}, to, ccs)
-	chainid := ctx.QOSChainID
+	//	chainid := ctx.QOSChainID
+	chainid := config.GetCLIContext().Config.QSCChainID
 	msg := genStdWrapTx(cdc, transtx, priv, chainid, nonce, from, to, amount, causecode, causeStr)
 	return wrapperResult(cdc, msg)
 }
@@ -73,7 +74,11 @@ func DispatchSend(cdc *wire.Codec,ctx *config.CLIConfig, privkey string, to []ty
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64) *txs.TxStd {
 	gas := types.NewInt(int64(0))
 	stx := txs.NewTxStd(sendTx, chainid, gas)
-	signature, _ := stx.SignTx(priKey, nonce,chainid)
+	//
+	//bz, _ := cdc.MarshalJSONIndent(stx, "", "")
+	//fmt.Println(string(bz))
+
+	signature, _ := stx.SignTx(priKey, nonce, chainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
@@ -82,12 +87,11 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 	return stx
 }
 
-
 //封装奖励发放跨链交易信息
 func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64, from types.Address, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) *txs.TxStd {
 	stx := genStdSendTx(cdc, sendTx, priKey, chainid, nonce)
 	//tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
-	dispatchTx:=NewDispatchAOE(stx, from, to, amount, causecode, causeStr, types.ZeroInt())
+	dispatchTx := NewDispatchAOE(stx, from, to, amount, causecode, causeStr, types.ZeroInt())
 	return genStdSendTx(cdc, dispatchTx, priKey, chainid, nonce)
 }
 
@@ -137,53 +141,51 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd) (*SendResult, error) {
 	return result, nil
 }
 
-
-
 //活动奖励发放
 //address       接收奖励地址(必填) 多个地址用|隔开
 //coins         接收奖励数额(必填) 多个地址用|隔开
 //causecodes    奖励类型(必填) 多个地址用|隔开
 //causestrings  奖励类型描述(必填) 多个地址用|隔开
 //gas           gas费 默认为0
-func DispatchAOE(cdc *wire.Codec,ctx *config.CLIConfig,address , coins, causecodes,  causestrings,  gas string)string{
-	if address==""||coins==""||causecodes==""||causestrings==""{
+func DispatchAOE(cdc *wire.Codec, ctx *config.CLIConfig, address, coins, causecodes, causestrings, gas string) string {
+	if address == "" || coins == "" || causecodes == "" || causestrings == "" {
 		return "{Code:\"1\",Reason:\"Parameter cannot be empty \"}"
 	}
-	addrs:=strings.Split(address,"|")
-	addlen:=len(addrs)
-	cois:=strings.Split(coins,"|")
-	codes:=strings.Split(causecodes,"|")
-	cstrs:=strings.Split(causestrings,"|")
+	addrs := strings.Split(address, "|")
+	addlen := len(addrs)
+	cois := strings.Split(coins, "|")
+	codes := strings.Split(causecodes, "|")
+	cstrs := strings.Split(causestrings, "|")
 
-	if addlen!=len(cois)||addlen!=len(codes)||addlen!=len(cstrs){
+	if addlen != len(cois) || addlen != len(codes) || addlen != len(cstrs) {
 		return "{Code:\"2\",Reason:\"Parameter lengths are not equal \"}"
 	}
-	if address==""||coins==""||causecodes==""||causestrings==""{
+	if address == "" || coins == "" || causecodes == "" || causestrings == "" {
 		return "{Code:\"1\",Reason:\"Parameter cannot be empty \"}"
 	}
-	amounts:=make([]types.BigInt,len(cois))
-	for i,coinsv:=range cois{
-		if amou,ok:=types.NewIntFromString(coinsv);ok{
-			amounts[i]=amou
-		}else{
+	amounts := make([]types.BigInt, len(cois))
+	for i, coinsv := range cois {
+		if amou, ok := types.NewIntFromString(coinsv); ok {
+			amounts[i] = amou
+		} else {
 			return "{Code:\"2\",Reason:\"amount format error \"}"
 		}
 	}
-    toaddrss:=make([]types.Address,addlen)
-    for i,addrsv:=range addrs {
+	toaddrss := make([]types.Address, addlen)
+	for i, addrsv := range addrs {
 		to, err := qstartypes.AccAddressFromBech32(addrsv)
-		if err!=nil{
+		if err != nil {
 			return "{Code:\"2\",Reason:\"address format error \"}"
 		}
-		toaddrss[i]=to
+		toaddrss[i] = to
 	}
 	//cdc := star.MakeCodec()
-	privkey:=tx.GetConfig().Dappowner
-	result,err:= DispatchSend(cdc,ctx,privkey,toaddrss,amounts,codes,cstrs)
-	if err!=nil{
+	privkey := tx.GetConfig().Dappowner
+	result, err := DispatchSend(cdc, ctx, privkey, toaddrss, amounts, codes, cstrs)
+	if err != nil {
 		return err.Error()
 	}
-	byteres,_:=json.Marshal(result)
+	byteres, _ := json.Marshal(result)
 	return string(byteres[:])
 }
 
@@ -207,14 +209,12 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 	return string(res), err
 }
 
-
-func GetResultKey(heigth1 string, tx1 string) string{
+func GetResultKey(heigth1 string, tx1 string) string {
 	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
 	return qstarskey
 }
 
-
-func GetCoins(cdc *wire.Codec,ctx *context.CLIContext,tx string)(coins *jianqian.Coins,err error){
-	 coins,err=jianqian.QueryCoins(cdc,ctx,tx)
-	 return coins,err
+func GetCoins(cdc *wire.Codec, ctx *context.CLIContext, tx string) (coins *jianqian.Coins, err error) {
+	coins, err = jianqian.QueryCoins(cdc, ctx, tx)
+	return coins, err
 }
