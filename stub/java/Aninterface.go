@@ -44,10 +44,10 @@ func DispatchCoins(addrs, coins, causecodes, causestrings, gas string) string {
 //}
 
 //for NewArticle
-func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate string) string {
-	output := jsdk.NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate)
-	return output
-}
+//func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate string) string {
+//	output := jsdk.NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate)
+//	return output
+//}
 
 //export InvestAd
 //func InvestAd(chainId, articleHash, coins, privatekey *C.char, nonce int64) *C.char {
@@ -81,13 +81,13 @@ func BuyAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
 //}
 
 func main() {
-	//InitJNI()
-	////send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
-	////r := SendByJNI("Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==", "address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos")
-	////fmt.Println(r)
+	InitJNI()
+	//send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
+	//r := SendByJNI("Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==", "address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355", "2qos")
+	//fmt.Println(r)
 	//
-	////disout := DispatchCoins("a12adc23|18671eab2", "1aoe|10aoe|30aoe", "1|2|1", "signin,invited,abc", "0QOS")
-	////fmt.Println(disout)
+	//disout := DispatchCoins("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355|address1zsqzn6wdecyar6c6nzem3e8qss2ws95csr8d0r", "500|400", "2|3", "qiandao|shiming", "0QOS")
+	//fmt.Println(disout)
 	//newout := NewArticle("address13mjc3n3xxj73dhkju9a0dfr4lrfvv3whxqg0dy", "address1zsqzn6wdecyar6c6nzem3e8qss2ws95csr8d0r", "a123", "20", "20", "20", "20", "20", "3")
 	//fmt.Println(newout)
 
@@ -98,4 +98,5 @@ func main() {
 	//fmt.Printf("error is:%s\n ", err)
 	//Adout := InvestAdBackground(string(ri.Result))
 	//fmt.Println(Adout)
+
 }

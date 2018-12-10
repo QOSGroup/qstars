@@ -4,8 +4,8 @@ import (
 	"github.com/QOSGroup/qstars/slim"
 )
 
-func AccountCreate() string {
-	output := slim.AccountCreateStr()
+func AccountCreate(password string) string {
+	output := slim.AccountCreateStr(password)
 	return output
 }
 
@@ -34,8 +34,8 @@ func QOSQueryAccount(addr string) string {
 }
 
 //for AccountRecovery
-func AccountRecover(mncode string) string {
-	output := slim.AccountRecoverStr(mncode)
+func AccountRecover(mncode, password string) string {
+	output := slim.AccountRecoverStr(mncode, password)
 	return output
 }
 

@@ -35,10 +35,10 @@ const (
 	AccountResultType = "local"
 )
 
-func AccountCreate() *ResultCreateAccount {
+func AccountCreate(password string) *ResultCreateAccount {
 	entropy, _ := bip39local.NewEntropy(256)
 	mnemonic, _ := bip39local.NewMnemonic(entropy)
-	seedo := bip39local.NewSeed(mnemonic, "qstars")
+	seedo := bip39local.NewSeed(mnemonic, password)
 
 	key := ed25519local.GenPrivKeyFromSecret(seedo)
 	//pub := key.PubKey().Bytes()
@@ -76,16 +76,16 @@ func AccountCreate() *ResultCreateAccount {
 }
 
 //convert the output to json string format
-func AccountCreateStr() string {
-	acc := AccountCreate()
+func AccountCreateStr(password string) string {
+	acc := AccountCreate(password)
 	result, _ := respwrap.ResponseWrapper(Cdc, acc, nil)
 	out := string(result)
 
 	return out
 }
 
-func AccountRecoverStr(mncode string) string {
-	seed := bip39local.NewSeed(mncode, "qstars")
+func AccountRecoverStr(mncode, password string) string {
+	seed := bip39local.NewSeed(mncode, password)
 	key := ed25519local.GenPrivKeyFromSecret(seed)
 	pub := key.PubKey()
 	pubkeyAmino, _ := Cdc.MarshalJSON(pub)
