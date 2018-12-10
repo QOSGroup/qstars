@@ -11,8 +11,8 @@ import (
 //	return C.CString(output)
 //}
 
-func AccountCreate() string {
-	output := slim.AccountCreateStr()
+func AccountCreate(password string) string {
+	output := slim.AccountCreateStr(password)
 	return output
 }
 
@@ -59,16 +59,16 @@ func QOSQueryAccount(addr string) string {
 }
 
 //export AccountRecover
-func AccountRecover(mncode *C.char) *C.char {
-	output := slim.AccountRecoverStr(C.GoString(mncode))
-	return C.CString(output)
-}
+//func AccountRecover(mncode, password *C.char) *C.char {
+//	output := slim.AccountRecoverStr(C.GoString(mncode), C.GoString(password))
+//	return C.CString(output)
+//}
 
 //for AccountRecovery
-//func AccountRecover(mncode string) string {
-//	output := slim.AccountRecoverStr(mncode)
-//	return output
-//}
+func AccountRecover(mncode, password string) string {
+	output := slim.AccountRecoverStr(mncode, password)
+	return output
+}
 
 //export GetIPfromInput
 //func SetBlockchainEntrance(sh, mh *C.char) {
@@ -119,7 +119,7 @@ func JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) s
 
 func main() {
 	//SetBlockchainEntrance("192.168.1.23:1317", "forQmoonAddr")
-	//output := AccountCreate()
+	//output := AccountCreate("qstars")
 	//fmt.Println(output)
 	//out := QSCQueryAccount("address13l90zvt26szkrquutwpgj7kef58mgyntfs46l2")
 	//fmt.Println(out)
@@ -127,7 +127,8 @@ func main() {
 	//fmt.Println(out)
 	//kvout := QSCKVStoreGet("13")
 	//fmt.Println(kvout)
-	//AccountRecover("vague success fresh check remove banner music snap jelly medal bring mix eagle seat cash off winter mean comic turn always teach tiny wagon")
+	//aout := AccountRecover("address rescue flower seven erode trigger panic apart mango put tenant version matrix devote ozone critic damp edge panda tuition view index sound account", "qstars")
+	//fmt.Println(aout)
 	//puba := PubAddrRetrieval("oyiJEECum3c7zTAAUjX5mo1i3wOonk9pD5+gOrsb8icV/JygVhPy2AYUkun4FJUQtbZ9NA0Zn/JPNMhdu71+DfeA6abM")
 	//fmt.Println(puba)
 	//transoutb64 := QSCtransferSend("address13l90zvt26szkrquutwpgj7kef58mgyntfs46l2", "2aoe", "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==", "qos-testapp")

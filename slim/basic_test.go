@@ -3,13 +3,15 @@ package slim
 import "testing"
 
 func TestAccountCreate(t *testing.T) {
-	output := AccountCreateStr()
+	password := "qstars"
+	output := AccountCreateStr(password)
 	t.Log(output)
 }
 
 func TestAccountRecoverStr(t *testing.T) {
-	mncode := "walk board image invite route below uncle toss celery negative hamster ordinary pink swift round student tip dragon rich such video sheriff just pull"
-	output := AccountRecoverStr(mncode)
+	mncode := "oyster leave weird tiger road rose anger garden planet price small rain cradle rhythm wine spider manual wave plastic solar spray battle parent match"
+	password := "qstars"
+	output := AccountRecoverStr(mncode, password)
 	t.Log(output)
 }
 
