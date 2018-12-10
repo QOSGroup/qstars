@@ -1,6 +1,12 @@
 package jsdk
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/QOSGroup/qbase/account"
+	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/types"
+	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/x/jianqian/article"
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
@@ -37,8 +43,36 @@ func InvestAdBackground(txb string) string {
 
 }
 
-func BuyAd(chainId, articleHash, coins, privatekey string, nonce int64) string {
-	result := buyad.BuyAd(CDC, chainId, articleHash, coins, privatekey, nonce, nonce)
+type ResultBuy struct {
+	Code   string          `json:"code"`
+	Reason string          `json:"reason,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
+}
+
+func BuyAd(articleHash, coins, buyer string) string {
+	chainid := config.GetCLIContext().Config.QSCChainID
+	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(buyer, CDC)
+	from, err := types.AccAddressFromBech32(addrben32)
+	key := account.AddressStoreKey(from)
+
+	qosacc, _ := config.GetCLIContext().QOSCliContext.GetAccount(key, CDC)
+	qosnonce := int64(qosacc.Nonce)
+
+	qscacc, _ := config.GetCLIContext().QSCCliContext.GetAccount(key, CDC)
+	qscnonce := int64(qscacc.Nonce)
+	tx := buyad.BuyAd(CDC, chainid, articleHash, coins, buyer, qosnonce, qscnonce)
+
+	var rb ResultBuy
+	if err := json.Unmarshal([]byte(tx), &rb); err != nil {
+		return fmt.Sprintf("Unmarshal tx error:%s ", err.Error())
+	}
+
+	if rb.Code != "0" {
+		return fmt.Sprintf("InvestAd tx error:%s ", rb.Reason)
+	}
+
+	timeout := time.Second * 60
+	result := buyad.BuyAdBackground(CDC, string(rb.Result), timeout)
 	output, err := CDC.MarshalJSON(result)
 	if err != nil {
 		return err.Error()
