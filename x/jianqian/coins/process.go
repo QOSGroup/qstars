@@ -48,14 +48,25 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 		return nil, err
 	}
 	key := account.AddressStoreKey(from)
-	var nonce int64 = 0
+	var qosnonce int64 = 0
 	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
 	if err != nil {
-		nonce = 0
+		qosnonce = 0
 	} else {
-		nonce = int64(acc.Nonce)
+		qosnonce = int64(acc.Nonce)
 	}
-	nonce++
+	qosnonce++
+
+
+	var qscnonce int64 = 0
+	qscacc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
+	if err != nil {
+		qscnonce = 0
+	} else {
+		qscnonce = int64(qscacc.Nonce)
+	}
+	qscnonce++
+
 	var ccs []types.BaseCoin
 	for _, coin := range amount {
 		ccs = append(ccs, types.BaseCoin{
@@ -64,19 +75,34 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 		})
 	}
 	transtx := tx.NewTransfer([]types.Address{from}, to, ccs)
+	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
+	var msg *txs.TxStd
+
+	if directTOQOS == true {
+		//直接连接公链
+		msg=genStdSendTx(cdc, transtx, priv,  config.GetCLIContext().Config.QOSChainID, qosnonce)
+
+	}else{
+		//走跨链
+		var qscnonce int64 = 0
+		qscacc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
+		if err != nil {
+			qscnonce = 0
+		} else {
+			qscnonce = int64(qscacc.Nonce)
+		}
+		qscnonce++
+		msg= genStdWrapTx(cdc, transtx, priv, qosnonce,qscnonce, from, to, amount, causecode, causeStr)
+	}
 	//	chainid := ctx.QOSChainID
 	//chainid := config.GetCLIContext().Config.QSCChainID
-	msg := genStdWrapTx(cdc, transtx, priv, nonce, from, to, amount, causecode, causeStr)
-	return wrapperResult(cdc, msg)
+	return wrapperResult(cdc, msg,directTOQOS)
 }
 
 //封装公链交易信息
-func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519,   nonce int64) *txs.TxStd {
+func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string,  nonce int64) *txs.TxStd {
 	gas := types.NewInt(int64(0))
-	stx := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QOSChainID, gas)
-	//
-	//bz, _ := cdc.MarshalJSONIndent(stx, "", "")
-	//fmt.Println(string(bz))
+	stx := txs.NewTxStd(sendTx, chainid, gas)
 
 	signature, _ := stx.SignTx(priKey, nonce, config.GetCLIContext().Config.QSCChainID)
 	stx.Signature = []txs.Signature{txs.Signature{
@@ -88,14 +114,14 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 }
 
 //封装奖励发放跨链交易信息
-func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519,  nonce int64, from types.Address, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) *txs.TxStd {
-	stx := genStdSendTx(cdc, sendTx, priKey,  nonce)
+func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519,  qosnonce,qscnonce int64, from types.Address, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) *txs.TxStd {
+	stx := genStdSendTx(cdc, sendTx, priKey,  config.GetCLIContext().Config.QOSChainID, qosnonce)
 	//tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
 	dispatchTx := NewDispatchAOE(stx, from, to, amount, causecode, causeStr, types.ZeroInt())
-	return genStdSendTx(cdc, dispatchTx, priKey,  nonce)
+	return genStdSendTx(cdc, dispatchTx, priKey,config.GetCLIContext().Config.QSCChainID,  qscnonce)
 }
 
-func wrapperResult(cdc *wire.Codec, msg *txs.TxStd) (*SendResult, error) {
+func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) (*SendResult, error) {
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 	result := &SendResult{}
@@ -112,32 +138,34 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd) (*SendResult, error) {
 	if err != nil {
 		panic("WaitingForQosResult should be able to convert to integer." + err.Error())
 	}
-	counter := 0
-	for {
-		if counter >= waittime {
-			fmt.Println("time out")
-			result.Error = "time out"
-			break
-		}
-		resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
-		if err != nil {
-			fmt.Println("get result error:" + err.Error())
-			result.Error = err.Error()
-		}
-		if resultstr != "" && resultstr != "-1" {
-			fmt.Printf("get result:[%+v]\n", resultstr)
-			rs := []rune(resultstr)
-			index1 := strings.Index(resultstr, " ")
 
-			result.Error = ""
-			result.Result = string(rs[index1+1:])
-			result.Code = string(rs[:index1])
-			break
+	if directTOQOS == false {
+		counter := 0
+		for {
+			if counter >= waittime {
+				fmt.Println("time out")
+				result.Error = "time out"
+				break
+			}
+			resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
+			if err != nil {
+				fmt.Println("get result error:" + err.Error())
+				result.Error = err.Error()
+			}
+			if resultstr != "" && resultstr != "-1" {
+				fmt.Printf("get result:[%+v]\n", resultstr)
+				rs := []rune(resultstr)
+				index1 := strings.Index(resultstr, " ")
+
+				result.Error = ""
+				result.Result = string(rs[index1+1:])
+				result.Code = string(rs[:index1])
+				break
+			}
+			time.Sleep(500 * time.Millisecond)
+			counter++
 		}
-		time.Sleep(500 * time.Millisecond)
-		counter++
 	}
-
 	return result, nil
 }
 
