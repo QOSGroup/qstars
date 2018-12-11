@@ -7,6 +7,7 @@ import (
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
+	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/QOSGroup/qstars/x/jianqian/article"
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
@@ -73,6 +74,42 @@ func BuyAd(articleHash, coins, buyer string) string {
 
 	timeout := time.Second * 60
 	result := buyad.BuyAdBackground(CDC, string(rb.Result), timeout)
+	output, err := CDC.MarshalJSON(result)
+	if err != nil {
+		return err.Error()
+	}
+	return string(output)
+}
+
+func RetrieveInvestors(articleHash string) string {
+	result := investad.RetrieveInvestors(CDC, articleHash)
+	output, err := CDC.MarshalJSON(result)
+	if err != nil {
+		return err.Error()
+	}
+	return string(output)
+}
+
+func RetrieveBuyer(articleHash string) string {
+	result := buyad.RetrieveBuyer(CDC, articleHash)
+	output, err := CDC.MarshalJSON(result)
+	if err != nil {
+		return err.Error()
+	}
+	return string(output)
+}
+
+func QueryArticle(articleHash string) string {
+	result, _ := jianqian.QueryArticle(CDC, config.GetCLIContext().QSCCliContext, articleHash)
+	output, err := CDC.MarshalJSON(result)
+	if err != nil {
+		return err.Error()
+	}
+	return string(output)
+}
+
+func QueryCoins(articleHash string) string {
+	result, _ := jianqian.QueryCoins(CDC, config.GetCLIContext().QSCCliContext, articleHash)
 	output, err := CDC.MarshalJSON(result)
 	if err != nil {
 		return err.Error()

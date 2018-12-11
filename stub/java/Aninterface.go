@@ -81,6 +81,54 @@ func BuyAd(articleHash, coins, buyer *C.char) *C.char {
 //	Result json.RawMessage `json:"result,omitempty"`
 //}
 
+//export RetrieveInvestors
+func RetrieveInvestors(articleHash *C.char) *C.char {
+	output := jsdk.RetrieveInvestors(C.GoString(articleHash))
+	return C.CString(output)
+}
+
+//for RetrieveInvestors
+//func RetrieveInvestors(articleHash string) string {
+//	output := jsdk.RetrieveInvestors(articleHash)
+//	return output
+//}
+
+//export RetrieveBuyer
+func RetrieveBuyer(articleHash *C.char) *C.char {
+	output := jsdk.RetrieveBuyer(C.GoString(articleHash))
+	return C.CString(output)
+}
+
+//for RetrieveBuyer
+//func RetrieveBuyer(articleHash string) string {
+//	output := jsdk.RetrieveBuyer(articleHash)
+//	return output
+//}
+
+//export QueryArticle
+func QueryArticle(articleHash *C.char) *C.char {
+	output := jsdk.QueryArticle(C.GoString(articleHash))
+	return C.CString(output)
+}
+
+//for QueryArticle
+//func QueryArticle(articleHash string) string {
+//	output := jsdk.QueryArticle(articleHash)
+//	return output
+//}
+
+//export QueryCoins
+func QueryCoins(articleHash *C.char) *C.char {
+	output := jsdk.QueryCoins(C.GoString(articleHash))
+	return C.CString(output)
+}
+
+//for QueryCoins
+//func QueryCoins(articleHash string) string {
+//	output := jsdk.QueryCoins(articleHash)
+//	return output
+//}
+
 func main() {
 	//InitJNI()
 	//send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
@@ -100,6 +148,18 @@ func main() {
 	//Adout := InvestAdBackground(string(ri.Result))
 	//fmt.Println(Adout)
 
-	//Buad := BuyAd("abcd", "100QOS", "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==")
+	//Buad := BuyAd("abcd", "10QOS", "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==")
 	//fmt.Println(Buad)
+
+	//reinv := RetrieveInvestors("abcd")
+	//fmt.Println(reinv)
+
+	//reby := RetrieveBuyer("abcd")
+	//fmt.Println(reby)
+
+	//qa := QueryArticle("adcd")
+	//fmt.Println(qa)
+
+	//qc := QueryCoins("adcd")
+	//fmt.Println(qc)
 }
