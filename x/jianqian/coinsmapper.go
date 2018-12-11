@@ -14,7 +14,7 @@ type Coins struct{
 	Tx         string
 	From       types.Address
 	Data       []ActivityAward
-	Code       string //记录保存跨链结果
+	Status       string //记录保存跨链结果
 }
 
 type ActivityAward struct{
@@ -55,7 +55,7 @@ func (cm *CoinsMapper) SetCoins(i *Coins) {
 func (cm *CoinsMapper) UpdateCoins(key []byte,code string) bool{
 	coins,ok:=cm.GetCoins(key)
 	if ok{
-		coins.Code=code
+		coins.Status=code
 		cm.SetCoins(coins)
 		return true
 	}
