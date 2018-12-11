@@ -15,6 +15,7 @@ import (
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/common"
+	"github.com/QOSGroup/qstars/x/jianqian"
 	"log"
 	"strconv"
 	"strings"
@@ -237,4 +238,29 @@ func NewTransfer(sender qbasetypes.Address, receiver qbasetypes.Address, coin []
 	sendTx.Receivers = append(sendTx.Receivers, warpperTransItem(receiver, coin))
 
 	return sendTx
+}
+
+// RetrieveInvestors 查询投资者
+func RetrieveInvestors(cdc *wire.Codec, articleHash string) string {
+	var result ResultInvest
+	result.Code = "0"
+
+	investors, err := jianqian.ListInvestors(config.GetCLIContext().QSCCliContext, cdc, articleHash)
+	if err != nil {
+		log.Printf("ListInvestors err:%s", err.Error())
+		result.Code = "-1"
+		result.Reason = err.Error()
+		return result.Marshal()
+	}
+
+	js, err := cdc.MarshalJSON(investors)
+	if err != nil {
+		log.Printf("buyAd err:%s", err.Error())
+		result.Code = "-1"
+		result.Reason = err.Error()
+		return result.Marshal()
+	}
+	result.Result = json.RawMessage(js)
+
+	return result.Marshal()
 }

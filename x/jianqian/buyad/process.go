@@ -372,3 +372,28 @@ func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qost
 
 	return ti
 }
+
+// RetrieveBuyer 查询购买者
+func RetrieveBuyer(cdc *wire.Codec, articleHash string) string {
+	var result ResultBuy
+	result.Code = "0"
+
+	buyer, err := jianqian.QueryArticleBuyer(cdc, config.GetCLIContext().QSCCliContext, articleHash)
+	if err != nil {
+		log.Printf("QueryArticleBuyer err:%s", err.Error())
+		result.Code = "-1"
+		result.Reason = err.Error()
+		return result.Marshal()
+	}
+
+	js, err := cdc.MarshalJSON(buyer)
+	if err != nil {
+		log.Printf("buyAd err:%s", err.Error())
+		result.Code = "-1"
+		result.Reason = err.Error()
+		return result.Marshal()
+	}
+	result.Result = json.RawMessage(js)
+
+	return result.Marshal()
+}
