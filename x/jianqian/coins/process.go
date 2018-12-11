@@ -154,7 +154,7 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 	} else {
 		cliCtx = *config.GetCLIContext().QSCCliContext
 	}
-	_, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
+	apphash, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 	if err!=nil{
 		return InternalError(err.Error()).Marshal()
 	}
@@ -166,13 +166,11 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 	}
 	code:="-1"
 	reason :=""
-	var result interface{}
 	if directTOQOS == false {
 		counter := 0
 		for {
 			if counter >= waittime {
 				log.Println("time out")
-				result = "time out"
 				reason="time out"
 				break
 			}
@@ -188,8 +186,7 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 				log.Printf("fetchResult result:[%+v]\n", resultstr)
 				rs := []rune(resultstr)
 				index1 := strings.Index(resultstr, " ")
-				reason = ""
-				result = string(rs[index1+1:])
+				reason = string(rs[index1+1:])
 				code = string(rs[:index1])
 				break
 			}
@@ -197,7 +194,7 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 			counter++
 		}
 	}
-	return NewResultCoins(cdc, code, reason, result).Marshal()
+	return NewResultCoins(cdc, code, reason, apphash).Marshal()
 }
 
 //活动奖励发放
