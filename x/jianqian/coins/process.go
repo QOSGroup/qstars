@@ -8,10 +8,10 @@ import (
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
-	"github.com/prometheus/common/log"
 	"strconv"
 	"strings"
 	"time"
+	"log"
 
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/client/utils"
@@ -20,32 +20,66 @@ import (
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/jianqian/tx"
-	"github.com/pkg/errors"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
-type SendResult struct {
-	Hash   string `json:"hash"`
-	Error  string `json:"error"`
-	Code   string `json:"code"`
-	Result string `json:"result"`
-	Heigth string `json:"heigth"`
+//type SendResult struct {
+//	Hash   string `json:"hash"`
+//	Error  string `json:"error"`
+//	Code   string `json:"code"`
+//	Result string `json:"result"`
+//	Heigth string `json:"heigth"`
+//}
+
+type ResultCoins struct {
+	Code   string          `json:"code"`
+	Reason string          `json:"reason,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
+}
+func InternalError(reason string) ResultCoins {
+	return ResultCoins{Code: "-1", Reason: reason}
+}
+func (ri ResultCoins) Marshal() string {
+	jsonBytes, err := json.MarshalIndent(ri, "", "  ")
+	if err != nil {
+		log.Printf("InvestAd err:%s", err.Error())
+		return InternalError(err.Error()).Marshal()
+	}
+	return string(jsonBytes)
+}
+func NewResultCoins(cdc *wire.Codec, code, reason string, res interface{}) ResultCoins {
+	var rawMsg json.RawMessage
+
+	if res != nil {
+		var js []byte
+		js, err := cdc.MarshalJSON(res)
+		if err != nil {
+			return InternalError(err.Error())
+		}
+		rawMsg = json.RawMessage(js)
+	}
+
+	var result ResultCoins
+	result.Result = rawMsg
+	result.Code = code
+	result.Reason = reason
+
+	return result
 }
 
 //发放活动奖励 一转多
-func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) (*SendResult, error) {
+func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) string {
 	tolen := len(to)
 	//判断长度是否一致
 	if tolen != len(amount) || tolen != len(causecode) || tolen != len(causeStr) {
-		return nil, errors.New("Array parameter length is inconsistent")
+		return InternalError("Array parameter length is inconsistent").Marshal()
 	}
 
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
-	fmt.Println("from=", from)
 	if err != nil {
-		return nil, err
+		return InternalError(err.Error()).Marshal()
 	}
 	key := account.AddressStoreKey(from)
 	var qosnonce int64 = 0
@@ -57,8 +91,6 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 	}
 	qosnonce++
 	fmt.Println("qosnonce",qosnonce)
-
-
 	var ccs []types.BaseCoin
 	for _, coin := range amount {
 		ccs = append(ccs, types.BaseCoin{
@@ -115,57 +147,57 @@ func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 	return genStdSendTx(cdc, dispatchTx, priKey,config.GetCLIContext().Config.QSCChainID,  qscnonce)
 }
 
-func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) (*SendResult, error) {
+func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 	var cliCtx context.CLIContext
 	if directTOQOS == true {
 		cliCtx = *config.GetCLIContext().QOSCliContext
 	} else {
 		cliCtx = *config.GetCLIContext().QSCCliContext
 	}
-	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
-	result := &SendResult{}
-	if err != nil {
-		result.Hash = ""
-		result.Error = err.Error()
-		result.Code = "1"
-		return result, nil
+	_, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
+	if err!=nil{
+		return InternalError(err.Error()).Marshal()
 	}
-	result.Hash = response
 	height := strconv.FormatInt(commitresult.Height, 10)
-	result.Heigth = height
+
 	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
 	if err != nil {
 		panic("WaitingForQosResult should be able to convert to integer." + err.Error())
 	}
-
+	code:="-1"
+	reason :=""
+	var result interface{}
 	if directTOQOS == false {
 		counter := 0
 		for {
 			if counter >= waittime {
-				fmt.Println("time out")
-				result.Error = "time out"
+				log.Println("time out")
+				result = "time out"
+				reason="time out"
 				break
 			}
 			resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
+			log.Printf("fetchResult result:%s, err:%+v\n", resultstr, err)
 			if err != nil {
-				fmt.Println("get result error:" + err.Error())
-				result.Error = err.Error()
+				log.Printf("fetchResult error:%s\n", err.Error())
+				reason = err.Error()
+				break
 			}
-			if resultstr != "" && resultstr != "-1" {
-				fmt.Printf("get result:[%+v]\n", resultstr)
+
+			if resultstr != "" && resultstr != (CoinsStub{}).Name() {
+				log.Printf("fetchResult result:[%+v]\n", resultstr)
 				rs := []rune(resultstr)
 				index1 := strings.Index(resultstr, " ")
-
-				result.Error = ""
-				result.Result = string(rs[index1+1:])
-				result.Code = string(rs[:index1])
+				reason = ""
+				result = string(rs[index1+1:])
+				code = string(rs[:index1])
 				break
 			}
 			time.Sleep(500 * time.Millisecond)
 			counter++
 		}
 	}
-	return result, nil
+	return NewResultCoins(cdc, code, reason, result).Marshal()
 }
 
 //活动奖励发放
@@ -208,12 +240,7 @@ func DispatchAOE(cdc *wire.Codec, ctx *config.CLIConfig, address, coins, causeco
 	}
 	//cdc := star.MakeCodec()
 	privkey := tx.GetConfig().Dappowner
-	result, err := DispatchSend(cdc, ctx, privkey, toaddrss, amounts, codes, cstrs)
-	if err != nil {
-		return err.Error()
-	}
-	byteres, _ := json.Marshal(result)
-	return string(byteres[:])
+	return  DispatchSend(cdc, ctx, privkey, toaddrss, amounts, codes, cstrs)
 }
 
 func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
@@ -221,7 +248,7 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 	//qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
 	qstarskey := GetResultKey(heigth1, tx1)
 	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), common.QSCResultMapperName)
-	log.Infof("QueryStore: %+v, %+v\n", d, err)
+	log.Printf("QueryStore: %+v, %+v\n", d, err)
 	if err != nil {
 		return "", err
 	}
@@ -241,7 +268,20 @@ func GetResultKey(heigth1 string, tx1 string) string {
 	return qstarskey
 }
 
-func GetCoins(cdc *wire.Codec, ctx *context.CLIContext, tx string) (coins *jianqian.Coins, err error) {
-	coins, err = jianqian.QueryCoins(cdc, ctx, tx)
-	return coins, err
+func GetCoins(cdc *wire.Codec, ctx *context.CLIContext, tx string) string {
+	var result ResultCoins
+	result.Code = "0"
+	coins, err := jianqian.QueryCoins(cdc, ctx, tx)
+	if err!=nil{
+		return InternalError(err.Error()).Marshal()
+	}
+	js, err := cdc.MarshalJSON(coins)
+	if err != nil {
+		log.Printf("GetCoins err:%s", err.Error())
+		result.Code = "-1"
+		result.Reason = err.Error()
+		return result.Marshal()
+	}
+	result.Result = json.RawMessage(js)
+	return result.Marshal()
 }
