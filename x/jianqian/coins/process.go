@@ -57,7 +57,6 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 	}
 	qosnonce++
 
-
 	var qscnonce int64 = 0
 	qscacc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
 	if err != nil {
