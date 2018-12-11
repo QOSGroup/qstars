@@ -56,16 +56,8 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 		qosnonce = int64(acc.Nonce)
 	}
 	qosnonce++
+	fmt.Println("qosnonce",qosnonce)
 
-
-	var qscnonce int64 = 0
-	qscacc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
-	if err != nil {
-		qscnonce = 0
-	} else {
-		qscnonce = int64(qscacc.Nonce)
-	}
-	qscnonce++
 
 	var ccs []types.BaseCoin
 	for _, coin := range amount {
@@ -92,6 +84,8 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 			qscnonce = int64(qscacc.Nonce)
 		}
 		qscnonce++
+		fmt.Println("qscnonce",qscnonce)
+
 		msg= genStdWrapTx(cdc, transtx, priv, qosnonce,qscnonce, from, to, amount, causecode, causeStr)
 	}
 	//	chainid := ctx.QOSChainID
@@ -104,7 +98,7 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 	gas := types.NewInt(int64(0))
 	stx := txs.NewTxStd(sendTx, chainid, gas)
 
-	signature, _ := stx.SignTx(priKey, nonce, config.GetCLIContext().Config.QSCChainID)
+	signature, _ := stx.SignTx(priKey, nonce, chainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
@@ -122,7 +116,12 @@ func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 }
 
 func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) (*SendResult, error) {
-	cliCtx := *config.GetCLIContext().QSCCliContext
+	var cliCtx context.CLIContext
+	if directTOQOS == true {
+		cliCtx = *config.GetCLIContext().QOSCliContext
+	} else {
+		cliCtx = *config.GetCLIContext().QSCCliContext
+	}
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 	result := &SendResult{}
 	if err != nil {

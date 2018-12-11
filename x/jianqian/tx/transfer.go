@@ -21,7 +21,6 @@ func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qost
 			ti.QSCs = append(ti.QSCs, &newcoin)
 		}
 	}
-
 	return ti
 }
 
@@ -29,7 +28,14 @@ func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qost
 func NewTransfer(sender []qbasetypes.Address, receiver []qbasetypes.Address, coin []qbasetypes.BaseCoin) txs.ITx {
 	var sendTx qostxs.TxTransfer
 	for _,sv:=range sender{
-			sendTx.Senders = append(sendTx.Senders, warpperTransItem(sv, coin))
+		//一转多时 sender要提供转出总额
+		name:=coin[0].Name
+		var total qbasetypes.BigInt=qbasetypes.ZeroInt()
+		for _,v:=range coin{
+			total=total.Add(v.Amount)
+		}
+		newcoin:=qbasetypes.BaseCoin{name,total}
+		sendTx.Senders = append(sendTx.Senders, warpperTransItem(sv, []qbasetypes.BaseCoin{newcoin}))
 	}
 	for i,rv:=range receiver {
 		sendTx.Receivers = append(sendTx.Receivers, warpperTransItem(rv, []qbasetypes.BaseCoin{coin[i]}))
