@@ -56,7 +56,7 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 		qosnonce = int64(acc.Nonce)
 	}
 	qosnonce++
-	fmt.Println("qosnonce",qosnonce)
+
 	var qscnonce int64 = 0
 	qscacc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
 	if err != nil {
@@ -91,9 +91,6 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 			qscnonce = int64(qscacc.Nonce)
 		}
 		qscnonce++
-
-		fmt.Println("qscnonce",qscnonce)
-
 		msg= genStdWrapTx(cdc, transtx, priv, qosnonce,qscnonce, from, to, amount, causecode, causeStr)
 	}
 	//	chainid := ctx.QOSChainID
@@ -131,6 +128,7 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) (*SendResul
 	} else {
 		cliCtx = *config.GetCLIContext().QSCCliContext
 	}
+
 
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 	result := &SendResult{}
