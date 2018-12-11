@@ -1,6 +1,7 @@
 package article
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
@@ -13,9 +14,28 @@ import (
 	"github.com/QOSGroup/qstars/x/jianqian/tx"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"log"
 	"strconv"
 	"strings"
 )
+
+type ResultArticle struct {
+	Code   string          `json:"code"`
+	Reason string          `json:"reason,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
+}
+func InternalError(reason string) ResultArticle {
+	return ResultArticle{Code: "-1", Reason: reason}
+}
+func (ri ResultArticle) Marshal() string {
+	jsonBytes, err := json.MarshalIndent(ri, "", "  ")
+	if err != nil {
+		log.Printf("InvestAd err:%s", err.Error())
+		return InternalError(err.Error()).Marshal()
+	}
+	return string(jsonBytes)
+}
+
 
 //上传新作品
 //
@@ -54,7 +74,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
 	if err != nil {
-		return "{Code:\"1\",Reason:\"" + err.Error() + "\"}"
+		return InternalError(err.Error()).Marshal()
 	}
 	key := account.AddressStoreKey(from)
 	var nonce int64 = 0
@@ -72,7 +92,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	_, _, err1 := utils.SendTx(cliCtx, cdc, txsd)
 
 	if err1 != nil {
-		return "{Code:\"1\",Reason:\"" + err1.Error() + "\"}"
+		return InternalError(err1.Error()).Marshal()
 	}
 	return "{Code:\"0\",Reason:\"\"}"
 }
@@ -91,7 +111,23 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 }
 
 // GetArticle process of get Article
-func GetArticle(cdc *amino.Codec, key string) (article *jianqian.Articles, err error) {
-	article, err = jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, key)
-	return article, err
+func GetArticle(cdc *amino.Codec, key string) string {
+	var result ResultArticle
+	result.Code = "0"
+	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, key)
+	if err!=nil{
+		return InternalError(err.Error()).Marshal()
+	}
+	if article.ArticleHash==""{
+		return InternalError(key+" ArticleHash not exist").Marshal()
+	}
+	js, err := cdc.MarshalJSON(article)
+	if err != nil {
+		log.Printf("GetCoins err:%s", err.Error())
+		result.Code = "-1"
+		result.Reason = err.Error()
+		return result.Marshal()
+	}
+	result.Result = json.RawMessage(js)
+	return result.Marshal()
 }

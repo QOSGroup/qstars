@@ -77,12 +77,10 @@ func QueryArticleCmd(cdc *wire.Codec) *cobra.Command {
 
 			articleHash := viper.GetString(flag_articleHash)
 
-			result,err := GetArticle(cdc,articleHash)
-			if err!=nil{
-				fmt.Println(err.Error())
-			}else{
-				fmt.Println(result)
-			}
+			result:= GetArticle(cdc,articleHash)
+
+			fmt.Println(result)
+
 			return nil
 		},
 	}
