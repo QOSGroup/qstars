@@ -118,8 +118,8 @@ func QueryArticle(articleHash *C.char) *C.char {
 //}
 
 //export QueryCoins
-func QueryCoins(articleHash *C.char) *C.char {
-	output := jsdk.QueryCoins(C.GoString(articleHash))
+func QueryCoins(txHash *C.char) *C.char {
+	output := jsdk.QueryCoins(C.GoString(txHash))
 	return C.CString(output)
 }
 

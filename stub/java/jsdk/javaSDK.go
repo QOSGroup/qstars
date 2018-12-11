@@ -7,7 +7,6 @@ import (
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
-	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/QOSGroup/qstars/x/jianqian/article"
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
@@ -100,7 +99,7 @@ func RetrieveBuyer(articleHash string) string {
 }
 
 func QueryArticle(articleHash string) string {
-	result, _ := jianqian.QueryArticle(CDC, config.GetCLIContext().QSCCliContext, articleHash)
+	result := article.GetArticle(CDC, articleHash)
 	output, err := CDC.MarshalJSON(result)
 	if err != nil {
 		return err.Error()
@@ -108,8 +107,8 @@ func QueryArticle(articleHash string) string {
 	return string(output)
 }
 
-func QueryCoins(articleHash string) string {
-	result, _ := jianqian.QueryCoins(CDC, config.GetCLIContext().QSCCliContext, articleHash)
+func QueryCoins(txHash string) string {
+	result := coins.GetCoins(CDC, config.GetCLIContext().QSCCliContext, txHash)
 	output, err := CDC.MarshalJSON(result)
 	if err != nil {
 		return err.Error()
