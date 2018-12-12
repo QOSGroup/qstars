@@ -1,7 +1,6 @@
 package article
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
@@ -10,31 +9,47 @@ import (
 	"github.com/QOSGroup/qstars/config"
 	qstartypes "github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
+	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/QOSGroup/qstars/x/jianqian/tx"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"log"
 	"strconv"
 	"strings"
 )
 
-type ResultArticle struct {
-	Code   string          `json:"code"`
-	Reason string          `json:"reason,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
-}
-func InternalError(reason string) ResultArticle {
-	return ResultArticle{Code: "-1", Reason: reason}
-}
-func (ri ResultArticle) Marshal() string {
-	jsonBytes, err := json.MarshalIndent(ri, "", "  ")
-	if err != nil {
-		log.Printf("InvestAd err:%s", err.Error())
-		return InternalError(err.Error()).Marshal()
-	}
-	return string(jsonBytes)
-}
+const (
+	ARTICLE_PRIV_ERR = "201"   //上传者私钥获取地址错误
+	ARTICLE_ORIGIN_ERR = "202"   //原作者获取地址错误
+	ARTICLE_AUTHOR_SHARE_ERR = "203" // 作者收入比例出错
+	ARTICLE_ORIGIN_SHARE_ERR = "204" // 原创入比例出错
+	ARTICLE_COMMUNITY_SHARE_ERR = "205" // 社区收入比例出错
+	ARTICLE_INVESTOR_SHARE_ERR = "206" // 投资者收入比例出错
+	ARTICLE_INVESTOR_DATE_ERR = "207" // 投资期限出错
+	ARTICLE_BUY_DATE_ERR = "208" // 购买期限比例出错
+	ARTICLE_ADDRES_ERR = "209" // 地址转换错误
+	ARTICLE_PRIV_AUTHOR_ERR = "210" // 非作者本人私钥
+	ARTICLE_SENDTX_ERR = "211" //交易出错
+
+	ARTICLE_QUERY_ERR = "212" //查询跨链结果错误
+)
+
+//type ResultArticle struct {
+//	Code   string          `json:"code"`
+//	Reason string          `json:"reason,omitempty"`
+//	Result json.RawMessage `json:"result,omitempty"`
+//}
+//func InternalError(reason string) ResultArticle {
+//	return ResultArticle{Code: "-1", Reason: reason}
+//}
+//func (ri ResultArticle) Marshal() string {
+//	jsonBytes, err := json.MarshalIndent(ri, "", "  ")
+//	if err != nil {
+//		log.Printf("InvestAd err:%s", err.Error())
+//		return InternalError(err.Error()).Marshal()
+//	}
+//	return string(jsonBytes)
+//}
 
 
 //上传新作品
@@ -53,28 +68,52 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	privkey := tx.GetConfig().Dappowner
 	authorAddr, err := qstartypes.AccAddressFromBech32(authorAddress)
 	if err != nil {
-		return err.Error()
+		return common.NewErrorResult(ARTICLE_ADDRES_ERR,err.Error()).Marshal()
 	}
 	var originaladdr types.Address
 	if strings.TrimSpace(originalAuthor) != "" {
 		originaladdr, _ = qstartypes.AccAddressFromBech32(originalAuthor)
 		if err != nil {
-			return err.Error()
+			return common.NewErrorResult(ARTICLE_ORIGIN_ERR,err.Error()).Marshal()
 		}
 	}
 
-	authshare, _ := strconv.Atoi(shareAuthor)
-	origshare, _ := strconv.Atoi(shareOriginalAuthor)
-	commushare, _ := strconv.Atoi(shareCommunity)
-	invesshare, _ := strconv.Atoi(shareInvestor)
-	investDays, _ := strconv.Atoi(endInvestDate)
-	buydays, _ := strconv.Atoi(endBuyDate)
+	authshare, err := strconv.Atoi(shareAuthor)
+	if err!=nil{
+		return common.NewErrorResult(ARTICLE_AUTHOR_SHARE_ERR,err.Error()).Marshal()
+	}
+	origshare, err := strconv.Atoi(shareOriginalAuthor)
+	if err!=nil{
+		return common.NewErrorResult(ARTICLE_ORIGIN_SHARE_ERR,err.Error()).Marshal()
+	}
+	commushare, err := strconv.Atoi(shareCommunity)
+	if err!=nil{
+		return common.NewErrorResult(ARTICLE_COMMUNITY_SHARE_ERR,err.Error()).Marshal()
+	}
+	invesshare, err := strconv.Atoi(shareInvestor)
+	if err!=nil{
+		return common.NewErrorResult(ARTICLE_INVESTOR_SHARE_ERR,err.Error()).Marshal()
+	}
+	investDays, err := strconv.Atoi(endInvestDate)
+	if err!=nil{
+		return common.NewErrorResult(ARTICLE_INVESTOR_DATE_ERR,err.Error()).Marshal()
+	}
+	buydays, err := strconv.Atoi(endBuyDate)
+	if err!=nil{
+		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR,err.Error()).Marshal()
+	}
 
-	tx := NewArticlesTx(authorAddr, originaladdr, articleHash, authshare, origshare, commushare, invesshare, investDays, buydays, types.ZeroInt())
+
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
 	if err != nil {
-		return InternalError(err.Error()).Marshal()
+		return common.NewErrorResult(ARTICLE_PRIV_ERR,err.Error()).Marshal()
+	}
+
+
+	if authorAddr.String()!=from.String(){
+		//非作者本人私钥
+		return common.NewErrorResult(ARTICLE_PRIV_AUTHOR_ERR,"非作者本人私钥").Marshal()
 	}
 	key := account.AddressStoreKey(from)
 	var nonce int64 = 0
@@ -87,14 +126,14 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	fmt.Println("nonce=", nonce)
 	nonce++
 	chainid := config.GetCLIContext().Config.QSCChainID
+	tx := NewArticlesTx(authorAddr, originaladdr, articleHash, authshare, origshare, commushare, invesshare, investDays, buydays, types.ZeroInt())
 	txsd := genStdSendTx(cdc, tx, priv, chainid, nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	_, _, err1 := utils.SendTx(cliCtx, cdc, txsd)
-
 	if err1 != nil {
-		return InternalError(err1.Error()).Marshal()
+		return common.NewErrorResult(ARTICLE_SENDTX_ERR,err1.Error()).Marshal()
 	}
-	return "{Code:\"0\",Reason:\"\"}"
+	return common.NewSuccessResult(cdc,0,"","").Marshal()
 }
 
 //封装公链交易信息
@@ -112,22 +151,10 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 
 // GetArticle process of get Article
 func GetArticle(cdc *amino.Codec, key string) string {
-	var result ResultArticle
-	result.Code = "0"
 	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, key)
 	if err!=nil{
-		return InternalError(err.Error()).Marshal()
+		return common.NewErrorResult(ARTICLE_QUERY_ERR,err.Error()).Marshal()
 	}
-	if article.ArticleHash==""{
-		return InternalError(key+" ArticleHash not exist").Marshal()
-	}
-	js, err := cdc.MarshalJSON(article)
-	if err != nil {
-		log.Printf("GetCoins err:%s", err.Error())
-		result.Code = "-1"
-		result.Reason = err.Error()
-		return result.Marshal()
-	}
-	result.Result = json.RawMessage(js)
-	return result.Marshal()
+	return common.NewSuccessResult(cdc, 0, "", article).Marshal()
+
 }
