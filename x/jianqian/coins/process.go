@@ -1,17 +1,16 @@
 package coins
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
+	"log"
 	"strconv"
 	"strings"
 	"time"
-	"log"
 
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/client/utils"
@@ -31,55 +30,27 @@ import (
 //	Result string `json:"result"`
 //	Heigth string `json:"heigth"`
 //}
+const (
+	COINS_PARA_LEN_ERR = "101"   //参数长度不一致
+	COINS_PRIV_ERR = "102"   //私钥获取地址错误
+	COINS_SENDTX_ERR = "103" //交易出错
+	COINS_FETCH_RESULT_ERR = "104" //查询跨链结果错误
+	COINS_QUERY_ERR = "105" //查询跨链结果错误
+)
 
-type ResultCoins struct {
-	Code   string          `json:"code"`
-	Reason string          `json:"reason,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
-}
-func InternalError(reason string) ResultCoins {
-	return ResultCoins{Code: "-1", Reason: reason}
-}
-func (ri ResultCoins) Marshal() string {
-	jsonBytes, err := json.MarshalIndent(ri, "", "  ")
-	if err != nil {
-		log.Printf("InvestAd err:%s", err.Error())
-		return InternalError(err.Error()).Marshal()
-	}
-	return string(jsonBytes)
-}
-func NewResultCoins(cdc *wire.Codec, code, reason string, res interface{}) ResultCoins {
-	var rawMsg json.RawMessage
-
-	if res != nil {
-		var js []byte
-		js, err := cdc.MarshalJSON(res)
-		if err != nil {
-			return InternalError(err.Error())
-		}
-		rawMsg = json.RawMessage(js)
-	}
-
-	var result ResultCoins
-	result.Result = rawMsg
-	result.Code = code
-	result.Reason = reason
-
-	return result
-}
 
 //发放活动奖励 一转多
 func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) string {
 	tolen := len(to)
 	//判断长度是否一致
 	if tolen != len(amount) || tolen != len(causecode) || tolen != len(causeStr) {
-		return InternalError("Array parameter length is inconsistent").Marshal()
+		return common.NewErrorResult(COINS_PARA_LEN_ERR,"Array parameter length is inconsistent").Marshal()
 	}
 
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
 	if err != nil {
-		return InternalError(err.Error()).Marshal()
+		return common.NewErrorResult(COINS_PRIV_ERR,err.Error()).Marshal()
 	}
 	key := account.AddressStoreKey(from)
 	var qosnonce int64 = 0
@@ -154,47 +125,41 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 	} else {
 		cliCtx = *config.GetCLIContext().QSCCliContext
 	}
-	apphash, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
+	hash, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 	if err!=nil{
-		return InternalError(err.Error()).Marshal()
+		return common.NewErrorResult(COINS_SENDTX_ERR,err.Error()).Marshal()
 	}
 	height := strconv.FormatInt(commitresult.Height, 10)
-
 	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
 	if err != nil {
-		panic("WaitingForQosResult should be able to convert to integer." + err.Error())
+		waittime=30
 	}
-	code:="-1"
-	reason :=""
 	if directTOQOS == false {
 		counter := 0
 		for {
 			if counter >= waittime {
 				log.Println("time out")
-				reason="time out"
-				break
+				return common.ResultQOSTimeoutError().Marshal()
 			}
 			resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
 			log.Printf("fetchResult result:%s, err:%+v\n", resultstr, err)
 			if err != nil {
 				log.Printf("fetchResult error:%s\n", err.Error())
-				reason = err.Error()
-				break
+				return common.NewErrorResult(COINS_FETCH_RESULT_ERR,err.Error()).Marshal()
 			}
 
 			if resultstr != "" && resultstr != (CoinsStub{}).Name() {
 				log.Printf("fetchResult result:[%+v]\n", resultstr)
 				rs := []rune(resultstr)
 				index1 := strings.Index(resultstr, " ")
-				reason = string(rs[index1+1:])
-				code = string(rs[:index1])
-				break
+				reason := string(rs[index1+1:])
+				return common.NewErrorResult(COINS_FETCH_RESULT_ERR,reason).Marshal()
 			}
 			time.Sleep(500 * time.Millisecond)
 			counter++
 		}
 	}
-	return NewResultCoins(cdc, code, reason, apphash).Marshal()
+	return common.NewSuccessResult(cdc, commitresult.Height, hash, hash).Marshal()
 }
 
 //活动奖励发放
@@ -266,19 +231,9 @@ func GetResultKey(heigth1 string, tx1 string) string {
 }
 
 func GetCoins(cdc *wire.Codec, ctx *context.CLIContext, tx string) string {
-	var result ResultCoins
-	result.Code = "0"
 	coins, err := jianqian.QueryCoins(cdc, ctx, tx)
 	if err!=nil{
-		return InternalError(err.Error()).Marshal()
+		return common.NewErrorResult(COINS_QUERY_ERR,err.Error()).Marshal()
 	}
-	js, err := cdc.MarshalJSON(coins)
-	if err != nil {
-		log.Printf("GetCoins err:%s", err.Error())
-		result.Code = "-1"
-		result.Reason = err.Error()
-		return result.Marshal()
-	}
-	result.Result = json.RawMessage(js)
-	return result.Marshal()
+	return common.NewSuccessResult(cdc, 0, "", coins).Marshal()
 }
