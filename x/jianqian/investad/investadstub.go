@@ -43,7 +43,7 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 	qcpTxResult, ok := baseabci.ConvertTxQcpResult(txQcpResult)
 	if ok == false {
 		log.Printf("investad.InvestadStub ResultNotify ConvertTxQcpResult error.")
-		resultCode = types.ABCICodeType(types.CodeTxDecode)
+		return nil
 	} else {
 		resultCode = qcpTxResult.Result.Code
 		key := in.QcpOriginalExtends //orginalTx.abc

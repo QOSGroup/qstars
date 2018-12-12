@@ -39,6 +39,7 @@ func checkArticle(ctx context.Context, articleKey []byte) error {
 
 	return nil
 }
+
 func (it BuyTx) ValidateData(ctx context.Context) error {
 	if err := checkArticle(ctx, it.ArticleHash); err != nil {
 		return err
@@ -49,6 +50,24 @@ func (it BuyTx) ValidateData(ctx context.Context) error {
 	if ok && buyer.CheckStatus != jianqian.CheckStatusFail {
 		return errors.New("已被购买")
 	}
+
+	transferTx, ok := it.Std.ITx.(*qostxs.TxTransfer)
+	if !ok {
+		return errors.New("std类型不支持")
+	}
+
+	if len(transferTx.Senders) == 0 || len(transferTx.Receivers) == 0 {
+		return errors.New("无效的tx")
+	}
+
+	totalAmount := qbasetypes.NewInt(0)
+	for _, v := range transferTx.Senders {
+		totalAmount = totalAmount.Add(v.QOS)
+	}
+	if totalAmount.IsZero() {
+		return errors.New("购买金额不能为0")
+	}
+
 	return nil
 }
 
