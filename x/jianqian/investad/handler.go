@@ -46,6 +46,25 @@ func (it InvestTx) ValidateData(ctx context.Context) error {
 		return err
 	}
 
+	transferTx, ok := it.Std.ITx.(*qostxs.TxTransfer)
+	if !ok {
+		return errors.New("std类型不支持")
+	}
+
+	if len(transferTx.Senders) == 0 || len(transferTx.Receivers) == 0 {
+		return errors.New("无效的tx")
+	}
+
+	totalAmount := qbasetypes.NewInt(0)
+
+	for _, v := range transferTx.Senders {
+		totalAmount = totalAmount.Add(getInvestAmount(v.QSCs))
+	}
+
+	if totalAmount.IsZero() {
+		return errors.New("投资金额不能为0")
+	}
+
 	return nil
 }
 
