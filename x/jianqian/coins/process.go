@@ -1,7 +1,6 @@
 package coins
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
@@ -76,7 +75,7 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 
 	if directTOQOS == true {
 		//直接连接公链
-		msg=genStdSendTx(cdc, transtx, priv,  config.GetCLIContext().Config.QOSChainID, qosnonce)
+		msg=genStdSendTx(cdc, transtx, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QOSChainID, qosnonce)
 
 	}else{
 		//走跨链
@@ -98,11 +97,11 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 }
 
 //封装公链交易信息
-func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string,  nonce int64) *txs.TxStd {
+func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid,fromchainid string,  nonce int64) *txs.TxStd {
 	gas := types.NewInt(int64(0))
-	stx := txs.NewTxStd(sendTx, chainid, gas)
+	stx := txs.NewTxStd(sendTx, tochainid, gas)
 
-	signature, _ := stx.SignTx(priKey, nonce, chainid)
+	signature, _ := stx.SignTx(priKey, nonce, fromchainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
@@ -113,10 +112,10 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 
 //封装奖励发放跨链交易信息
 func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519,  qosnonce,qscnonce int64, from types.Address, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) *txs.TxStd {
-	stx := genStdSendTx(cdc, sendTx, priKey,  config.GetCLIContext().Config.QOSChainID, qosnonce)
+	stx := genStdSendTx(cdc, sendTx, priKey,  config.GetCLIContext().Config.QOSChainID,config.GetCLIContext().Config.QSCChainID, qosnonce)
 	//tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
 	dispatchTx := NewDispatchAOE(stx, from, to, amount, causecode, causeStr, types.ZeroInt())
-	return genStdSendTx(cdc, dispatchTx, priKey,config.GetCLIContext().Config.QSCChainID,  qscnonce)
+	return genStdSendTx(cdc, dispatchTx, priKey,config.GetCLIContext().Config.QSCChainID,config.GetCLIContext().Config.QSCChainID,  qscnonce)
 }
 
 func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
@@ -156,7 +155,7 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 				reason := string(rs[index1+1:])
 				code := string(rs[:index1])
 				result:=common.NewErrorResult(code,reason)
-				result.Result=json.RawMessage(hash)
+				result.Hash=hash
 				return result.Marshal()
 			}
 			time.Sleep(500 * time.Millisecond)
