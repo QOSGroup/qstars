@@ -6,9 +6,11 @@ import (
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/tendermint/tendermint/crypto/tmhash"
-	"github.com/tendermint/tendermint/libs/common"
+	tmcommon "github.com/tendermint/tendermint/libs/common"
+	"strconv"
 )
 
 //活动奖励
@@ -47,14 +49,21 @@ func (tx DispatchAOETx) Exec(ctx context.Context) (result types.Result, crossTxQ
 		award := jianqian.ActivityAward{v, tx.CoinAmount[i], tx.CausesCode[i], tx.CausesStr[i]}
 		awards = append(awards, award)
 	}
-	tx1 := (common.HexBytes)(tmhash.Sum(ctx.TxBytes()))
+	tx1 := (tmcommon.HexBytes)(tmhash.Sum(ctx.TxBytes()))
+	heigth1 := strconv.FormatInt(ctx.BlockHeight(), 10)
+	key := "heigth:" + heigth1 + ",hash:" + tx1.String()
 
 	coins := jianqian.Coins{tx1.String(), tx.From, awards, "-1"}
 	coinsMapper.SetCoins(&coins)
+
+	kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
+	kvMapper.Set([]byte(key), CoinsStub{}.Name())
+
 	//跨链
 	crossTxQcps = &txs.TxQcp{}
 	crossTxQcps.TxStd = tx.Wrapper
 	crossTxQcps.To = config.GetServerConf().QOSChainName
+	crossTxQcps.Extends=key
 	result = types.Result{
 		Code: types.ABCICodeOK,
 	}
