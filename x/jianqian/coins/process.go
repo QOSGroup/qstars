@@ -1,6 +1,7 @@
 package coins
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
@@ -153,7 +154,10 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 				rs := []rune(resultstr)
 				index1 := strings.Index(resultstr, " ")
 				reason := string(rs[index1+1:])
-				return common.NewErrorResult(COINS_FETCH_RESULT_ERR,reason).Marshal()
+				code := string(rs[:index1])
+				result:=common.NewErrorResult(code,reason)
+				result.Result=json.RawMessage(hash)
+				return result.Marshal()
 			}
 			time.Sleep(500 * time.Millisecond)
 			counter++
