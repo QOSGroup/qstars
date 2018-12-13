@@ -156,6 +156,7 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 				code := string(rs[:index1])
 				result:=common.NewErrorResult(code,reason)
 				result.Hash=hash
+				result.Height=commitresult.Height
 				return result.Marshal()
 			}
 			time.Sleep(500 * time.Millisecond)
