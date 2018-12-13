@@ -16,30 +16,30 @@ import (
 
 func DispatchCoins(addrs, cns, causecodes, causestrings, gas string) string {
 	result := coins.DispatchAOE(CDC, CONF, addrs, cns, causecodes, causestrings, gas)
-	output, err := CDC.MarshalJSON(result)
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
+	//output, err := CDC.MarshalJSON(result)
+	//if err != nil {
+	//	return err.Error()
+	//}
+	return result
 }
 
 func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate string) string {
 	result := article.NewArticle(CDC, CONF, authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate)
-	output, err := CDC.MarshalJSON(result)
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
+	//output, err := CDC.MarshalJSON(result)
+	//if err != nil {
+	//	return err.Error()
+	//}
+	return result
 }
 
 func InvestAdBackground(txb string) string {
 	timeout := time.Second * 60
 	result := investad.InvestAdBackground(CDC, txb, timeout)
-	output, err := CDC.MarshalJSON(result)
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
+	//output, err := CDC.MarshalJSON(result)
+	//if err != nil {
+	//	return err.Error()
+	//}
+	return result
 
 }
 
@@ -73,45 +73,45 @@ func BuyAd(articleHash, coins, buyer string) string {
 
 	timeout := time.Second * 60
 	result := buyad.BuyAdBackground(CDC, string(rb.Result), timeout)
-	output, err := CDC.MarshalJSON(result)
+	//output, err := CDC.MarshalJSON(result)
 	if err != nil {
 		return err.Error()
 	}
-	return string(output)
+	return result
 }
 
 func RetrieveInvestors(articleHash string) string {
 	result := investad.RetrieveInvestors(CDC, articleHash)
-	output, err := CDC.MarshalJSON(result)
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
+	//output, err := CDC.MarshalJSON(result)
+	//if err != nil {
+	//	return err.Error()
+	//}
+	return result
 }
 
 func RetrieveBuyer(articleHash string) string {
 	result := buyad.RetrieveBuyer(CDC, articleHash)
-	output, err := CDC.MarshalJSON(result)
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
+	//output, err := CDC.MarshalJSON(result)
+	//if err != nil {
+	//	return err.Error()
+	//}
+	return result
 }
 
 func QueryArticle(articleHash string) string {
 	result := article.GetArticle(CDC, articleHash)
-	output, err := CDC.MarshalJSON(result)
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
+	//output, err := CDC.MarshalJSON(result)
+	//if err != nil {
+	//	return err.Error()
+	//}
+	return result
 }
 
 func QueryCoins(txHash string) string {
 	result := coins.GetCoins(CDC, config.GetCLIContext().QSCCliContext, txHash)
-	output, err := CDC.MarshalJSON(result)
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
+	//output, err := CDC.MarshalJSON(result)
+	//if err != nil {
+	//	return err.Error()
+	//}
+	return result
 }
