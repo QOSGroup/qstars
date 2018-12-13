@@ -14,6 +14,7 @@
 .idea
 .vscode
 
+app_example
 cmd/qstarscli/qstarscli
 cmd/qstarsd/qstarsd
 cmd/qstarsd/data
