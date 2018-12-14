@@ -14,6 +14,7 @@ import (
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	tmcommon "github.com/tendermint/tendermint/libs/common"
 	"log"
+	"time"
 
 	"strconv"
 )
@@ -25,7 +26,19 @@ type BuyTx struct {
 
 var _ txs.ITx = (*BuyTx)(nil)
 
-func checkArticle(ctx context.Context, articleKey []byte) error {
+func checkArticleBase(article *jianqian.Articles, now time.Time) error {
+	if article.EndBuyDate.After(now) {
+		return errors.New("投资还没结束期限")
+
+	}
+	if article.EndBuyDate.Before(now) {
+		return errors.New("超过购买期限")
+	}
+
+	return nil
+}
+
+func check(ctx context.Context, articleKey []byte) error {
 	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
 	a := articleMapper.GetArticle(string(articleKey))
 	if a == nil {
@@ -33,15 +46,15 @@ func checkArticle(ctx context.Context, articleKey []byte) error {
 	}
 
 	log.Printf("--- checkArticle: EndBuyDate:%+v, Time:%+v", a.EndBuyDate, ctx.BlockHeader().Time)
-	if a.EndBuyDate.Before(ctx.BlockHeader().Time) {
-		return errors.New("超过投资期限")
+	if err := checkArticleBase(a, ctx.BlockHeader().Time); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (it BuyTx) ValidateData(ctx context.Context) error {
-	if err := checkArticle(ctx, it.ArticleHash); err != nil {
+	if err := check(ctx, it.ArticleHash); err != nil {
 		return err
 	}
 
