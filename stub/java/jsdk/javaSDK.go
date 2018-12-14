@@ -51,6 +51,9 @@ type ResultBuy struct {
 
 func BuyAd(articleHash, coins, buyer string) string {
 	chainid := config.GetCLIContext().Config.QSCChainID
+	if len(buyer) == 0 {
+		buyer = config.GetCLIContext().Config.Adbuyermock
+	}
 	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(buyer, CDC)
 	from, err := types.AccAddressFromBech32(addrben32)
 	key := account.AddressStoreKey(from)
