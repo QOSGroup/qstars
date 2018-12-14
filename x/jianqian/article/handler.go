@@ -19,8 +19,8 @@ type ArticleTx struct {
 	ShareOriginalAuthor int           //原创收入比例(转载作品必填)
 	ShareCommunity      int           //社区收入比例(必填)
 	ShareInvestor       int           //投资者收入比例(必填)
-	InvestDays          int           //可供投资的天数(必填)
-	BuyDays             int           //可供购买广告位的天数(必填)
+	InvestHours          int           //可供投资的小时数(必填)
+	BuyHours             int           //可供购买广告位的小时数(必填)
 	Gas                 types.BigInt
 }
 
@@ -56,11 +56,11 @@ func (tx *ArticleTx) Exec(ctx context.Context) (result types.Result, crossTxQcp 
 	//本地存储
 	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
 
-	buydays := ctx.BlockHeader().Time.Add(time.Hour * (24 * time.Duration(tx.BuyDays)))
-	investdays := ctx.BlockHeader().Time.Add(time.Hour * (24 * time.Duration(tx.InvestDays)))
+	buyhours := ctx.BlockHeader().Time.Add(time.Hour * ( time.Duration(tx.BuyHours)))
+	investhours := ctx.BlockHeader().Time.Add(time.Hour * ( time.Duration(tx.InvestHours)))
 
 	art := jianqian.Articles{tx.Authoraddress, tx.OriginalAuthor, tx.ArticleHash, tx.ShareAuthor, tx.ShareOriginalAuthor,
-		tx.ShareCommunity, tx.ShareInvestor, tx.InvestDays, investdays, tx.BuyDays, buydays, tx.Gas}
+		tx.ShareCommunity, tx.ShareInvestor, tx.InvestHours, investhours, tx.BuyHours, buyhours, tx.Gas}
 
 	if !articleMapper.SetArticle(tx.ArticleHash, &art) {
 		result.Log = "Error: Save Article  error"

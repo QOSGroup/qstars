@@ -31,6 +31,7 @@ const (
 	ARTICLE_PRIV_AUTHOR_ERR = "210" // 非作者本人私钥
 	ARTICLE_SENDTX_ERR = "211" //交易出错
 
+
 	ARTICLE_QUERY_ERR = "212" //查询跨链结果错误
 )
 
@@ -61,8 +62,8 @@ const (
 //shareOriginalAuthor    原创收入比例(转载作品必填)
 //shareCommunity         社区收入比例(必填)
 //shareInvestor          投资者收入比例(必填)
-//endInvestDate          投资结束时间(必填)
-//endBuyDate             广告位购买结果时间(必填)
+//endInvestDate          投资结束时间(必填) 单位 小时
+//endBuyDate             广告位购买结果时间(必填) 单位 小时
 func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, originalAuthor, articleHash, shareAuthor, shareOriginalAuthor,
 	shareCommunity, shareInvestor, endInvestDate, endBuyDate string) string {
 	privkey := tx.GetConfig().Dappowner
@@ -94,16 +95,20 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	if err!=nil{
 		return common.NewErrorResult(ARTICLE_INVESTOR_SHARE_ERR,err.Error()).Marshal()
 	}
-	investDays, err := strconv.Atoi(endInvestDate)
+	investhours, err := strconv.Atoi(endInvestDate)
 	if err!=nil{
 		return common.NewErrorResult(ARTICLE_INVESTOR_DATE_ERR,err.Error()).Marshal()
 	}
-	buydays, err := strconv.Atoi(endBuyDate)
+	if investhours<=0{
+		return common.NewErrorResult(ARTICLE_INVESTOR_DATE_ERR,"投资期需大于0").Marshal()
+	}
+	buyhours, err := strconv.Atoi(endBuyDate)
 	if err!=nil{
 		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR,err.Error()).Marshal()
 	}
-
-
+	if buyhours<=0{
+		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR,"广告竞拍期需大于0").Marshal()
+	}
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
 	if err != nil {
@@ -126,7 +131,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	fmt.Println("nonce=", nonce)
 	nonce++
 	chainid := config.GetCLIContext().Config.QSCChainID
-	tx := NewArticlesTx(authorAddr, originaladdr, articleHash, authshare, origshare, commushare, invesshare, investDays, buydays, types.ZeroInt())
+	tx := NewArticlesTx(authorAddr, originaladdr, articleHash, authshare, origshare, commushare, invesshare, investhours, buyhours, types.ZeroInt())
 	txsd := genStdSendTx(cdc, tx, priv, chainid, nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	_, _, err1 := utils.SendTx(cliCtx, cdc, txsd)
