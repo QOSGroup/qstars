@@ -53,6 +53,46 @@ func check(ctx context.Context, articleKey []byte) error {
 	return nil
 }
 
+func checkRevenue(ctx context.Context, articleKey []byte, totalAmount qbasetypes.BigInt, items []qostxs.TransItem) error {
+	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
+	a := articleMapper.GetArticle(string(articleKey))
+	if a == nil {
+		return errors.New("invalid article")
+	}
+
+	receivers, err := warpperReceivers(articleMapper.GetCodec(), a, totalAmount)
+	if err != nil {
+		return err
+	}
+
+	if len(receivers) != len(items) {
+		return errors.New("invalid Receivers")
+	}
+
+	receiverMap := make(map[string]qostxs.TransItem)
+	for _, v := range receivers {
+		if vv, ok := receiverMap[v.Address.String()]; ok {
+			vv.QOS = vv.QOS.Add(v.QOS)
+			receiverMap[v.Address.String()] = vv
+		} else {
+			receiverMap[v.Address.String()] = v
+		}
+	}
+
+	for _, v := range items {
+		if vv, ok := receiverMap[v.Address.String()]; ok {
+			if !v.QOS.Equal(vv.QOS) {
+				return errors.New("qos invalid")
+			}
+
+		} else {
+			return errors.New("invest not found")
+		}
+	}
+
+	return nil
+}
+
 func (it BuyTx) ValidateData(ctx context.Context) error {
 	if err := check(ctx, it.ArticleHash); err != nil {
 		return err
@@ -69,7 +109,7 @@ func (it BuyTx) ValidateData(ctx context.Context) error {
 		return errors.New("std类型不支持")
 	}
 
-	if len(transferTx.Senders) == 0 || len(transferTx.Receivers) == 0 {
+	if len(transferTx.Senders) != 1 || len(transferTx.Receivers) == 0 {
 		return errors.New("无效的tx")
 	}
 
@@ -79,6 +119,10 @@ func (it BuyTx) ValidateData(ctx context.Context) error {
 	}
 	if totalAmount.IsZero() {
 		return errors.New("购买金额不能为0")
+	}
+
+	if err := checkRevenue(ctx, it.ArticleHash, totalAmount, transferTx.Receivers); err != nil {
+		return err
 	}
 
 	return nil

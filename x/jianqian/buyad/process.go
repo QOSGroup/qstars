@@ -252,47 +252,106 @@ func mergeReceivers(rs []qostxs.TransItem) []qostxs.TransItem {
 	return res
 }
 
-func warpperReceivers(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt) []qostxs.TransItem {
+func warpperReceivers(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt) ([]qostxs.TransItem, error) {
 	var result []qostxs.TransItem
 	log.Printf("buyad warpperReceivers  article:%+v", article)
+
+	investors, err := calculateRevenue(cdc, article, amount)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range investors {
+		result = append(
+			result,
+			warpperTransItem(
+				v.Address,
+				[]qbasetypes.BaseCoin{{Name: coinsName, Amount: v.Revenue}}))
+	}
+
+	return mergeReceivers(result), nil
+}
+
+// calculateInvestorRevenue 计算投资者收入
+func calculateInvestorRevenue(cdc *wire.Codec, articleHash string, amount qbasetypes.BigInt) (jianqian.Investors, error) {
+	investors, err := jianqian.ListInvestors(config.GetCLIContext().QSCCliContext, cdc, articleHash)
+	log.Printf("buyAd calculateInvestorRevenue investors:%+v", investors)
+	if err != nil {
+		return nil, err
+	}
+
+	totalInvest := investors.TotalInvest()
+	log.Printf("buyAd calculateInvestorRevenue amount:%s, totalInvest:%d", amount.String(), totalInvest.Int64())
+
+	curAmount := qbasetypes.NewInt(0)
+	if !totalInvest.IsZero() {
+		l := len(investors)
+		for i := 0; i < l; i++ {
+			var revenue qbasetypes.BigInt
+			if i+1 == l {
+				revenue = amount.Sub(curAmount)
+			} else {
+				revenue = amount.Mul(investors[i].Invest).Div(totalInvest)
+			}
+
+			investors[i].Revenue = revenue
+			curAmount = curAmount.Add(revenue)
+		}
+	}
+
+	return investors, nil
+}
+
+// calculateRevenue 计算收入
+func calculateRevenue(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt) ([]jianqian.Investor, error) {
+	var result []jianqian.Investor
+	log.Printf("buyad calculateRevenue  article:%+v", article)
 
 	// 作者地址
 	authorTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareAuthor)).Div(qbasetypes.NewInt(100)))
 	result = append(
 		result,
-		warpperTransItem(
-			article.Authoraddress,
-			[]qbasetypes.BaseCoin{{Name: coinsName, Amount: authorTotal}}))
+		jianqian.Investor{
+			InvestorType: jianqian.InvestorTypeAuthor, // 投资者类型
+			Address:      article.Authoraddress,       // 投资者地址
+			Invest:       qbasetypes.NewInt(0),        // 投资金额
+			Revenue:      authorTotal,                 // 投资收益
+		})
 
 	// 原创作者地址
 	shareOriginalTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareOriginalAuthor)).Div(qbasetypes.NewInt(100)))
 	result = append(
 		result,
-		warpperTransItem(
-			article.OriginalAuthor,
-			[]qbasetypes.BaseCoin{{Name: coinsName, Amount: shareOriginalTotal}}))
+		jianqian.Investor{
+			InvestorType: jianqian.InvestorTypeOriginalAuthor, // 投资者类型
+			Address:      article.OriginalAuthor,              // 投资者地址
+			Invest:       qbasetypes.NewInt(0),                // 投资金额
+			Revenue:      shareOriginalTotal,                  // 投资收益
+		})
 
 	// 投资者收入分配
 	investorShouldTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareInvestor)).Div(qbasetypes.NewInt(100)))
-	investorActuallyTotal := qbasetypes.NewInt(0)
-	investors := warpperInvestorTx(cdc, article.ArticleHash, investorShouldTotal.Int64())
-	if len(investors) != 0 {
-		result = append(result, investors...)
-		investorActuallyTotal = investorShouldTotal
+	investors, err := calculateInvestorRevenue(cdc, article.ArticleHash, investorShouldTotal)
+	if err != nil {
+		return nil, err
 	}
+	result = append(result, investors...)
 
 	shareCommunityAddr, err := getCommunityAddr(cdc)
 	if err == nil {
-		shareCommunityTotal := amount.Sub(authorTotal).Sub(shareOriginalTotal).Sub(investorActuallyTotal)
+		shareCommunityTotal := amount.Sub(authorTotal).Sub(shareOriginalTotal).Sub(investors.TotalRevenue())
 		// 社区收入比例
 		result = append(
 			result,
-			warpperTransItem(
-				shareCommunityAddr,
-				[]qbasetypes.BaseCoin{{Name: coinsName, Amount: shareCommunityTotal}}))
+			jianqian.Investor{
+				InvestorType: jianqian.InvestorTypeCommunity, // 投资者类型
+				Address:      shareCommunityAddr,             // 投资者地址
+				Invest:       qbasetypes.NewInt(0),           // 投资金额
+				Revenue:      shareCommunityTotal,            // 投资收益
+			})
 	}
 
-	return mergeReceivers(result)
+	return result, nil
 }
 
 // buyAd 投资广告
@@ -344,7 +403,11 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	qosnonce += 1
 	var transferTx qostxs.TxTransfer
 	transferTx.Senders = []qostxs.TransItem{warpperTransItem(buyer, ccs)}
-	transferTx.Receivers = warpperReceivers(cdc, article, qbasetypes.NewInt(amount))
+	receivers, err := warpperReceivers(cdc, article, qbasetypes.NewInt(amount))
+	if err != nil {
+		return nil, err
+	}
+	transferTx.Receivers = receivers
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(transferTx, config.GetCLIContext().Config.QOSChainID, gas)
 	signature, _ := stx.SignTx(priv, qosnonce, config.GetCLIContext().Config.QSCChainID)

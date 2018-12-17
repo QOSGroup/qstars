@@ -90,9 +90,10 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 						investMapper.SetInvestor(key, investor)
 					} else {
 						investor = jianqian.Investor{
-							Address:    v.Address,
-							InvestTime: v.InvestTime,
-							Invest:     v.Invest,
+							InvestorType: jianqian.InvestorTypeCommonInvestor,
+							Address:      v.Address,
+							InvestTime:   v.InvestTime,
+							Invest:       v.Invest,
 						}
 						log.Printf("investad.InvestadStub investor create %+v\n", investor)
 

@@ -70,6 +70,15 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 		return result
 	}
 
+	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
+	investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
+
+	article := articleMapper.GetArticle(string(buyerSta.ArticleHash))
+	if article == nil {
+		log.Printf("buyad.BuyadStub GetArticle error.")
+		return result
+	}
+
 	if buyerSta.CheckStatus != jianqian.CheckStatusInit {
 		log.Printf("buyad.BuyadStub unexpected status.")
 		return result
@@ -87,9 +96,20 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 	}
 
 	if qcpTxResult.Result.IsOK() {
+		investors, err := calculateRevenue(buyMapper.GetCodec(), article, buyer.Buy)
+		if err != nil {
+			log.Printf("buyad.BuyadStub calculateRevenue err:%s", err.Error())
+			return result
+		}
+
+		for _, v := range investors {
+			investMapper.SetInvestor(jianqian.GetInvestKey(buyer.ArticleHash, v.Address), v)
+		}
+
 		buyer.CheckStatus = jianqian.CheckStatusSuccess
 		log.Printf("buyad.BuyadStub buyer update key:%+v\n", key)
 		buyMapper.SetBuyer(buyerSta.ArticleHash, *buyer)
+
 	} else {
 		log.Printf("buyad.BuyadStub buyer delete key:%+v", key)
 
