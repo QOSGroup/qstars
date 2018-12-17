@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qstars/config"
-	"github.com/QOSGroup/qstars/slim"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
+	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian/article"
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
@@ -121,6 +121,18 @@ func QueryCoins(txHash string) string {
 }
 
 func QSCCommitResultCheck(txhash, height string) string {
-	result := slim.QOSCommitResultCheck(txhash, height)
-	return result
+	qstarskey := "heigth:" + height + ",hash:" + txhash
+	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), common.QSCResultMapperName)
+	if err != nil {
+		return err.Error()
+	}
+	if d == nil {
+		return ""
+	}
+	var res []byte
+	err = CDC.UnmarshalBinaryBare(d, &res)
+	if err != nil {
+		return err.Error()
+	}
+	return string(res)
 }
