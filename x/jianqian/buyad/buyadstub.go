@@ -35,13 +35,14 @@ func (bs BuyadStub) RegisterCdc(cdc *go_amino.Codec) {
 
 func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	result := &types.Result{}
+	result.Code = types.ABCICodeType(types.CodeOK)
+
 	log.Printf("buyad.BuyadStub ResultNotify")
 	in := txQcpResult.(*txs.QcpTxResult)
 	log.Printf("buyad.BuyadStub ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
 	qcpTxResult, ok := baseabci.ConvertTxQcpResult(txQcpResult)
 	if ok == false {
 		log.Printf("buyad.BuyadStub ResultNotify ConvertTxQcpResult error.")
-		result.Code = types.ABCICodeType(types.CodeTxDecode)
 		return result
 	}
 
@@ -54,7 +55,7 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 	kvMapper.Get([]byte(key), &initValue)
 	if initValue != bs.Name() {
 		log.Printf("buyad.BuyadStub This is not my response.")
-		return nil
+		return result
 	}
 	log.Printf("buyad.BuyadStub ResultNotify kvMapper get key:%s, value:%s", key, initValue)
 	c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
@@ -66,26 +67,22 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 	buyerSta, ok := buyMapper.GetBuyer([]byte(key))
 	if !ok || buyerSta == nil {
 		log.Printf("buyad.BuyadStub unexpected buyerSta.")
-		result.Code = types.ABCICodeType(types.CodeTxDecode)
 		return result
 	}
 
 	if buyerSta.CheckStatus != jianqian.CheckStatusInit {
 		log.Printf("buyad.BuyadStub unexpected status.")
-		result.Code = types.ABCICodeType(types.CodeTxDecode)
 		return result
 	}
 
 	buyer, ok := buyMapper.GetBuyer(buyerSta.ArticleHash)
 	if !ok || buyer == nil {
 		log.Printf("buyad.BuyadStub unexpected buyer.")
-		result.Code = types.ABCICodeType(types.CodeTxDecode)
 		return result
 	}
 
 	if buyer.CheckStatus != jianqian.CheckStatusInit {
 		log.Printf("buyad.BuyadStub unexpected status.")
-		result.Code = types.ABCICodeType(types.CodeTxDecode)
 		return result
 	}
 
@@ -101,8 +98,6 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 
 	// 删除临时状态
 	buyMapper.DeleteBuyer([]byte(key))
-
-	result.Code = qcpTxResult.Result.Code
 
 	return result
 }
