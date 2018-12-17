@@ -11,7 +11,7 @@ import (
 	"github.com/QOSGroup/qstars/baseapp"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
-	"github.com/prometheus/common/log"
+	"log"
 	go_amino "github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -40,38 +40,34 @@ func (cstub CoinsStub) RegisterCdc(cdc *go_amino.Codec) {
 
 func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	in := txQcpResult.(*txs.QcpTxResult)
-	log.Debugf("ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
-	var resultCode types.ABCICodeType
+	log.Printf("ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
+	result := &types.Result{}
+	result.Code = types.ABCICodeType(types.CodeOK)
 	qcpTxResult, ok := baseabci.ConvertTxQcpResult(txQcpResult)
 	if ok == false {
-		log.Errorf("ResultNotify ConvertTxQcpResult error.")
-		resultCode = types.ABCICodeType(types.CodeTxDecode)
+		log.Printf("coins.CoinsStub ResultNotify ConvertTxQcpResult error.")
+		return result
 	} else {
-		log.Errorf("ResultNotify update status")
+		log.Printf("ResultNotify update status")
 		orginalTxHash := in.QcpOriginalExtends //orginalTx.abc
 		kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
 		initValue := ""
 		kvMapper.Get([]byte(orginalTxHash), &initValue)
 		if initValue != cstub.Name() {
-			log.Info("This is not my response.")
-			return nil
+			log.Printf("This is not my response.")
+			return result
 		}
 		//put result to map for client query
 		c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
 		c = c + " " + qcpTxResult.Result.Log
-		log.Errorf("--------update key:" + common.QSCResultMapperName + " key:" + orginalTxHash + " value:" + c)
+		log.Printf("--------update key:" + common.QSCResultMapperName + " key:" + orginalTxHash + " value:" + c)
 		kvMapper.Set([]byte(orginalTxHash), c)
-
 		//根据跨链结果 更新记录结果
 		coinsMapper := ctx.Mapper(jianqian.CoinsMapperName).(*jianqian.CoinsMapper)
 		coinsMapper.UpdateCoins(ctx.TxBytes(), c)
+	}
 
-		resultCode = types.ABCICodeType(types.CodeOK)
-	}
-	rr := types.Result{
-		Code: resultCode,
-	}
-	return &rr
+	return result
 }
 
 func (cstub CoinsStub) CustomerQuery(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error) {
