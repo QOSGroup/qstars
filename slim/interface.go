@@ -662,7 +662,15 @@ func investAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) (*T
 	qosnonce++
 	//the first sign with the QOS nonce
 	t := NewTransfer(investor, tempAddr, ccs)
-	msg := genStdSendTx(t, priv, QOSchainId, qosnonce)
+	//msg := genStdSendTx(t, priv, QSCchainId, qosnonce)
+	gas1 := NewBigInt(int64(0))
+	stx := NewTxStd(t, QOSchainId, gas1)
+	signature, _ := stx.SignTx(priv, qosnonce, QSCchainId)
+	stx.Signature = []Signature{Signature{
+		Pubkey:    priv.PubKey(),
+		Signature: signature,
+		Nonce:     qosnonce,
+	}}
 
 	//qsc nonce fetched from the qscaccount query
 	AccountStr2 := QSCQueryAccountGet(addrben32)
@@ -678,8 +686,8 @@ func investAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) (*T
 
 	it := &InvestTx{}
 	it.ArticleHash = []byte(articleHash)
-	it.Std = msg
-	tx2 := NewTxStd(it, QSCchainId, msg.MaxGas)
+	it.Std = stx
+	tx2 := NewTxStd(it, QSCchainId, stx.MaxGas)
 	signature2, _ := tx2.SignTx(priv, qscnonce, QSCchainId)
 	tx2.Signature = []Signature{Signature{
 		Pubkey:    priv.PubKey(),
