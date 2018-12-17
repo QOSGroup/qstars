@@ -37,15 +37,16 @@ func (s InvestadStub) RegisterCdc(cdc *go_amino.Codec) {
 }
 
 func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
+	result := &types.Result{}
+	result.Code = types.ABCICodeType(types.CodeOK)
+
 	in := txQcpResult.(*txs.QcpTxResult)
 	log.Printf("investad.InvestadStub ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
-	var resultCode types.ABCICodeType
 	qcpTxResult, ok := baseabci.ConvertTxQcpResult(txQcpResult)
 	if ok == false {
 		log.Printf("investad.InvestadStub ResultNotify ConvertTxQcpResult error.")
-		return nil
+		return result
 	} else {
-		resultCode = qcpTxResult.Result.Code
 		key := in.QcpOriginalExtends //orginalTx.abc
 
 		kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
@@ -54,7 +55,7 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 		log.Printf("investad.InvestadStub kvMapper-1 key:[%s], value:[%s]", key, initValue)
 		if initValue != s.Name() {
 			log.Printf("investad.InvestadStub This is not my response.")
-			return nil
+			return result
 		}
 		c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
 		c = c + " " + qcpTxResult.Result.Log
@@ -71,7 +72,7 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 			investUncheckeds, ok := investUncheckedMapper.GetInvestUncheckeds([]byte(key))
 			if !ok || investUncheckeds == nil {
 				log.Printf("investad.InvestadStub This is not my response.")
-				return nil
+				return result
 			}
 
 			investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
@@ -102,16 +103,10 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 				}
 			}
 			investUncheckedMapper.SetInvestUncheckeds([]byte(key), investUncheckeds)
-
-			resultCode = types.ABCICodeType(types.CodeOK)
 		}
 	}
 
-	rr := types.Result{
-		Code: resultCode,
-	}
-
-	return &rr
+	return result
 }
 
 func (s InvestadStub) EndBlockNotify(ctx context.Context) {
