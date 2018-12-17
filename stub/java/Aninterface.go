@@ -129,6 +129,12 @@ func QueryCoins(txHash *C.char) *C.char {
 //	return output
 //}
 
+//export QSCCommitResultCheck
+func QSCCommitResultCheck(txhash, height *C.char) *C.char {
+	output := jsdk.QSCCommitResultCheck(C.GoString(txhash), C.GoString(height))
+	return C.CString(output)
+}
+
 func main() {
 	//InitJNI()
 	//send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
