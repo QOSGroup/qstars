@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/slim"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/x/jianqian/article"
@@ -116,5 +117,10 @@ func QueryCoins(txHash string) string {
 	//if err != nil {
 	//	return err.Error()
 	//}
+	return result
+}
+
+func QSCCommitResultCheck(txhash, height string) string {
+	result := slim.QOSCommitResultCheck(txhash, height)
 	return result
 }

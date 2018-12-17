@@ -130,7 +130,7 @@ func QOSCommitResultCheck(txhash, height string) string {
 	}
 
 	defer resp.Body.Close()
-	output := fmt.Sprintf("This function has not been realized in QOS yet:%v", string(body))
+	output := fmt.Sprintf("This function has not been realized in QOS yet:\n%v", string(body))
 	return output
 
 }
