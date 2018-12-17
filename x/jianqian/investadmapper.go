@@ -13,16 +13,46 @@ const (
 	InvestMapperName = "investad"
 )
 
+const (
+	InvestorTypeAuthor         = "author"
+	InvestorTypeOriginalAuthor = "originalAuthor"
+	InvestorTypeCommunity      = "community"
+	InvestorTypeCommonInvestor = "commonInvestor"
+)
+
 func GetInvestKey(article []byte, user qbasetypes.Address) []byte {
 	return append(article, user...)
 }
 
 // Investor 投资者
 type Investor struct {
-	Address    qbasetypes.Address `json:"address"`    // 投资者地址
-	Invest     qbasetypes.BigInt  `json:"investad"`   // 投资金额
-	Revenue    qbasetypes.BigInt  `json:"revenue"`    // 投资收益
-	InvestTime time.Time          `json:"investTime"` // 投资时间
+	InvestorType string             `json:"investorType"` // 投资者类型 author, originalAuthor, community, commonInvestor
+	Address      qbasetypes.Address `json:"address"`      // 投资者地址
+	Invest       qbasetypes.BigInt  `json:"investad"`     // 投资金额
+	Revenue      qbasetypes.BigInt  `json:"revenue"`      // 投资收益
+	InvestTime   time.Time          `json:"investTime"`   // 投资时间
+}
+
+type Investors []Investor
+
+// TotalInvest 总投资
+func (is Investors) TotalInvest() qbasetypes.BigInt {
+	totalInvest := qbasetypes.NewInt(0)
+	for _, v := range is {
+		totalInvest = totalInvest.Add(v.Invest)
+	}
+
+	return totalInvest
+}
+
+// 总收益
+func (is Investors) TotalRevenue() qbasetypes.BigInt {
+	totalRevenue := qbasetypes.NewInt(0)
+	for _, v := range is {
+		totalRevenue = totalRevenue.Add(v.Revenue)
+	}
+
+	return totalRevenue
 }
 
 type InvestMapper struct {
@@ -68,10 +98,10 @@ func (im *InvestMapper) SetInvestor(key []byte, i Investor) {
 }
 
 // Iterator
-func (im *InvestMapper) AllInvestors(article []byte) []Investor {
+func (im *InvestMapper) AllInvestors(article []byte) Investors {
 	log.Printf("jianqian.AllInvestors article:%+v", article)
 
-	var investors []Investor
+	var investors Investors
 
 	im.Iterator(article, func(val []byte) (stop bool) {
 		log.Printf("jianqian.AllInvestors Iterator")
