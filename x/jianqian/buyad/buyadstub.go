@@ -5,8 +5,11 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	ctx "github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
-	"github.com/QOSGroup/qbase/types"
+	qbasetypes "github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/baseapp"
+	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/types"
+	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	go_amino "github.com/tendermint/go-amino"
@@ -33,9 +36,9 @@ func (bs BuyadStub) RegisterCdc(cdc *go_amino.Codec) {
 	cdc.RegisterConcrete(&BuyTx{}, "qstars/BuyTx", nil)
 }
 
-func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
-	result := &types.Result{}
-	result.Code = types.ABCICodeType(types.CodeOK)
+func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *qbasetypes.Result {
+	result := &qbasetypes.Result{}
+	result.Code = qbasetypes.ABCICodeType(qbasetypes.CodeOK)
 
 	log.Printf("buyad.BuyadStub ResultNotify")
 	in := txQcpResult.(*txs.QcpTxResult)
@@ -95,8 +98,20 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 		return result
 	}
 
+	communityPri := config.GetServerConf().Community
+	if communityPri == "" {
+		return result
+	}
+
+	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(communityPri, articleMapper.GetCodec())
+	communityAddr, err := types.AccAddressFromBech32(addrben32)
+	if err != nil {
+		return result
+	}
+
 	if qcpTxResult.Result.IsOK() {
-		investors, err := calculateRevenue(buyMapper.GetCodec(), article, buyer.Buy)
+		investors := investMapper.AllInvestors(buyerSta.ArticleHash)
+		investors, err := calculateRevenue(buyMapper.GetCodec(), article, buyer.Buy, investors, communityAddr)
 		if err != nil {
 			log.Printf("buyad.BuyadStub calculateRevenue err:%s", err.Error())
 			return result
@@ -126,7 +141,7 @@ func (bs BuyadStub) EndBlockNotify(ctx context.Context) {
 
 }
 
-func (kv BuyadStub) CustomerQuery(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err types.Error) {
+func (kv BuyadStub) CustomerQuery(ctx ctx.Context, route []string, req abci.RequestQuery) (res []byte, err qbasetypes.Error) {
 	return nil, nil
 }
 

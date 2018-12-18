@@ -32,6 +32,7 @@ func QueryCoins(cdc *amino.Codec, ctx *context.CLIContext, tx string) (coins *Co
 }
 
 func ListInvestors(ctx *context.CLIContext, cdc *amino.Codec, articleHash string) (Investors, error) {
+	log.Printf("ListInvestors ctx:%+v, articleHash:%s", ctx, articleHash)
 	d, err := ctx.QueryInvestadCustom([]byte(articleHash))
 	if err != nil {
 		return nil, err

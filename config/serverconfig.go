@@ -11,28 +11,31 @@ import (
 qstars configuration file
 QStarsPrivateKey qstars privatekey
 QStarsTransactions TBD
- */
+*/
 type ServerConf struct {
-	QStarsPrivateKey   	string `toml:"QStarsPrivateKey"`
-	QStarsTransactions 	string `toml:"QStarsTransactions"`
-	QOSChainName       	string `toml:"QOSChainName"`
-	RootDir				string `toml:"RootDir"`
+	QStarsPrivateKey   string `toml:"QStarsPrivateKey"`
+	QStarsTransactions string `toml:"QStarsTransactions"`
+	QOSChainName       string `toml:"QOSChainName"`
+	RootDir            string `toml:"RootDir"`
+	Community          string `mapstructure:"community"`
 }
+
 var serverconfiguration *ServerConf = nil
-func Init(filename string,rootDir string) (p *ServerConf, err error){
-	if serverconfiguration==nil{
+
+func Init(filename string, rootDir string) (p *ServerConf, err error) {
+	if serverconfiguration == nil {
 		sconf, err := readConf(filename)
-		if len(sconf.RootDir)==0{
+		if len(sconf.RootDir) == 0 {
 			sconf.RootDir = rootDir
 		}
 		serverconfiguration = sconf
-		return sconf,err
-	}else{
-		return serverconfiguration,nil
+		return sconf, err
+	} else {
+		return serverconfiguration, nil
 	}
 }
 
-func GetServerConf() *ServerConf{
+func GetServerConf() *ServerConf {
 	return serverconfiguration
 }
 func readConf(fname string) (p *ServerConf, err error) {

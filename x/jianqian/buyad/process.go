@@ -191,20 +191,22 @@ func warpperInvestorTx(cdc *wire.Codec, articleHash string, amount int64) []qost
 	return result
 }
 
-func getCommunityAddr(cdc *wire.Codec) (qbasetypes.Address, error) {
-	communityPri := config.GetCLIContext().Config.Community
-	if communityPri == "" {
-		return nil, errors.New("no community")
-	}
+//func getCommunityAddr(cdc *wire.Codec) (qbasetypes.Address, error) {
+//config.GetServerConf().Community
 
-	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(communityPri, cdc)
-	community, err := types.AccAddressFromBech32(addrben32)
-	if err != nil {
-		return nil, err
-	}
-
-	return community, nil
-}
+//	communityPri := config.GetCLIContext().Config.Community
+//	if communityPri == "" {
+//		return nil, errors.New("no community")
+//	}
+//
+//	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(communityPri, cdc)
+//	community, err := types.AccAddressFromBech32(addrben32)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return community, nil
+//}
 
 func mergeQSCs(q1, q2 qostypes.QSCs) qostypes.QSCs {
 	m := make(map[string]*qbasetypes.BaseCoin)
@@ -252,33 +254,32 @@ func mergeReceivers(rs []qostxs.TransItem) []qostxs.TransItem {
 	return res
 }
 
-func warpperReceivers(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt) ([]qostxs.TransItem, error) {
+func warpperReceivers(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt,
+	investors jianqian.Investors, communityAddr qbasetypes.Address) ([]qostxs.TransItem, error) {
 	var result []qostxs.TransItem
 	log.Printf("buyad warpperReceivers  article:%+v", article)
 
-	investors, err := calculateRevenue(cdc, article, amount)
+	investors, err := calculateRevenue(cdc, article, amount, investors, communityAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, v := range investors {
-		result = append(
-			result,
-			warpperTransItem(
-				v.Address,
-				[]qbasetypes.BaseCoin{{Name: coinsName, Amount: v.Revenue}}))
+		if !v.Revenue.IsZero() {
+			result = append(
+				result,
+				warpperTransItem(
+					v.Address,
+					[]qbasetypes.BaseCoin{{Name: coinsName, Amount: v.Revenue}}))
+		}
 	}
 
 	return mergeReceivers(result), nil
 }
 
 // calculateInvestorRevenue 计算投资者收入
-func calculateInvestorRevenue(cdc *wire.Codec, articleHash string, amount qbasetypes.BigInt) (jianqian.Investors, error) {
-	investors, err := jianqian.ListInvestors(config.GetCLIContext().QSCCliContext, cdc, articleHash)
+func calculateInvestorRevenue(cdc *wire.Codec, investors jianqian.Investors, amount qbasetypes.BigInt) (jianqian.Investors, error) {
 	log.Printf("buyAd calculateInvestorRevenue investors:%+v", investors)
-	if err != nil {
-		return nil, err
-	}
 
 	totalInvest := investors.TotalInvest()
 	log.Printf("buyAd calculateInvestorRevenue amount:%s, totalInvest:%d", amount.String(), totalInvest.Int64())
@@ -296,6 +297,8 @@ func calculateInvestorRevenue(cdc *wire.Codec, articleHash string, amount qbaset
 
 			investors[i].Revenue = revenue
 			curAmount = curAmount.Add(revenue)
+			log.Printf("buyad calculateRevenue  investorAddr:%s invest:%d, revenue:%d",
+				investors[i].Address.String(), investors[i].Invest.Int64(), revenue.Int64())
 		}
 	}
 
@@ -303,12 +306,14 @@ func calculateInvestorRevenue(cdc *wire.Codec, articleHash string, amount qbaset
 }
 
 // calculateRevenue 计算收入
-func calculateRevenue(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt) ([]jianqian.Investor, error) {
+func calculateRevenue(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt, is jianqian.Investors,
+	communityAddr qbasetypes.Address) (jianqian.Investors, error) {
 	var result []jianqian.Investor
-	log.Printf("buyad calculateRevenue  article:%+v", article)
+	log.Printf("buyad calculateRevenue  article:%+v, amount:%d", article, amount.Int64())
 
 	// 作者地址
-	authorTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareAuthor)).Div(qbasetypes.NewInt(100)))
+	authorTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareAuthor))).Div(qbasetypes.NewInt(100))
+	log.Printf("buyad calculateRevenue  Authoraddress:%s amount:%d", article.Authoraddress.String(), authorTotal.Int64())
 	result = append(
 		result,
 		jianqian.Investor{
@@ -319,7 +324,8 @@ func calculateRevenue(cdc *wire.Codec, article *jianqian.Articles, amount qbaset
 		})
 
 	// 原创作者地址
-	shareOriginalTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareOriginalAuthor)).Div(qbasetypes.NewInt(100)))
+	shareOriginalTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareOriginalAuthor))).Div(qbasetypes.NewInt(100))
+	log.Printf("buyad calculateRevenue  OriginalAuthor:%s amount:%d", article.OriginalAuthor.String(), shareOriginalTotal.Int64())
 	result = append(
 		result,
 		jianqian.Investor{
@@ -330,39 +336,45 @@ func calculateRevenue(cdc *wire.Codec, article *jianqian.Articles, amount qbaset
 		})
 
 	// 投资者收入分配
-	investorShouldTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareInvestor)).Div(qbasetypes.NewInt(100)))
-	investors, err := calculateInvestorRevenue(cdc, article.ArticleHash, investorShouldTotal)
+	investorShouldTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareInvestor))).Div(qbasetypes.NewInt(100))
+	log.Printf("buyad calculateRevenue investorShouldTotal:%d", investorShouldTotal.Int64())
+	investors, err := calculateInvestorRevenue(cdc, is, investorShouldTotal)
 	if err != nil {
 		return nil, err
 	}
 	result = append(result, investors...)
 
-	shareCommunityAddr, err := getCommunityAddr(cdc)
-	if err == nil {
-		shareCommunityTotal := amount.Sub(authorTotal).Sub(shareOriginalTotal).Sub(investors.TotalRevenue())
-		// 社区收入比例
-		result = append(
-			result,
-			jianqian.Investor{
-				InvestorType: jianqian.InvestorTypeCommunity, // 投资者类型
-				Address:      shareCommunityAddr,             // 投资者地址
-				Invest:       qbasetypes.NewInt(0),           // 投资金额
-				Revenue:      shareCommunityTotal,            // 投资收益
-			})
-	}
+	shareCommunityTotal := amount.Sub(authorTotal).Sub(shareOriginalTotal).Sub(investors.TotalRevenue())
+	log.Printf("buyad calculateRevenue  communityAddr:%s amount:%d", communityAddr.String(), shareCommunityTotal.Int64())
+	// 社区收入比例
+	result = append(
+		result,
+		jianqian.Investor{
+			InvestorType: jianqian.InvestorTypeCommunity, // 投资者类型
+			Address:      communityAddr,                  // 投资者地址
+			Invest:       qbasetypes.NewInt(0),           // 投资金额
+			Revenue:      shareCommunityTotal,            // 投资收益
+		})
 
 	return result, nil
 }
 
 // buyAd 投资广告
 func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosnonce, qscnonce int64) (*txs.TxStd, error) {
-	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, articleHash)
-	log.Printf("buyad.buyAd QueryArticle article:%+v, err:%+v", article, err)
+	communityPri := config.GetCLIContext().Config.Community
+	if communityPri == "" {
+		return nil, errors.New("no community")
+	}
+
+	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(communityPri, cdc)
+	communityAddr, err := types.AccAddressFromBech32(addrben32)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := checkArticleBase(article, time.Now()); err != nil {
+	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, articleHash)
+	log.Printf("buyad.buyAd QueryArticle article:%+v, err:%+v", article, err)
+	if err != nil {
 		return nil, err
 	}
 
@@ -372,6 +384,15 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 		if articleBuy.CheckStatus != jianqian.CheckStatusFail {
 			return nil, errors.New("已被购买")
 		}
+	}
+
+	investors, err := jianqian.ListInvestors(config.GetCLIContext().QSCCliContext, cdc, article.ArticleHash)
+	if err != nil {
+		investors = jianqian.Investors{}
+	}
+
+	if articleBuy == nil {
+		articleBuy = &jianqian.Buyer{}
 	}
 
 	cs, err := types.ParseCoins(coins)
@@ -403,7 +424,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	qosnonce += 1
 	var transferTx qostxs.TxTransfer
 	transferTx.Senders = []qostxs.TransItem{warpperTransItem(buyer, ccs)}
-	receivers, err := warpperReceivers(cdc, article, qbasetypes.NewInt(amount))
+	receivers, err := warpperReceivers(cdc, article, qbasetypes.NewInt(amount), investors, communityAddr)
 	if err != nil {
 		return nil, err
 	}
