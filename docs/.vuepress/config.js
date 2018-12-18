@@ -25,18 +25,17 @@ module.exports = {
                     "/getting-started/full-node.md",
                     "/getting-started/create-testnet.md",
                     "/getting-started/commands.md",
-                    "/getting-started/app-init.md",
                 ]
             },
             {
                 title: "SDK Usage",
                 collapsable: false,
                 children: [
-                    "/sdk/createyourowntransaction.md",
                     "/sdk/kvstore.md",
                     "/sdk/qstarsclicmd.md",
                     "/sdk/qstarsclirestful.md",
                     "/sdk/transactionmessage.md",
+                    "/sdk/app-init.md",
                 ]
             }
             ,
