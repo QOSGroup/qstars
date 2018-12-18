@@ -9,6 +9,8 @@ import (
 	qbasetypes "github.com/QOSGroup/qbase/types"
 	qostxs "github.com/QOSGroup/qos/txs/transfer"
 	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/types"
+	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -27,8 +29,9 @@ type BuyTx struct {
 var _ txs.ITx = (*BuyTx)(nil)
 
 func checkArticleBase(article *jianqian.Articles, now time.Time) error {
-	if article.EndBuyDate.After(now) {
-		return errors.New("投资还没结束期限")
+	log.Printf("checkArticleBase EndInvestDate:%+v, EndBuyDate:%+v, now:%+v", article.EndInvestDate, article.EndBuyDate, now)
+	if article.EndInvestDate.After(now) {
+		return errors.New("投资还没结束")
 
 	}
 	if article.EndBuyDate.Before(now) {
@@ -45,7 +48,7 @@ func check(ctx context.Context, articleKey []byte) error {
 		return errors.New("invalid article")
 	}
 
-	log.Printf("--- checkArticle: EndBuyDate:%+v, Time:%+v", a.EndBuyDate, ctx.BlockHeader().Time)
+	log.Printf("--- checkArticle: EndBuyDate:%+v, blockheader:%+v", a.EndBuyDate, ctx.BlockHeader())
 	if err := checkArticleBase(a, ctx.BlockHeader().Time); err != nil {
 		return err
 	}
@@ -59,8 +62,21 @@ func checkRevenue(ctx context.Context, articleKey []byte, totalAmount qbasetypes
 	if a == nil {
 		return errors.New("invalid article")
 	}
+	investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
+	investors := investMapper.AllInvestors(articleKey)
 
-	receivers, err := warpperReceivers(articleMapper.GetCodec(), a, totalAmount)
+	communityPri := config.GetServerConf().Community
+	if communityPri == "" {
+		return errors.New("no community")
+	}
+
+	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(communityPri, articleMapper.GetCodec())
+	communityAddr, err := types.AccAddressFromBech32(addrben32)
+	if err != nil {
+		return err
+	}
+
+	receivers, err := warpperReceivers(articleMapper.GetCodec(), a, totalAmount, investors, communityAddr)
 	if err != nil {
 		return err
 	}
