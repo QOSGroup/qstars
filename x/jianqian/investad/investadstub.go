@@ -81,7 +81,7 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 			for k, v := range investUncheckeds {
 				log.Printf("investad.InvestadStub investUncheckeds k:%+v, v:%+v\n", k, v)
 				if !v.IsChecked {
-					key := jianqian.GetInvestKey(v.Article, v.Address)
+					key := jianqian.GetInvestKey(v.Article, v.Address, jianqian.InvestorTypeCommonInvestor)
 					investor, ok := investMapper.GetInvestor(key)
 					if ok {
 						investor.Invest = investor.Invest.Add(v.Invest)
@@ -99,7 +99,6 @@ func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{})
 
 						investMapper.SetInvestor(key, investor)
 					}
-
 					investUncheckeds[k].IsChecked = true
 				}
 			}

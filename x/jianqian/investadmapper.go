@@ -20,8 +20,10 @@ const (
 	InvestorTypeCommonInvestor = "commonInvestor"
 )
 
-func GetInvestKey(article []byte, user qbasetypes.Address) []byte {
-	return append(article, user...)
+func GetInvestKey(article []byte, user qbasetypes.Address, investorType string) []byte {
+	key := append(article, user...)
+	key = append(key, []byte(investorType)...)
+	return key
 }
 
 // Investor 投资者

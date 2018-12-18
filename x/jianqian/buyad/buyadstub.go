@@ -118,7 +118,7 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 		}
 
 		for _, v := range investors {
-			investMapper.SetInvestor(jianqian.GetInvestKey(buyer.ArticleHash, v.Address), v)
+			investMapper.SetInvestor(jianqian.GetInvestKey(buyer.ArticleHash, v.Address, v.InvestorType), v)
 		}
 
 		buyer.CheckStatus = jianqian.CheckStatusSuccess
