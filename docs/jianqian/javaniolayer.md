@@ -4,11 +4,19 @@ jianqian错误号，分配：article 101-199 buyad 201-299 coins 301-399 investe
 
 100以内是跨链的错误号，如果跨链失败了，直接把跨链的错误号返回客户端。
 
+### jianqian application
+jianqian is first application of QOS and QStars Chain
 
 qcpTxResult.Result.Log 是跨链的错误原因字符串
 
 
-超时错误都是负数，-2 代表未上联盟链超时了，-1代表已经上主链，未上联盟链超时了。0 是成功
+超时错误都是负数，
+
+-2 代表未上联盟链超时了，
+
+-1代表已经上主链，未上联盟链超时了。
+
+0 是成功
 
 
 如果像文章不存在这种没上链的错误，也要返回这个，就是没有hash和heigth而已

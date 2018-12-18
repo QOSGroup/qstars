@@ -21,17 +21,22 @@ module.exports = {
                 title: "Getting Started",
                 collapsable: false,
                 children: [
-                    "/getting-started/installation",
-                    "/getting-started/full-node",
-                    "/getting-started/create-testnet"
+                    "/getting-started/installation.md",
+                    "/getting-started/full-node.md",
+                    "/getting-started/create-testnet.md",
+                    "/getting-started/commands.md",
+                    "/getting-started/app-init.md",
                 ]
             },
             {
                 title: "SDK Usage",
                 collapsable: false,
                 children: [
+                    "/sdk/createyourowntransaction.md",
+                    "/sdk/kvstore.md",
                     "/sdk/qstarsclicmd.md",
                     "/sdk/qstarsclirestful.md",
+                    "/sdk/transactionmessage.md",
                 ]
             }
             ,
@@ -40,6 +45,14 @@ module.exports = {
                 collapsable: false,
                 children: [
                     "/library/introduction.md",
+                ]
+            }
+            ,
+            {
+                title: "jianqian app",
+                collapsable: false,
+                children: [
+                    "/jianqian/javaniolayer.md",
                 ]
             }
             // {
