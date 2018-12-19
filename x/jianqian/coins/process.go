@@ -174,7 +174,8 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd,directTOQOS bool) string {
 //gas           gas费 默认为0
 func DispatchAOE(cdc *wire.Codec, ctx *config.CLIConfig, address, coins, causecodes, causestrings, gas string) string {
 	if address == "" || coins == "" || causecodes == "" || causestrings == "" {
-		return "{Code:\"1\",Reason:\"Parameter cannot be empty \"}"
+		return common.NewErrorResult(COINS_PARA_LEN_ERR,"Dispatch AOE parameters must not empty").Marshal()
+		//return "{Code:\"1\",Reason:\"Parameter cannot be empty \"}"
 	}
 	addrs := strings.Split(address, "|")
 	addlen := len(addrs)
@@ -183,24 +184,21 @@ func DispatchAOE(cdc *wire.Codec, ctx *config.CLIConfig, address, coins, causeco
 	cstrs := strings.Split(causestrings, "|")
 
 	if addlen != len(cois) || addlen != len(codes) || addlen != len(cstrs) {
-		return "{Code:\"2\",Reason:\"Parameter lengths are not equal \"}"
-	}
-	if address == "" || coins == "" || causecodes == "" || causestrings == "" {
-		return "{Code:\"1\",Reason:\"Parameter cannot be empty \"}"
+		return common.NewErrorResult(COINS_PARA_LEN_ERR,"Array parameter length is inconsistent").Marshal()
 	}
 	amounts := make([]types.BigInt, len(cois))
 	for i, coinsv := range cois {
 		if amou, ok := types.NewIntFromString(coinsv); ok {
 			amounts[i] = amou
 		} else {
-			return "{Code:\"2\",Reason:\"amount format error \"}"
+			return common.NewErrorResult(COINS_PARA_LEN_ERR,"amount format error").Marshal()
 		}
 	}
 	toaddrss := make([]types.Address, addlen)
 	for i, addrsv := range addrs {
 		to, err := qstartypes.AccAddressFromBech32(addrsv)
 		if err != nil {
-			return "{Code:\"2\",Reason:\"address format error \"}"
+			return common.NewErrorResult(COINS_PARA_LEN_ERR,"address format error").Marshal()
 		}
 		toaddrss[i] = to
 	}
