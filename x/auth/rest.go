@@ -1,10 +1,10 @@
 package auth
 
 import (
+	"github.com/QOSGroup/qstars/slim"
 	"net/http"
 
 	"github.com/QOSGroup/qstars/client/lcd/lib"
-	"github.com/QOSGroup/qstars/stub"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/gorilla/mux"
 )
@@ -32,7 +32,9 @@ func RegisterRoutes(cdc *wire.Codec, r *mux.Router) {
 	r.HandleFunc(
 		"/accounts",
 		func(w http.ResponseWriter, r *http.Request) {
-			acc := stub.AccountCreate()
+			r.ParseForm()
+			password := r.FormValue("password")
+			acc := slim.AccountCreate(password)
 			lib.HttpResponseWrapper(w, cdc, acc, nil)
 		}).Methods("POST")
 }
