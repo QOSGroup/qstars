@@ -3,9 +3,10 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
+	"github.com/QOSGroup/qstars/slim"
 
-	"github.com/QOSGroup/qstars/stub"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/spf13/cobra"
 
@@ -15,10 +16,15 @@ import (
 // CreateAccountCmd returns a new account
 func CreateAccountCmd(cdc *wire.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "createaccount",
+		Use:   "createaccount password",
 		Short: "create an account",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			acc := stub.AccountCreate()
+			if len(args) != 1 {
+				return errors.New("需要参数password")
+			}
+			password := args[0]
+
+			acc := slim.AccountCreate(password)
 
 			output, err := wire.MarshalJSONIndent(cdc, acc)
 			if err != nil {
