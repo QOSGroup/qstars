@@ -38,6 +38,9 @@ const (
 func AccountCreate(password string) *ResultCreateAccount {
 	entropy, _ := bip39local.NewEntropy(256)
 	mnemonic, _ := bip39local.NewMnemonic(entropy)
+	if len(password) == 0 {
+		password = "DNWTTY"
+	}
 	seedo := bip39local.NewSeed(mnemonic, password)
 
 	key := ed25519local.GenPrivKeyFromSecret(seedo)
@@ -85,6 +88,9 @@ func AccountCreateStr(password string) string {
 }
 
 func AccountRecoverStr(mncode, password string) string {
+	if len(password) == 0 {
+		password = "DNWTTY"
+	}
 	seed := bip39local.NewSeed(mncode, password)
 	key := ed25519local.GenPrivKeyFromSecret(seed)
 	pub := key.PubKey()
