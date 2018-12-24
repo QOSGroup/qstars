@@ -372,6 +372,10 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 		return nil, err
 	}
 
+	if articleHash == "" {
+		return nil, errors.New("invalid article hash")
+	}
+
 	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, articleHash)
 	log.Printf("buyad.buyAd QueryArticle article:%+v, err:%+v", article, err)
 	if err != nil {
