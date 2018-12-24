@@ -125,6 +125,9 @@ func (s InvestadStub) CustomerQuery(ctx ctx.Context, route []string, req abci.Re
 	}
 
 	key := req.Data
+	if key == nil || len(key) == 0 {
+		return nil, nil
+	}
 
 	investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
 	log.Printf("investad.CustomerQuery investMapper:%+v", investMapper)

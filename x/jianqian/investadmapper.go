@@ -104,6 +104,9 @@ func (im *InvestMapper) AllInvestors(article []byte) Investors {
 	log.Printf("jianqian.AllInvestors article:%+v", article)
 
 	var investors Investors
+	if article == nil || len(article) == 0 {
+		return investors
+	}
 
 	im.Iterator(article, func(val []byte) (stop bool) {
 		log.Printf("jianqian.AllInvestors Iterator")
