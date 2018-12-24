@@ -2,12 +2,12 @@
 How to invoke the functions/interfaces for mobile app
 
 ## Current version via commit hash:
-``` 
+```
 aa3a2b5
 ```
 
 ## Interfaces exposed  
-There are 13 interfaces exposed under the current version, let’s start with the interfaces one by one.
+There are 13 interfaces exposed under the current version, let?s start with the interfaces one by one.
 
 ### 1. AccountCreate
 Used for account creation with usage:
@@ -29,7 +29,6 @@ Input `password ` string format for account generation with example output as be
  }
 ```
 Note: Write down the mnemonic, it is critical for the account recovery procedure.
-
 
 ### 2. AccountRecover
 Used for account recovery with usage:
@@ -73,11 +72,11 @@ Input the "privKey" of the account as `priv` to fetch the public key and address
 Used for the private key AES encryption alongside with usage:
 ```
 func AesEncrypt(key, plainText string) string 
-``` 
+```
 Input the "key" as the string output of internal HMAC, the byte size should be 16, and the "plainText" is the "privKey" of the account. The output could be as below:
 ```
 90wz2NtXedwF5kMnjF88kty4yjxacijK9GdhpZhOvYwaeB-UV1QA6E0uuAv2rDUSlW3v81OS-u4I5sj2nBwF-vIxsyDc3UxwyIezFJPTHYo1J2yaSFX77WzxaxhOCXAQWTowgSO-aPs=
-``` 
+```
 It would be stored in the app equipment and retrieved for the "plain" private key after decryption.
 
 Note: It is worth mentioning however that there is a "salt" of sorts for AES as well in the form of the IV (initialization vector). This is simply random data (which should be different every time), that can be stored alongside the ciphertext, and ensures that even when encrypting the same data multiple times, the output is different.
@@ -98,7 +97,7 @@ Used for set the Restful entrance for the block chain with usage:
 ```
 func SetBlockchainEntrance(sh, mh string)
 ```
-Input "sh" means the restful host of block chain(e.g. qstars), the format could be "<IP>:1317"; the "mh" is reserved for Qmoon explorer, right now could be input as "forQmoonAddr" or any string.
+Input "sh" means the restful host of block chain(e.g. qstars), the format could be "IP:1317"; the "mh" is reserved for Qmoon explorer, right now could be input as "forQmoonAddr" or any string.
 
 Note: This function should be invoked every time Restful operations are taking.
 
@@ -128,7 +127,6 @@ func QSCKVStoreSet(k, v, privkey, chain string) string
 Input "k", "v" is the key-value as name, "chain" is the chain-id of the QSC, which is also corresponding to the Restful host with `SetBlockchainEntrance`; for security reason, "privkey" would be deprecated, now you can input any string.
 
 Note: It should not input as plain "privkey" by security reason!
-
 
 ### 10.  QSCKVStoreGet
 Used for setting the keystore information in QSC with usage:

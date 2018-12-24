@@ -2,7 +2,7 @@ module.exports = {
     title: "QStars Network",
     description: "Documentation for the QStars Network.",
     dest: "./dist/docs",
-    base: "/docs/",
+    base: "/qstars/",
     markdown: {
         lineNumbers: true
     },
@@ -43,6 +43,7 @@ module.exports = {
                 title: "library",
                 collapsable: false,
                 children: [
+                    "/library/instruction.md",
                     "/library/introduction.md",
                 ]
             }
