@@ -435,7 +435,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	transferTx.Receivers = receivers
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(transferTx, config.GetCLIContext().Config.QOSChainID, gas)
-	signature, _ := stx.SignTx(priv, qosnonce, config.GetCLIContext().Config.QSCChainID)
+	signature, _ := stx.SignTx(priv, qosnonce, config.GetCLIContext().Config.QSCChainID,config.GetCLIContext().Config.QOSChainID)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature,
@@ -447,7 +447,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	it.ArticleHash = []byte(articleHash)
 	it.Std = stx
 	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
-	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID)
+	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID,config.GetCLIContext().Config.QOSChainID)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature2,
