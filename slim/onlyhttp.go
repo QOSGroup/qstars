@@ -137,8 +137,8 @@ func QOSCommitResultCheck(txhash, height string) string {
 
 }
 
-func TransferRecordsQuery(addr, cointype string) string {
-	trurl := TRurl + addr + "/transfer/?coin=" + cointype
+func TransferRecordsQuery(addr, cointype, offset, limit string) string {
+	trurl := TRurl + addr + "/transfer/?coin=" + cointype + "&offset=" + offset + "&limit=" + limit
 	resp, _ := http.Get(trurl)
 	var body []byte
 	var err error
