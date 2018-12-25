@@ -447,7 +447,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	it.ArticleHash = []byte(articleHash)
 	it.Std = stx
 	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
-	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID,config.GetCLIContext().Config.QOSChainID)
+	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID,config.GetCLIContext().Config.QSCChainID)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature2,

@@ -98,3 +98,18 @@ banker = "9QkouVPl29N2v1lBO1+azUDqm38fAgs6d3Xo8DcnCus7xjMqsavhc190xCGzZuXcjapUah
 dappowner = "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q=="
 
 ```
+
+```go
+"name": "acc3", 
+ "addrbech32": "address1y9r4pjjnvkmpvw46de8tmwunw4nx4qnz2ax5ux", 
+ "address": "214750CA5365B6163ABA6E4EBDBB9375666A8262", 
+ "pub_key": { 
+ "type": "tendermint/PubKeyEd25519", 
+ "value": "O8YzKrGr4XNfdMQhs2bl3I2qVGoYu2O79gw+Ic1QgLE=" 
+ }, 
+ "priv_key": { 
+ "type": "tendermint/PrivKeyEd25519", 
+ "value": "9QkouVPl29N2v1lBO1+azUDqm38fAgs6d3Xo8DcnCus7xjMqsavhc190xCGzZuXcjapUahi7Y7v2DD4hzVCAsQ==" 
+ } 
+ } 
+```

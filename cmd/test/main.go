@@ -20,14 +20,14 @@ import (
 	sdk "github.com/QOSGroup/qstars/types"
 )
 
-func main(){
-	InitJNI()
-	//send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
-	r := SendByJNI("rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA==","address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355","2qos")
-	print(r)
-}
+//func main1(){
+//	InitJNI()
+//	//send --from=rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA== --to=address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355 --amount=2qos
+//	r := SendByJNI("rpt3O80wAFI1+ZqNYt8DqJ5PaQ+foDq7G/InFfycoFYT8tgGFJLp+BSVELW2fTQNGZ/yTzTIXbu9fg33gOmmzA==","address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355","2qos")
+//	print(r)
+//}
 
-func main1(){
+func main(){
 	cdc := star.MakeCodec()
 	to, err := sdk.AccAddressFromBech32("address12as5uhdpf2y9zjkurx2l6dz8g98qkgryc4x355")
 	if err != nil {
@@ -74,8 +74,8 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	var nn int64
 	nn = int64(6)
 	nn++
-
-	t := tx.NewTransfer(from, to, ccs)
+	tos := []qbasetypes.Address{0:to,1:to}
+	t := tx.NewTransferMultiple(from, tos, ccs)
 	var msg *txs.TxStd
 	tochainid := "qos-test"
 	fromchainid := "qstars-test"
