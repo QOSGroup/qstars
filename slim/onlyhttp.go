@@ -24,6 +24,7 @@ var (
 	Accounturl    string
 	KVurl         string
 	QResulturl    string
+	TRurl         string
 )
 
 //set Block Chain entrance hosts for both Qstars and Qmoon
@@ -35,6 +36,7 @@ func SetBlockchainEntrance(qstarshost, qmoonhost string) {
 	Accounturl = "http://" + Shost + "/accounts/"
 	KVurl = "http://" + Shost + "/kv/"
 	QResulturl = "http://" + Shost + "/commits/"
+	TRurl = "http://" + Mhost + "/node/qos-test/accounts/"
 
 }
 
@@ -133,4 +135,21 @@ func QOSCommitResultCheck(txhash, height string) string {
 	output := fmt.Sprintf("This function has not been realized in QOS yet:\n%v", string(body))
 	return output
 
+}
+
+func TransferRecordsQuery(addr, cointype string) string {
+	trurl := TRurl + addr + "/transfer/?coin=" + cointype
+	resp, _ := http.Get(trurl)
+	var body []byte
+	var err error
+	if resp.StatusCode == http.StatusOK {
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	defer resp.Body.Close()
+	output := string(body)
+	return output
 }
