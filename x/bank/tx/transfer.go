@@ -34,3 +34,15 @@ func NewTransfer(sender qbasetypes.Address, receiver qbasetypes.Address, coin []
 
 	return sendTx
 }
+
+// NewTransfer ...
+func NewTransferMultiple(sender qbasetypes.Address, receiver []qbasetypes.Address, coin []qbasetypes.BaseCoin) txs.ITx {
+	var sendTx qostxs.TxTransfer
+
+	sendTx.Senders = append(sendTx.Senders, warpperTransItem(sender, coin))
+	for i:= 0;i<len(receiver);i++{
+		sendTx.Receivers = append(sendTx.Receivers, warpperTransItem(receiver[i], coin))
+	}
+
+	return sendTx
+}

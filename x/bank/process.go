@@ -168,7 +168,7 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 			return result,err1
 		}
 		qscnonce++;
-		msg = genStdWrapTx(cdc, t, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QSCChainID,qscnonce)
+		msg = genStdWrapTx(cdc, t, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QSCChainID,nn,qscnonce)
 	}
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 
@@ -200,11 +200,15 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 				fmt.Println("get result error:" + err.Error())
 				result.Error = err.Error()
 			}
-			if resultstr != "" && resultstr != "-1" {
+			if resultstr=="BankStub"{
+				result.Error = ""
+				result.Result =resultstr
+				result.Code = "-1"
+				break
+			}else if resultstr != "" && resultstr != "-1" {
 				fmt.Printf("get result:[%+v]\n", resultstr)
 				rs := []rune(resultstr)
 				index1 := strings.Index(resultstr, " ")
-
 
 				result.Error = ""
 				result.Result = string(rs[index1+1:])
@@ -330,7 +334,7 @@ func Approve(cdc *wire.Codec, command string, fromstr string, tostr string, coin
 			return result,err1
 		}
 		qscnonce++;
-		msg = genStdWrapTx(cdc, t, priv, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QOSChainID,qscnonce)
+		msg = genStdWrapTx(cdc, t, priv, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QOSChainID,nonce,qscnonce)
 	}
 
 	var cliCtx context.CLIContext
@@ -407,15 +411,15 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 }
 
 //add the string input chainid
-func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid string, fromchainid string, nonce int64) *txs.TxStd {
-	stx := genStdSendTx(cdc, sendTx, priKey, tochainid,fromchainid, nonce)
+func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid string, fromchainid string, qosnonce int64, qscnonce int64) *txs.TxStd {
+	stx := genStdSendTx(cdc, sendTx, priKey, tochainid,fromchainid, qosnonce)
 	tx2 := txs.NewTxStd(nil, fromchainid, stx.MaxGas)
 	tx2.ITx = NewWrapperSendTx(stx)
-	signature, _ := tx2.SignTx(priKey, nonce,fromchainid,tochainid)
+	signature, _ := tx2.SignTx(priKey, qscnonce,fromchainid,fromchainid)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
-		Nonce:     nonce,
+		Nonce:     qscnonce,
 	}}
 
 	return tx2
