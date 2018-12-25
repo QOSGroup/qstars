@@ -70,12 +70,17 @@ func JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) s
 
 func AesEncrypt(key, plainText string) string {
 	output := slim.AesEncrypt(key, plainText)
-	return string(output)
+	return output
 }
 
 func AesDecrypt(key, cipherText string) string {
 	output := slim.AesDecrypt(key, cipherText)
-	return string(output)
+	return output
+}
+
+func TransferRecordsQuery(addr, cointype string) string {
+	output := slim.TransferRecordsQuery(addr, cointype)
+	return output
 }
 
 //func QSCtransfer() {

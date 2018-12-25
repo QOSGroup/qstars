@@ -146,7 +146,7 @@ func main() {
 	//newout := NewArticle("address13mjc3n3xxj73dhkju9a0dfr4lrfvv3whxqg0dy", "address1zsqzn6wdecyar6c6nzem3e8qss2ws95csr8d0r", "a123", "20", "20", "20", "20", "20", "3")
 	//fmt.Println(newout)
 
-	//slim.SetBlockchainEntrance("192.168.1.23:1317", "forQmoonAddr")
+	//slim.SetBlockchainEntrance("192.168.1.223:1317", "192.168.1.223:9527")
 	//ad := slim.JQInvestAd("qos-testapp", "qstars-test", "abcd", "1AOE", "Ey+2bNFF2gTUV6skSBgRy3rZwo9nS4Dw0l2WpLrhVvV8MuMRbjN4tUK8orHiJgHTR+enkxyXcA8giVrsrIRM4Q==")
 	//var ri ResultInvest
 	//err := json.Unmarshal([]byte(ad), &ri)
@@ -168,4 +168,7 @@ func main() {
 
 	//qc := QueryCoins("adcd")
 	//fmt.Println(qc)
+
+	//trc := slim.TransferRecordsQuery("address1l7d3dc26adk9gwzp777s3a9p5tprn7m43p99cg", "AOE")
+	//fmt.Println(trc)
 }
