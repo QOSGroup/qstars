@@ -101,7 +101,7 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 	gas := types.NewInt(int64(0))
 	stx := txs.NewTxStd(sendTx, tochainid, gas)
 
-	signature, _ := stx.SignTx(priKey, nonce, fromchainid)
+	signature, _ := stx.SignTx(priKey, nonce, fromchainid,tochainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,

@@ -130,7 +130,8 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	}
 	fmt.Println("nonce=", nonce)
 	nonce++
-	chainid := config.GetCLIContext().Config.QSCChainID
+	fromchainid := config.GetCLIContext().Config.QSCChainID
+	tochainid := config.GetCLIContext().Config.QOSChainID
 	tx := NewArticlesTx(authorAddr, originaladdr, articleHash, authshare, origshare, commushare, invesshare, investhours, buyhours, types.ZeroInt())
 	txsd := genStdSendTx(cdc, tx, priv, chainid, nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext
@@ -145,7 +146,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64) *txs.TxStd {
 	gas := types.NewInt(int64(0))
 	stx := txs.NewTxStd(sendTx, chainid, gas)
-	signature, _ := stx.SignTx(priKey, nonce, chainid)
+	signature, _ := stx.SignTx(priKey, nonce, chainid,)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
