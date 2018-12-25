@@ -133,7 +133,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	fromchainid := config.GetCLIContext().Config.QSCChainID
 	tochainid := config.GetCLIContext().Config.QOSChainID
 	tx := NewArticlesTx(authorAddr, originaladdr, articleHash, authshare, origshare, commushare, invesshare, investhours, buyhours, types.ZeroInt())
-	txsd := genStdSendTx(cdc, tx, priv, chainid, nonce)
+	txsd := genStdSendTx(cdc, tx, priv, fromchainid,tochainid,nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	_, _, err1 := utils.SendTx(cliCtx, cdc, txsd)
 	if err1 != nil {
@@ -143,10 +143,10 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 }
 
 //封装公链交易信息
-func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64) *txs.TxStd {
+func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, fromchainid string, tochainid string, nonce int64) *txs.TxStd {
 	gas := types.NewInt(int64(0))
-	stx := txs.NewTxStd(sendTx, chainid, gas)
-	signature, _ := stx.SignTx(priKey, nonce, chainid,)
+	stx := txs.NewTxStd(sendTx, fromchainid,  gas)
+	signature, _ := stx.SignTx(priKey, nonce, fromchainid, tochainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
