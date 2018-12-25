@@ -239,15 +239,15 @@ func genStdSendTx(sendTx ITx, priKey ed25519local.PrivKeyEd25519, chainid string
 	return stx
 }
 
-func getAddrFromBech32(bech32Addr string) (address []byte) {
-	//prefix, bz, err := bech32local.DecodeAndConvert(bech32Addr)
-	_, bz, _ := bech32local.DecodeAndConvert(bech32Addr)
-	//fmt.Printf("the prefix is %s\n", prefix)
-	address = bz
-	//if prefix != "address" {
-	//	return nil, errors.Wrap(err, "Valid Address string should begin with")
-	//}
-	return
+func getAddrFromBech32(bech32Addr string) ([]byte, error) {
+	if len(bech32Addr) == 0 {
+		return nil, errors.New("decoding bech32 address failed: must provide an address")
+	}
+	prefix, bz, err := bech32local.DecodeAndConvert(bech32Addr)
+	if prefix != "address" {
+		return nil, errors.Wrap(err, "Invalid address prefix!")
+	}
+	return bz, err
 }
 
 type Address []byte
@@ -275,10 +275,10 @@ func (add *Address) UnmarshalJSON(bech32Addr []byte) error {
 	if err != nil {
 		return err
 	}
-	add2 := getAddrFromBech32(s)
-	//if err != nil {
-	//	return err
-	//}
+	add2, err := getAddrFromBech32(s)
+	if err != nil {
+		return err
+	}
 	*add = add2
 	return nil
 }
@@ -494,7 +494,10 @@ type QOSAccount struct {
 //only need the following arguments, it`s enough!
 func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	//generate the receiver address, i.e. "addrto" with the following format
-	to := getAddrFromBech32(addrto)
+	to, err1 := getAddrFromBech32(addrto)
+	if err1 != nil {
+		fmt.Println(err1)
+	}
 	var key ed25519local.PrivKeyEd25519
 	ts := "{\"type\": \"tendermint/PrivKeyEd25519\",\"value\": \"" + privkey + "\"}"
 	err := Cdc.UnmarshalJSON([]byte(ts), &key)
@@ -503,7 +506,10 @@ func QSCtransferSendStr(addrto, coinstr, privkey, chainid string) string {
 	}
 	priv := key
 	addrben32, _ := bech32local.ConvertAndEncode(PREF_ADD, key.PubKey().Address().Bytes())
-	from := getAddrFromBech32(addrben32)
+	from, err2 := getAddrFromBech32(addrben32)
+	if err2 != nil {
+		fmt.Println(err2)
+	}
 	//coins generate from input
 	var ccs []BaseCoin
 	coins, err := ParseCoins(coinstr)
@@ -640,8 +646,10 @@ func investAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) (*T
 	}
 	priv := key
 	addrben32, _ := bech32local.ConvertAndEncode(PREF_ADD, key.PubKey().Address().Bytes())
-	investor := getAddrFromBech32(addrben32)
-
+	investor, err2 := getAddrFromBech32(addrben32)
+	if err2 != nil {
+		fmt.Println(err2)
+	}
 	var ccs []BaseCoin
 	for _, coin := range cs {
 		ccs = append(ccs, BaseCoin{
