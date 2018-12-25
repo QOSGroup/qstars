@@ -78,8 +78,8 @@ func AesDecrypt(key, cipherText string) string {
 	return output
 }
 
-func TransferRecordsQuery(addr, cointype string) string {
-	output := slim.TransferRecordsQuery(addr, cointype)
+func TransferRecordsQuery(addr, cointype, offset, limit string) string {
+	output := slim.TransferRecordsQuery(addr, cointype, offset, limit)
 	return output
 }
 
