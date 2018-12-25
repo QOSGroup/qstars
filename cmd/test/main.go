@@ -77,14 +77,15 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 
 	t := tx.NewTransfer(from, to, ccs)
 	var msg *txs.TxStd
-	chainid := "qos-test"
-	msg = genStdSendTx(cdc, t, priv, chainid, nn)
+	tochainid := "qos-test"
+	fromchainid := "qstars-test"
+	msg = genStdSendTx(cdc, t, priv, fromchainid,tochainid, nn)
 	rrr, _ := cdc.MarshalJSON(msg)
 	fmt.Println()
 	fmt.Println((string)(rrr))
 	fmt.Println()
 
-	sigdata := append(msg.BuildSignatureBytes(nn,chainid), Int2Byte(nn)...)
+	sigdata := append(msg.BuildSignatureBytes(nn,tochainid), Int2Byte(nn)...)
 	encodedStr := hex.EncodeToString(sigdata)
 	fmt.Println(":need to signdata ", (encodedStr))
 
@@ -101,10 +102,10 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 
 
 //add the string input chainid
-func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, chainid string, nonce int64) *txs.TxStd {
+func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, fromchainid string, tochainid string, nonce int64) *txs.TxStd {
 	gas := qbasetypes.NewInt(int64(0))
-	stx := txs.NewTxStd(sendTx, chainid, gas)
-	signature, _ := stx.SignTx(priKey, nonce,chainid)
+	stx := txs.NewTxStd(sendTx, tochainid, gas)
+	signature, _ := stx.SignTx(priKey, nonce,fromchainid, tochainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
