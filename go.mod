@@ -6,7 +6,7 @@ require (
 	github.com/QOSGroup/qos v0.0.3
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
-	github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d
+	github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d // indirect
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/brejski/hid v0.0.0-20180408220029-06112dcfcc50 // indirect
 	github.com/cosmos/cosmos-sdk v0.24.2

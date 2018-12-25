@@ -33,13 +33,22 @@ func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOrig
 	return result
 }
 
+//for investAdbckaground testing
+type ResultInvest struct {
+	Code   string          `json:"code"`
+	Reason string          `json:"reason,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
+}
+
 func InvestAdBackground(txb string) string {
 	timeout := time.Second * 60
-	result := investad.InvestAdBackground(CDC, txb, timeout)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
+	var ri ResultInvest
+	err := json.Unmarshal([]byte(txb), &ri)
+	if err != nil {
+		return err.Error()
+	}
+	Txresult := string(ri.Result)
+	result := investad.InvestAdBackground(CDC, Txresult, timeout)
 	return result
 
 }
