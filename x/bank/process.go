@@ -396,7 +396,7 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid string, fromchainid string, nonce int64) *txs.TxStd {
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(sendTx, tochainid, gas)
-	signature, _ := stx.SignTx(priKey, nonce,fromchainid)
+	signature, _ := stx.SignTx(priKey, nonce,fromchainid,tochainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
@@ -411,7 +411,7 @@ func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 	stx := genStdSendTx(cdc, sendTx, priKey, tochainid,fromchainid, nonce)
 	tx2 := txs.NewTxStd(nil, fromchainid, stx.MaxGas)
 	tx2.ITx = NewWrapperSendTx(stx)
-	signature, _ := tx2.SignTx(priKey, nonce,fromchainid)
+	signature, _ := tx2.SignTx(priKey, nonce,fromchainid,tochainid)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
