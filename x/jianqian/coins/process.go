@@ -237,5 +237,8 @@ func GetCoins(cdc *wire.Codec, ctx *context.CLIContext, tx string) string {
 	if err!=nil{
 		return common.NewErrorResult(COINS_QUERY_ERR,err.Error()).Marshal()
 	}
+	if coins==nil||coins.Tx==""{
+		return common.NewErrorResult(COINS_QUERY_ERR,fmt.Sprint("query dispatch error.tx:%s not exist",tx)).Marshal()
+	}
 	return common.NewSuccessResult(cdc, 0, "", coins).Marshal()
 }

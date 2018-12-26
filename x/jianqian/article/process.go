@@ -161,6 +161,9 @@ func GetArticle(cdc *amino.Codec, key string) string {
 	if err!=nil{
 		return common.NewErrorResult(ARTICLE_QUERY_ERR,err.Error()).Marshal()
 	}
+	if article==nil||article.ArticleHash==""{
+		return common.NewErrorResult(ARTICLE_QUERY_ERR,fmt.Sprint("article　%s not exist",key)).Marshal()
+	}
 	return common.NewSuccessResult(cdc, 0, "", article).Marshal()
 
 }
