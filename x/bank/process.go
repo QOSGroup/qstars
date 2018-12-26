@@ -204,7 +204,6 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 				result.Error = ""
 				result.Result =resultstr
 				result.Code = "-1"
-				break
 			}else if resultstr != "" && resultstr != "-1" {
 				fmt.Printf("get result:[%+v]\n", resultstr)
 				rs := []rune(resultstr)
