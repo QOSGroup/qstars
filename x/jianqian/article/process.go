@@ -146,7 +146,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, fromchainid string, tochainid string, nonce int64) *txs.TxStd {
 	gas := types.NewInt(int64(0))
 	stx := txs.NewTxStd(sendTx, fromchainid,  gas)
-	signature, _ := stx.SignTx(priKey, nonce, fromchainid, tochainid)
+	signature, _ := stx.SignTx(priKey, nonce, fromchainid, fromchainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
@@ -160,6 +160,9 @@ func GetArticle(cdc *amino.Codec, key string) string {
 	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, key)
 	if err!=nil{
 		return common.NewErrorResult(ARTICLE_QUERY_ERR,err.Error()).Marshal()
+	}
+	if article==nil||article.ArticleHash==""{
+		return common.NewErrorResult(ARTICLE_QUERY_ERR,fmt.Sprintf("query article failure,%s not exist",key)).Marshal()
 	}
 	return common.NewSuccessResult(cdc, 0, "", article).Marshal()
 
