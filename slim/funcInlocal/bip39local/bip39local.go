@@ -139,14 +139,22 @@ func IsMnemonicValid(mnemonic string) bool {
 	}
 
 	// Check if all words belong in the wordlist
-	//var wordMap map[string]int
-	//for _, word := range words {
-	//	if _, ok := wordMap[word]; !ok {
-	//		return false
-	//	}
-	//}
+	for i := 0; i < wordCount; i++ {
+		if !contains(WordList, words[i]) {
+			return false
+		}
+	}
 
 	return true
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 // Language-specific wordlists
