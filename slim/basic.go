@@ -91,6 +91,11 @@ func AccountRecoverStr(mncode, password string) string {
 	if len(password) == 0 {
 		password = "DNWTTY"
 	}
+	// add mnemonics validation
+	if bip39local.IsMnemonicValid(mncode) == false {
+		return fmt.Sprintf("Invalid mnemonic!")
+	}
+
 	seed := bip39local.NewSeed(mncode, password)
 	key := ed25519local.GenPrivKeyFromSecret(seed)
 	pub := key.PubKey()
