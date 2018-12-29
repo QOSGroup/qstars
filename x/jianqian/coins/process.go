@@ -61,6 +61,15 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 	}
 	qosnonce++
 	fmt.Println("qosnonce", qosnonce)
+
+
+
+
+
+
+
+
+
 	var ccs []types.BaseCoin
 	for _, coin := range amount {
 		ccs = append(ccs, types.BaseCoin{
@@ -68,7 +77,26 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 			Amount: types.NewInt(coin.Int64()),
 		})
 	}
-	transtx := tx.NewTransfer([]types.Address{from}, to, ccs)
+
+	//合并接收地址
+	addmap:=make(map[string]types.BaseCoin)
+	for i,addv:=range to{
+		if v,ok:=addmap[addv.String()];ok{
+			v.Amount.Add(ccs[i].Amount)
+		}else{
+			addmap[addv.String()]=ccs[i]
+		}
+	}
+
+	var newto []types.Address
+	var newccs []types.BaseCoin
+	for k, v := range addmap {
+		addres, _ := qstartypes.AccAddressFromBech32(k)
+		newto = append(newto, addres)
+		newccs = append(newccs, v)
+	}
+
+	transtx := tx.NewTransfer([]types.Address{from}, newto, newccs)
 	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
 	var msg *txs.TxStd
 
