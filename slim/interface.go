@@ -580,14 +580,33 @@ func (it InvestTx) GetSignData() []byte {
 
 var _ ITx = (*InvestTx)(nil)
 
+const (
+	ResultCodeSuccess       = "0"
+	ResultCodeQstarsTimeout = "-2"
+	ResultCodeQOSTimeout    = "-1"
+	ResultCodeInternalError = "500"
+)
+
 type ResultInvest struct {
 	Code   string          `json:"code"`
+	Height int64           `json:"height"`
+	Hash   string          `json:"hash,omitempty"`
 	Reason string          `json:"reason,omitempty"`
 	Result json.RawMessage `json:"result,omitempty"`
 }
 
 func InternalError(reason string) ResultInvest {
-	return ResultInvest{Code: "-1", Reason: reason}
+	return NewErrorResult(ResultCodeInternalError, 0, "", reason)
+}
+
+func NewErrorResult(code string, height int64, hash string, reason string) ResultInvest {
+	var result ResultInvest
+	result.Height = height
+	result.Hash = hash
+	result.Code = code
+	result.Reason = reason
+
+	return result
 }
 
 func (ri ResultInvest) Marshal() string {
@@ -605,12 +624,12 @@ var tempAddr = Address("99999999999999999999")
 
 func JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) string {
 	var result ResultInvest
-	result.Code = "0"
+	result.Code = ResultCodeSuccess
 
 	tx, err := investAd(QOSchainId, QSCchainId, articleHash, coins, privatekey)
 	if err != nil {
 		fmt.Printf("investAd err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}
@@ -618,7 +637,7 @@ func JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) s
 	js, err := Cdc.MarshalJSON(tx)
 	if err != nil {
 		fmt.Printf("investAd err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}
