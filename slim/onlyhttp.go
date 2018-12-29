@@ -36,7 +36,7 @@ func SetBlockchainEntrance(qstarshost, qmoonhost string) {
 	Accounturl = "http://" + Shost + "/accounts/"
 	KVurl = "http://" + Shost + "/kv/"
 	QResulturl = "http://" + Shost + "/commits/"
-	TRurl = "http://" + Mhost + "/node/qos-test/accounts/"
+	TRurl = "http://" + Mhost + "/node/"
 
 }
 
@@ -137,8 +137,8 @@ func QOSCommitResultCheck(txhash, height string) string {
 
 }
 
-func TransferRecordsQuery(addr, cointype, offset, limit string) string {
-	trurl := TRurl + addr + "/transfer/?coin=" + cointype + "&offset=" + offset + "&limit=" + limit
+func TransferRecordsQuery(chainid, addr, cointype, offset, limit string) string {
+	trurl := TRurl + chainid + "/accounts/" + addr + "/transfer/?coin=" + cointype + "&offset=" + offset + "&limit=" + limit
 	resp, _ := http.Get(trurl)
 	var body []byte
 	var err error

@@ -6,6 +6,7 @@ import (
 	"github.com/QOSGroup/qstars/slim/funcInlocal/bip39local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/ed25519local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/respwrap"
+	"github.com/pkg/errors"
 	"log"
 )
 
@@ -93,7 +94,10 @@ func AccountRecoverStr(mncode, password string) string {
 	}
 	// add mnemonics validation
 	if bip39local.IsMnemonicValid(mncode) == false {
-		return fmt.Sprintf("Invalid mnemonic!")
+		err := errors.Errorf("Invalid mnemonic!")
+		resp, _ := respwrap.ResponseWrapper(Cdc, nil, err)
+		return string(resp)
+
 	}
 
 	seed := bip39local.NewSeed(mncode, password)

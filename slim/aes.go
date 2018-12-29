@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"github.com/QOSGroup/qstars/slim/funcInlocal/respwrap"
 	"io"
 )
 
@@ -23,7 +24,10 @@ func AesEncrypt(keystring, text string) string {
 	}
 	stream := cipher.NewCFBEncrypter(block, iv)
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
-	return base64.URLEncoding.EncodeToString(ciphertext)
+	result := base64.URLEncoding.EncodeToString(ciphertext)
+	resp, _ := respwrap.ResponseWrapper(Cdc, result, nil)
+	out := string(resp)
+	return out
 }
 
 func AesDecrypt(keystring, cryptoText string) string {
@@ -40,5 +44,8 @@ func AesDecrypt(keystring, cryptoText string) string {
 	ciphertext = ciphertext[aes.BlockSize:]
 	stream := cipher.NewCFBDecrypter(block, iv)
 	stream.XORKeyStream(ciphertext, ciphertext)
-	return fmt.Sprintf("%s", ciphertext)
+	result := fmt.Sprintf("%s", ciphertext)
+	resp, _ := respwrap.ResponseWrapper(Cdc, result, nil)
+	out := string(resp)
+	return out
 }
