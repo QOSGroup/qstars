@@ -19,18 +19,17 @@ import (
 )
 
 const (
-	ARTICLE_PRIV_ERR = "201"   //上传者私钥获取地址错误
-	ARTICLE_ORIGIN_ERR = "202"   //原作者获取地址错误
-	ARTICLE_AUTHOR_SHARE_ERR = "203" // 作者收入比例出错
-	ARTICLE_ORIGIN_SHARE_ERR = "204" // 原创入比例出错
+	ARTICLE_PRIV_ERR            = "201" //上传者私钥获取地址错误
+	ARTICLE_ORIGIN_ERR          = "202" //原作者获取地址错误
+	ARTICLE_AUTHOR_SHARE_ERR    = "203" // 作者收入比例出错
+	ARTICLE_ORIGIN_SHARE_ERR    = "204" // 原创入比例出错
 	ARTICLE_COMMUNITY_SHARE_ERR = "205" // 社区收入比例出错
-	ARTICLE_INVESTOR_SHARE_ERR = "206" // 投资者收入比例出错
-	ARTICLE_INVESTOR_DATE_ERR = "207" // 投资期限出错
-	ARTICLE_BUY_DATE_ERR = "208" // 购买期限比例出错
-	ARTICLE_ADDRES_ERR = "209" // 地址转换错误
-	ARTICLE_PRIV_AUTHOR_ERR = "210" // 非作者本人私钥
-	ARTICLE_SENDTX_ERR = "211" //交易出错
-
+	ARTICLE_INVESTOR_SHARE_ERR  = "206" // 投资者收入比例出错
+	ARTICLE_INVESTOR_DATE_ERR   = "207" // 投资期限出错
+	ARTICLE_BUY_DATE_ERR        = "208" // 购买期限比例出错
+	ARTICLE_ADDRES_ERR          = "209" // 地址转换错误
+	ARTICLE_PRIV_AUTHOR_ERR     = "210" // 非作者本人私钥
+	ARTICLE_SENDTX_ERR          = "211" //交易出错
 
 	ARTICLE_QUERY_ERR = "212" //查询跨链结果错误
 )
@@ -52,7 +51,6 @@ const (
 //	return string(jsonBytes)
 //}
 
-
 //上传新作品
 //
 //authoraddress          作者地址(必填)
@@ -69,56 +67,55 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	privkey := tx.GetConfig().Dappowner
 	authorAddr, err := qstartypes.AccAddressFromBech32(authorAddress)
 	if err != nil {
-		return common.NewErrorResult(ARTICLE_ADDRES_ERR,err.Error()).Marshal()
+		return common.NewErrorResult(ARTICLE_ADDRES_ERR, 0, "", err.Error()).Marshal()
 	}
 	var originaladdr types.Address
 	if strings.TrimSpace(originalAuthor) != "" {
 		originaladdr, _ = qstartypes.AccAddressFromBech32(originalAuthor)
 		if err != nil {
-			return common.NewErrorResult(ARTICLE_ORIGIN_ERR,err.Error()).Marshal()
+			return common.NewErrorResult(ARTICLE_ORIGIN_ERR, 0, "", err.Error()).Marshal()
 		}
 	}
 
 	authshare, err := strconv.Atoi(shareAuthor)
-	if err!=nil{
-		return common.NewErrorResult(ARTICLE_AUTHOR_SHARE_ERR,err.Error()).Marshal()
+	if err != nil {
+		return common.NewErrorResult(ARTICLE_AUTHOR_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
 	origshare, err := strconv.Atoi(shareOriginalAuthor)
-	if err!=nil{
-		return common.NewErrorResult(ARTICLE_ORIGIN_SHARE_ERR,err.Error()).Marshal()
+	if err != nil {
+		return common.NewErrorResult(ARTICLE_ORIGIN_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
 	commushare, err := strconv.Atoi(shareCommunity)
-	if err!=nil{
-		return common.NewErrorResult(ARTICLE_COMMUNITY_SHARE_ERR,err.Error()).Marshal()
+	if err != nil {
+		return common.NewErrorResult(ARTICLE_COMMUNITY_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
 	invesshare, err := strconv.Atoi(shareInvestor)
-	if err!=nil{
-		return common.NewErrorResult(ARTICLE_INVESTOR_SHARE_ERR,err.Error()).Marshal()
+	if err != nil {
+		return common.NewErrorResult(ARTICLE_INVESTOR_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
 	investhours, err := strconv.Atoi(endInvestDate)
-	if err!=nil{
-		return common.NewErrorResult(ARTICLE_INVESTOR_DATE_ERR,err.Error()).Marshal()
+	if err != nil {
+		return common.NewErrorResult(ARTICLE_INVESTOR_DATE_ERR, 0, "", err.Error()).Marshal()
 	}
-	if investhours<=0{
-		return common.NewErrorResult(ARTICLE_INVESTOR_DATE_ERR,"投资期需大于0").Marshal()
+	if investhours <= 0 {
+		return common.NewErrorResult(ARTICLE_INVESTOR_DATE_ERR, 0, "", "投资期需大于0").Marshal()
 	}
 	buyhours, err := strconv.Atoi(endBuyDate)
-	if err!=nil{
-		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR,err.Error()).Marshal()
+	if err != nil {
+		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR, 0, "", err.Error()).Marshal()
 	}
-	if buyhours<=0{
-		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR,"广告竞拍期需大于0").Marshal()
+	if buyhours <= 0 {
+		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR, 0, "", "广告竞拍期需大于0").Marshal()
 	}
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
 	if err != nil {
-		return common.NewErrorResult(ARTICLE_PRIV_ERR,err.Error()).Marshal()
+		return common.NewErrorResult(ARTICLE_PRIV_ERR, 0, "", err.Error()).Marshal()
 	}
 
-
-	if authorAddr.String()!=from.String(){
+	if authorAddr.String() != from.String() {
 		//非作者本人私钥
-		return common.NewErrorResult(ARTICLE_PRIV_AUTHOR_ERR,"非作者本人私钥").Marshal()
+		return common.NewErrorResult(ARTICLE_PRIV_AUTHOR_ERR, 0, "", "非作者本人私钥").Marshal()
 	}
 	key := account.AddressStoreKey(from)
 	var nonce int64 = 0
@@ -133,19 +130,19 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	fromchainid := config.GetCLIContext().Config.QSCChainID
 	tochainid := config.GetCLIContext().Config.QOSChainID
 	tx := NewArticlesTx(authorAddr, originaladdr, articleHash, authshare, origshare, commushare, invesshare, investhours, buyhours, types.ZeroInt())
-	txsd := genStdSendTx(cdc, tx, priv, fromchainid,tochainid,nonce)
+	txsd := genStdSendTx(cdc, tx, priv, fromchainid, tochainid, nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext
-	_, _, err1 := utils.SendTx(cliCtx, cdc, txsd)
+	_, commitresult, err1 := utils.SendTx(cliCtx, cdc, txsd)
 	if err1 != nil {
-		return common.NewErrorResult(ARTICLE_SENDTX_ERR,err1.Error()).Marshal()
+		return common.NewErrorResult(ARTICLE_SENDTX_ERR, commitresult.Height, commitresult.Hash.String(), err1.Error()).Marshal()
 	}
-	return common.NewSuccessResult(cdc,0,"","").Marshal()
+	return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), "").Marshal()
 }
 
 //封装公链交易信息
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, fromchainid string, tochainid string, nonce int64) *txs.TxStd {
 	gas := types.NewInt(int64(0))
-	stx := txs.NewTxStd(sendTx, fromchainid,  gas)
+	stx := txs.NewTxStd(sendTx, fromchainid, gas)
 	signature, _ := stx.SignTx(priKey, nonce, fromchainid, fromchainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
@@ -158,11 +155,11 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 // GetArticle process of get Article
 func GetArticle(cdc *amino.Codec, key string) string {
 	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, key)
-	if err!=nil{
-		return common.NewErrorResult(ARTICLE_QUERY_ERR,err.Error()).Marshal()
+	if err != nil {
+		return common.NewErrorResult(ARTICLE_QUERY_ERR, 0, "", err.Error()).Marshal()
 	}
-	if article==nil||article.ArticleHash==""{
-		return common.NewErrorResult(ARTICLE_QUERY_ERR,fmt.Sprintf("query article failure,%s not exist",key)).Marshal()
+	if article == nil || article.ArticleHash == "" {
+		return common.NewErrorResult(ARTICLE_QUERY_ERR, 0, "", fmt.Sprintf("query article failure,%s not exist", key)).Marshal()
 	}
 	return common.NewSuccessResult(cdc, 0, "", article).Marshal()
 

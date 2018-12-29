@@ -7,6 +7,13 @@ import (
 	"github.com/QOSGroup/qstars/wire"
 )
 
+const (
+	ResultCodeSuccess       = "0"
+	ResultCodeQstarsTimeout = "-2"
+	ResultCodeQOSTimeout    = "-1"
+	ResultCodeInternalError = "500"
+)
+
 type Result struct {
 	Code   string          `json:"code"`
 	Height int64           `json:"height"`
@@ -16,10 +23,10 @@ type Result struct {
 }
 
 func InternalError(reason string) Result {
-	return NewErrorResult("500", reason)
+	return NewErrorResult(ResultCodeInternalError, 0, "", reason)
 }
 
-func NewSuccessResult(cdc *wire.Codec, height int64, hash, res interface{}) Result {
+func NewSuccessResult(cdc *wire.Codec, height int64, hash string, res interface{}) Result {
 	var rawMsg json.RawMessage
 
 	if res != nil {
@@ -32,14 +39,18 @@ func NewSuccessResult(cdc *wire.Codec, height int64, hash, res interface{}) Resu
 	}
 
 	var result Result
+	result.Height = height
+	result.Hash = hash
 	result.Result = rawMsg
 	result.Code = "0"
 
 	return result
 }
 
-func NewErrorResult(code, reason string) Result {
+func NewErrorResult(code string, height int64, hash string, reason string) Result {
 	var result Result
+	result.Height = height
+	result.Hash = hash
 	result.Code = code
 	result.Reason = reason
 
@@ -55,11 +66,11 @@ func (r Result) Marshal() string {
 }
 
 // ResultQstarsTimeoutError 联盟链超时
-func ResultQstarsTimeoutError() Result {
-	return NewErrorResult("-2", "qstars timeout")
+func ResultQstarsTimeoutError(height int64, hash string) Result {
+	return NewErrorResult(ResultCodeQstarsTimeout, height, hash, "qstars timeout")
 }
 
 // ResultQOSTimeoutError 主链超时
-func ResultQOSTimeoutError() Result {
-	return NewErrorResult("-1", "qos timeout")
+func ResultQOSTimeoutError(height int64, hash string) Result {
+	return NewErrorResult(ResultCodeQOSTimeout, height, hash, "qos timeout")
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -85,7 +86,7 @@ func buyadCmd(cdc *wire.Codec) *cobra.Command {
 			tx := BuyAd(cdc, chainid, articleHash, coins, buyer, qosnonce, qscnonce)
 			log.Printf("BuyAd tx:%+v", tx)
 
-			var rb ResultBuy
+			var rb common.Result
 			if err := json.Unmarshal([]byte(tx), &rb); err != nil {
 				return fmt.Errorf("Unmarshal tx error:%s ", err.Error())
 			}

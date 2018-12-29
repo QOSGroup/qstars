@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	qosaccount "github.com/QOSGroup/qos/account"
+	"github.com/QOSGroup/qstars/x/common"
 
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
@@ -84,7 +85,7 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 
 			tx := InvestAd(cdc, chainid, articleHash, coins, investor, qosnonce, qscnonce)
 			fmt.Printf("InvestAd:%s\n", tx)
-			var ri ResultInvest
+			var ri common.Result
 			if err := json.Unmarshal([]byte(tx), &ri); err != nil {
 				return fmt.Errorf("Unmarshal tx error:%s ", err.Error())
 			}
