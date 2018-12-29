@@ -36,6 +36,8 @@ func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOrig
 //for investAdbckaground testing
 type ResultInvest struct {
 	Code   string          `json:"code"`
+	Height int64           `json:"height"`
+	Hash   string          `json:"hash,omitempty"`
 	Reason string          `json:"reason,omitempty"`
 	Result json.RawMessage `json:"result,omitempty"`
 }

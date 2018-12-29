@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/respwrap"
+	"github.com/pkg/errors"
 	"io"
 )
 
@@ -15,12 +16,16 @@ func AesEncrypt(keystring, text string) string {
 	plaintext := []byte(text)
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err)
+		//panic(err)
+		resp, _ := respwrap.ResponseWrapper(Cdc, nil, err)
+		return string(resp)
 	}
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(err)
+		//panic(err)
+		resp, _ := respwrap.ResponseWrapper(Cdc, nil, err)
+		return string(resp)
 	}
 	stream := cipher.NewCFBEncrypter(block, iv)
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
@@ -35,10 +40,15 @@ func AesDecrypt(keystring, cryptoText string) string {
 	ciphertext, _ := base64.URLEncoding.DecodeString(cryptoText)
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err)
+		//panic(err)
+		resp, _ := respwrap.ResponseWrapper(Cdc, nil, err)
+		return string(resp)
 	}
 	if len(ciphertext) < aes.BlockSize {
-		panic("Ciphertext too short")
+		//panic("Ciphertext too short")
+		err := errors.Errorf("Ciphertext too short")
+		resp, _ := respwrap.ResponseWrapper(Cdc, nil, err)
+		return string(resp)
 	}
 	iv := ciphertext[:aes.BlockSize]
 	ciphertext = ciphertext[aes.BlockSize:]
