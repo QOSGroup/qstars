@@ -23,45 +23,6 @@ import (
 	"time"
 )
 
-type ResultBuy struct {
-	Code   string          `json:"code"`
-	Reason string          `json:"reason,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
-}
-
-func InternalError(reason string) ResultBuy {
-	return ResultBuy{Code: "-1", Reason: reason}
-}
-
-func NewResultBuy(cdc *wire.Codec, code, reason string, res interface{}) ResultBuy {
-	var rawMsg json.RawMessage
-
-	if res != nil {
-		var js []byte
-		js, err := cdc.MarshalJSON(res)
-		if err != nil {
-			return InternalError(err.Error())
-		}
-		rawMsg = json.RawMessage(js)
-	}
-
-	var result ResultBuy
-	result.Result = rawMsg
-	result.Code = code
-	result.Reason = reason
-
-	return result
-}
-
-func (ri ResultBuy) Marshal() string {
-	jsonBytes, err := json.MarshalIndent(ri, "", "  ")
-	if err != nil {
-		log.Printf("BuyAd err:%s", err.Error())
-		return InternalError(err.Error()).Marshal()
-	}
-	return string(jsonBytes)
-}
-
 const coinsName = "QOS"
 
 // BuyAdBackground 提交到链上
@@ -70,7 +31,7 @@ func BuyAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) string 
 	err := cdc.UnmarshalJSON([]byte(txb), ts)
 	log.Printf("buyad.BuyAdBackground ts:%+v, err:%+v", ts, err)
 	if err != nil {
-		return InternalError(err.Error()).Marshal()
+		return common.InternalError(err.Error()).Marshal()
 	}
 
 	cliCtx := *config.GetCLIContext().QSCCliContext
@@ -78,11 +39,12 @@ func BuyAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) string 
 	log.Printf("buyad.BuyAdBackground SendTx commitresult:%+v, err:%+v", commitresult, err)
 
 	if err != nil {
-		return InternalError(err.Error()).Marshal()
+		return common.NewErrorResult("", commitresult.Height, commitresult.Hash.String(), err.Error()).Marshal()
 	}
 
 	height := strconv.FormatInt(commitresult.Height, 10)
-	var code, reason string
+	code := common.ResultCodeSuccess
+	var reason string
 	var result interface{}
 
 	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
@@ -92,16 +54,12 @@ func BuyAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) string 
 	counter := 0
 
 	for {
-		if counter >= waittime {
-			log.Println("time out")
-			result = "time out"
-			break
-		}
 		resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
 		log.Printf("fetchResult result:%s, err:%+v\n", resultstr, err)
 		if err != nil {
 			log.Printf("fetchResult error:%s\n", err.Error())
 			reason = err.Error()
+			code = common.ResultCodeInternalError
 			break
 		}
 
@@ -115,11 +73,28 @@ func BuyAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) string 
 			code = string(rs[:index1])
 			break
 		}
+
+		if counter >= waittime {
+			log.Println("time out")
+			reason = "time out"
+
+			if resultstr == "" {
+				code = common.ResultCodeQstarsTimeout
+			} else {
+				code = common.ResultCodeQOSTimeout
+			}
+			break
+		}
+
 		time.Sleep(500 * time.Millisecond)
 		counter++
 	}
 
-	return NewResultBuy(cdc, code, reason, result).Marshal()
+	if code != common.ResultCodeSuccess {
+		return common.NewErrorResult(code, commitresult.Height, commitresult.Hash.String(), reason).Marshal()
+	}
+
+	return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), result).Marshal()
 }
 
 func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
@@ -141,13 +116,13 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 
 // BuyAd 投资广告
 func BuyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosnonce, qscnonce int64) string {
-	var result ResultBuy
-	result.Code = "0"
+	var result common.Result
+	result.Code = common.ResultCodeSuccess
 
 	tx, err := buyAd(cdc, chainId, articleHash, coins, privatekey, qosnonce, qscnonce)
 	if err != nil {
 		log.Printf("buyAd err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = common.ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}
@@ -155,7 +130,7 @@ func BuyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	js, err := cdc.MarshalJSON(tx)
 	if err != nil {
 		log.Printf("buyAd err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = common.ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}
@@ -435,7 +410,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	transferTx.Receivers = receivers
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(transferTx, config.GetCLIContext().Config.QOSChainID, gas)
-	signature, _ := stx.SignTx(priv, qosnonce, config.GetCLIContext().Config.QSCChainID,config.GetCLIContext().Config.QOSChainID)
+	signature, _ := stx.SignTx(priv, qosnonce, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QOSChainID)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature,
@@ -447,7 +422,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	it.ArticleHash = []byte(articleHash)
 	it.Std = stx
 	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
-	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID,config.GetCLIContext().Config.QSCChainID)
+	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature2,
@@ -475,13 +450,13 @@ func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qost
 
 // RetrieveBuyer 查询购买者
 func RetrieveBuyer(cdc *wire.Codec, articleHash string) string {
-	var result ResultBuy
-	result.Code = "0"
+	var result common.Result
+	result.Code = common.ResultCodeSuccess
 
 	buyer, err := jianqian.QueryArticleBuyer(cdc, config.GetCLIContext().QSCCliContext, articleHash)
 	if err != nil {
 		log.Printf("QueryArticleBuyer err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = common.ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}
@@ -489,7 +464,7 @@ func RetrieveBuyer(cdc *wire.Codec, articleHash string) string {
 	js, err := cdc.MarshalJSON(buyer)
 	if err != nil {
 		log.Printf("buyAd err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = common.ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}

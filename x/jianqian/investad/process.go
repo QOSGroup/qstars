@@ -22,45 +22,6 @@ import (
 	"time"
 )
 
-type ResultInvest struct {
-	Code   string          `json:"code"`
-	Reason string          `json:"reason,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
-}
-
-func InternalError(reason string) ResultInvest {
-	return ResultInvest{Code: "-1", Reason: reason}
-}
-
-func NewResultInvest(cdc *wire.Codec, code, reason string, res interface{}) ResultInvest {
-	var rawMsg json.RawMessage
-
-	if res != nil {
-		var js []byte
-		js, err := cdc.MarshalJSON(res)
-		if err != nil {
-			return InternalError(err.Error())
-		}
-		rawMsg = json.RawMessage(js)
-	}
-
-	var result ResultInvest
-	result.Result = rawMsg
-	result.Code = code
-	result.Reason = reason
-
-	return result
-}
-
-func (ri ResultInvest) Marshal() string {
-	jsonBytes, err := json.MarshalIndent(ri, "", "  ")
-	if err != nil {
-		log.Printf("InvestAd err:%s", err.Error())
-		return InternalError(err.Error()).Marshal()
-	}
-	return string(jsonBytes)
-}
-
 const coinsName = "AOE"
 
 var tempAddr = qbasetypes.Address("99999999999999999999")
@@ -71,18 +32,19 @@ func InvestAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) stri
 	err := cdc.UnmarshalJSON([]byte(txb), ts)
 	fmt.Printf("InvestAdBackground ts:%+v, txb:%s\n", ts, txb)
 	if err != nil {
-		return InternalError(err.Error()).Marshal()
+		return common.InternalError(err.Error()).Marshal()
 	}
 
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	_, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
 	fmt.Printf("SendTx commitresult:%+v, err:%+v \n", commitresult, err)
 	if err != nil {
-		return InternalError(err.Error()).Marshal()
+		return common.NewErrorResult("", commitresult.Height, commitresult.Hash.String(), err.Error()).Marshal()
 	}
 
 	height := strconv.FormatInt(commitresult.Height, 10)
-	var code, reason string
+	code := common.ResultCodeSuccess
+	var reason string
 	var result interface{}
 
 	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
@@ -92,16 +54,12 @@ func InvestAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) stri
 	counter := 0
 
 	for {
-		if counter >= waittime {
-			log.Println("time out")
-			result = "time out"
-			break
-		}
 		resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
 		log.Printf("fetchResult result:%s, err:%+v\n", resultstr, err)
 		if err != nil {
 			log.Printf("fetchResult error:%s\n", err.Error())
 			reason = err.Error()
+			code = common.ResultCodeInternalError
 			break
 		}
 
@@ -115,11 +73,27 @@ func InvestAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) stri
 			code = string(rs[:index1])
 			break
 		}
+
+		if counter >= waittime {
+			log.Println("time out")
+			result = "time out"
+			if resultstr == "" {
+				code = common.ResultCodeQstarsTimeout
+			} else {
+				code = common.ResultCodeQOSTimeout
+			}
+			break
+		}
+
 		time.Sleep(500 * time.Millisecond)
 		counter++
 	}
 
-	return NewResultInvest(cdc, code, reason, result).Marshal()
+	if code != common.ResultCodeSuccess {
+		return common.NewErrorResult(code, commitresult.Height, commitresult.Hash.String(), reason).Marshal()
+	}
+
+	return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), result).Marshal()
 }
 
 func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
@@ -141,13 +115,13 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 
 // InvestAd 投资广告
 func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosnonce, qscnonce int64) string {
-	var result ResultInvest
-	result.Code = "0"
+	var result common.Result
+	result.Code = common.ResultCodeSuccess
 
 	tx, err := investAd(cdc, chainId, articleHash, coins, privatekey, qosnonce, qscnonce)
 	if err != nil {
 		log.Printf("investAd err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = common.ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}
@@ -155,7 +129,7 @@ func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, q
 	js, err := cdc.MarshalJSON(tx)
 	if err != nil {
 		log.Printf("investAd err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = common.ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}
@@ -242,13 +216,13 @@ func NewTransfer(sender qbasetypes.Address, receiver qbasetypes.Address, coin []
 
 // RetrieveInvestors 查询投资者
 func RetrieveInvestors(cdc *wire.Codec, articleHash string) string {
-	var result ResultInvest
-	result.Code = "0"
+	var result common.Result
+	result.Code = common.ResultCodeSuccess
 
 	investors, err := jianqian.ListInvestors(config.GetCLIContext().QSCCliContext, cdc, articleHash)
 	if err != nil {
 		log.Printf("ListInvestors err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = common.ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}
@@ -256,7 +230,7 @@ func RetrieveInvestors(cdc *wire.Codec, articleHash string) string {
 	js, err := cdc.MarshalJSON(investors)
 	if err != nil {
 		log.Printf("buyAd err:%s", err.Error())
-		result.Code = "-1"
+		result.Code = common.ResultCodeInternalError
 		result.Reason = err.Error()
 		return result.Marshal()
 	}
