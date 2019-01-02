@@ -73,8 +73,9 @@ func TxSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
 	result := &SendResult{}
 	if err != nil {
-		result.Error = err.Error()
-		return result, nil
+		//result.Error = err.Error()
+		//return result, nil
+		return nil, err
 	}
 
 	result.Hash = response
@@ -82,31 +83,32 @@ func TxSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
 	result.Heigth = height
 	return result, nil
 }
-func queryQSCAccount(cdc *wire.Codec,key []byte)(*SendResult, error, int64){
+func queryQSCAccount(cdc *wire.Codec, key []byte) (*SendResult, error, int64) {
 	chainid := config.GetCLIContext().Config.QSCChainID
 	accqsc, errqsc := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
 
 	if errqsc != nil {
 		fmt.Println(errqsc.Error())
 	}
-	fmt.Println("---------"+chainid)
+	fmt.Println("---------" + chainid)
 	result := &SendResult{}
 	if errqsc != nil {
-		if errqsc.Error()!=context.ACCOUNT_NOT_EXIST{
+		if errqsc.Error() != context.ACCOUNT_NOT_EXIST {
 			result.Hash = ""
 			result.Error = errqsc.Error()
 			result.Code = "1"
-			return result,errqsc,0
+			return result, errqsc, 0
 		}
 	}
 	qscnonce := int64(0)
-	if accqsc==nil {
+	if accqsc == nil {
 		qscnonce = 0
-	}else{
+	} else {
 		qscnonce = int64(accqsc.Nonce)
 	}
-	return nil,nil,qscnonce
+	return nil, nil, qscnonce
 }
+
 // Send 支持一次多种币 coins.Len() == 1;
 func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Coins, sopt *SendOptions) (*SendResult, error) {
 	if coins.Len() == 0 {
@@ -161,14 +163,14 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 	t := tx.NewTransfer(from, to, ccs)
 	var msg *txs.TxStd
 	if directTOQOS == true {
-		msg = genStdSendTx(cdc, t, priv, config.GetCLIContext().Config.QOSChainID,config.GetCLIContext().Config.QOSChainID, nn)
+		msg = genStdSendTx(cdc, t, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QOSChainID, nn)
 	} else {
-		result,err1,qscnonce := queryQSCAccount(cdc,key)
-		if result!=nil{
-			return result,err1
+		result, err1, qscnonce := queryQSCAccount(cdc, key)
+		if result != nil {
+			return result, err1
 		}
-		qscnonce++;
-		msg = genStdWrapTx(cdc, t, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QSCChainID,nn,qscnonce)
+		qscnonce++
+		msg = genStdWrapTx(cdc, t, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QSCChainID, nn, qscnonce)
 	}
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 
@@ -200,11 +202,11 @@ func Send(cdc *wire.Codec, fromstr string, to qbasetypes.Address, coins types.Co
 				fmt.Println("get result error:" + err.Error())
 				result.Error = err.Error()
 			}
-			if resultstr=="BankStub"{
+			if resultstr == "BankStub" {
 				result.Error = ""
-				result.Result =resultstr
+				result.Result = resultstr
 				result.Code = "-1"
-			}else if resultstr != "" && resultstr != "-1" {
+			} else if resultstr != "" && resultstr != "-1" {
 				fmt.Printf("get result:[%+v]\n", resultstr)
 				rs := []rune(resultstr)
 				index1 := strings.Index(resultstr, " ")
@@ -326,14 +328,14 @@ func Approve(cdc *wire.Codec, command string, fromstr string, tostr string, coin
 	var msg *txs.TxStd
 	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
 	if directTOQOS == true {
-		msg = genStdSendTx(cdc, t, priv, config.GetCLIContext().Config.QOSChainID,config.GetCLIContext().Config.QOSChainID, nonce)
+		msg = genStdSendTx(cdc, t, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QOSChainID, nonce)
 	} else {
-		result,err1,qscnonce := queryQSCAccount(cdc,key)
-		if result!=nil{
-			return result,err1
+		result, err1, qscnonce := queryQSCAccount(cdc, key)
+		if result != nil {
+			return result, err1
 		}
-		qscnonce++;
-		msg = genStdWrapTx(cdc, t, priv, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QOSChainID,nonce,qscnonce)
+		qscnonce++
+		msg = genStdWrapTx(cdc, t, priv, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QOSChainID, nonce, qscnonce)
 	}
 
 	var cliCtx context.CLIContext
@@ -399,7 +401,7 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid string, fromchainid string, nonce int64) *txs.TxStd {
 	gas := qbasetypes.NewInt(int64(0))
 	stx := txs.NewTxStd(sendTx, tochainid, gas)
-	signature, _ := stx.SignTx(priKey, nonce,fromchainid,tochainid)
+	signature, _ := stx.SignTx(priKey, nonce, fromchainid, tochainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
@@ -411,10 +413,10 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 
 //add the string input chainid
 func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid string, fromchainid string, qosnonce int64, qscnonce int64) *txs.TxStd {
-	stx := genStdSendTx(cdc, sendTx, priKey, tochainid,fromchainid, qosnonce)
+	stx := genStdSendTx(cdc, sendTx, priKey, tochainid, fromchainid, qosnonce)
 	tx2 := txs.NewTxStd(nil, fromchainid, stx.MaxGas)
 	tx2.ITx = NewWrapperSendTx(stx)
-	signature, _ := tx2.SignTx(priKey, qscnonce,fromchainid,fromchainid)
+	signature, _ := tx2.SignTx(priKey, qscnonce, fromchainid, fromchainid)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
 		Signature: signature,
@@ -423,4 +425,3 @@ func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 
 	return tx2
 }
-
