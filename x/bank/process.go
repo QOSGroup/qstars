@@ -62,6 +62,27 @@ func NewSendOptions(opts ...func(*SendOptions)) *SendOptions {
 	return sopt
 }
 
+func TxJsonSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
+	ts := new(txs.TxStd)
+	err := cdc.UnmarshalJSON(txb, ts)
+	if err != nil {
+		return nil, err
+	}
+
+	cliCtx := *config.GetCLIContext().QOSCliContext
+	response, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
+	result := &SendResult{}
+	if err != nil {
+		result.Error = err.Error()
+		return result, nil
+	}
+
+	result.Hash = response
+	height := strconv.FormatInt(commitresult.Height, 10)
+	result.Heigth = height
+	return result, nil
+}
+
 func TxSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
 	ts := new(txs.TxStd)
 	err := cdc.UnmarshalJSON(txb, ts)
