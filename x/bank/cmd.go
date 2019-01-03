@@ -156,7 +156,7 @@ func ApproveCmd(cdc *wire.Codec) *cobra.Command {
 //
 //	return &stdTx
 //}
-
+const SEPERATOR = ","
 // MsgSend - high level transaction of the coin module
 type MsgSend struct {
 	Inputs  []Input  `json:"inputs"`
@@ -172,7 +172,7 @@ func formatInput(cdc *wire.Codec, toaddressesStr string,fromaddressesStr string,
 
 	tostrs := []qbasetypes.Address {}
 
-	toaddresses := strings.Split(toaddressesStr,";")
+	toaddresses := strings.Split(toaddressesStr,SEPERATOR)
 	fmt.Println("to address:",toaddresses)
 	for i:=0;i< len(toaddresses);i++{
 		to, err := sdk.AccAddressFromBech32(toaddresses[i])
@@ -184,7 +184,7 @@ func formatInput(cdc *wire.Codec, toaddressesStr string,fromaddressesStr string,
 
 	fromstrs := []string{}
 
-	fromaddresses := strings.Split(fromaddressesStr,";")
+	fromaddresses := strings.Split(fromaddressesStr,SEPERATOR)
 	fmt.Println("private key:",fromaddresses)
 	for i:=0;i< len(fromaddresses);i++{
 		fromstrs = append(fromstrs, fromaddresses[i])
@@ -193,7 +193,7 @@ func formatInput(cdc *wire.Codec, toaddressesStr string,fromaddressesStr string,
 	scoins :=[]types.Coins {}
 
 	// parse coins trying to be sent
-	fromamounts := strings.Split(fromamountstr,";")
+	fromamounts := strings.Split(fromamountstr,SEPERATOR)
 	fmt.Println("from mounts:",fromamounts)
 	for i:=0;i< len(fromamounts);i++ {
 		secointmp, err := sdk.ParseCoins(fromamounts[i])
@@ -206,7 +206,7 @@ func formatInput(cdc *wire.Codec, toaddressesStr string,fromaddressesStr string,
 
 	rcoins :=[]types.Coins {}
 
-	toamounts := strings.Split(toamountstr,";")
+	toamounts := strings.Split(toamountstr,SEPERATOR)
 	fmt.Println("to mounts:",toamounts)
 	for i:=0;i< len(toamounts);i++ {
 		// parse coins trying to be sent
