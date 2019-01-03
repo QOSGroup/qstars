@@ -35,6 +35,7 @@ module.exports = {
                     "/sdk/qstarsclicmd.md",
                     "/sdk/qstarsclirestful.md",
                     "/sdk/transactionmessage.md",
+                    "/sdk/multitransfermsg.md",
                     "/sdk/app-init.md",
                 ]
             }
