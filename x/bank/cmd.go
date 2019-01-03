@@ -2,16 +2,21 @@ package bank
 
 import (
 	"fmt"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"strings"
 
 	sdk "github.com/QOSGroup/qstars/types"
+	qbasetypes "github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qstars/types"
 )
 
 const (
 	flagTo      = "to"
-	flagAmount  = "amount"
+	flagFromAmount  = "fromamount"
+	flagToAmount  = "toamount"
 	flagFrom    = "from"
 	flagCommand = "command"
 	flagChainid = "chainid"
@@ -29,39 +34,57 @@ func SendTxCmd(cdc *wire.Codec) *cobra.Command {
 				}
 			}()
 			toStr := viper.GetString(flagTo)
-			to, err := sdk.AccAddressFromBech32(toStr)
-			if err != nil {
-				return err
-			}
-
 			fromstr := viper.GetString(flagFrom) //Teddy changes
 
-			amount := viper.GetString(flagAmount)
-			// parse coins trying to be sent
-			coins, err := sdk.ParseCoins(amount)
-			if err != nil {
-				return err
-			}
+			fromamount := viper.GetString(flagFromAmount)
+			toamount := viper.GetString(flagToAmount)
 
-			result, err := Send(cdc, fromstr, to, coins, NewSendOptions(
-				gas(viper.GetInt64("gas")),
-				fee(viper.GetString("fee"))))
-			if err != nil {
-				return err
-			}
+			directTOQOS := config.GetCLIContext().Config.DirectTOQOS
 
-			output, err := wire.MarshalJSONIndent(cdc, result)
-			if err != nil {
-				return err
-			}
+			a,b,c,d := formatInput(cdc,toStr,fromstr,fromamount,toamount)
 
-			fmt.Println(string(output))
-			return nil
+
+			if directTOQOS == true {
+				result, err := MultiSendDirect(cdc,a,b,c,d);
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
+				output, err := wire.MarshalJSONIndent(cdc, result)
+				if err != nil {
+					return err
+				}
+
+				fmt.Println(string(output))
+				return nil
+			}else {
+				result, err := MultiSendViaQStars(cdc,a,b,c,d);
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
+				output, err := wire.MarshalJSONIndent(cdc, result)
+				if err != nil {
+					return err
+				}
+
+				fmt.Println(string(output))
+				return nil
+			}
+			//result, err := Send(cdc, fromstr, to, coins, NewSendOptions(
+			//	gas(viper.GetInt64("gas")),
+			//	fee(viper.GetString("fee"))))
+			//if err != nil {
+			//	return err
+			//}
+
+
 		},
 	}
 
-	cmd.Flags().String(flagTo, "", "Address to send coins")
-	cmd.Flags().String(flagAmount, "", "Amount of coins to send")
+	cmd.Flags().String(flagTo, "", "Addresses to send coins")
+	cmd.Flags().String(flagFromAmount, "", "Amount of coins to send")
+	cmd.Flags().String(flagToAmount, "", "Amount of coins to receive")
 
 	return cmd
 }
@@ -79,7 +102,7 @@ func ApproveCmd(cdc *wire.Codec) *cobra.Command {
 			}()
 			toStr := viper.GetString(flagTo)
 			fromstr := viper.GetString(flagFrom) //Teddy changes
-			amount := viper.GetString(flagAmount)
+			amount := viper.GetString(flagFromAmount)
 			// parse coins trying to be sent
 			coins, err := sdk.ParseCoins(amount)
 			chainid := viper.GetString(flagChainid)
@@ -106,7 +129,8 @@ func ApproveCmd(cdc *wire.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagTo, "", "Address to send coins")
-	cmd.Flags().String(flagAmount, "", "Amount of coins to send")
+	cmd.Flags().String(flagFromAmount, "", "Amount of coins to send")
+	cmd.Flags().String(flagToAmount, "", "Amount of coins to receive")
 	cmd.Flags().String(flagCommand, "", "client command, for approve: create,increase,decrease,use,cancel")
 
 	return cmd
@@ -142,4 +166,56 @@ type MsgSend struct {
 // NewMsgSend - construct arbitrary multi-in, multi-out send msg.
 func NewMsgSend(in []Input, out []Output) MsgSend {
 	return MsgSend{Inputs: in, Outputs: out}
+}
+
+func formatInput(cdc *wire.Codec, toaddressesStr string,fromaddressesStr string,fromamountstr string,toamountstr string) ([]string,[]qbasetypes.Address,[]types.Coins,[]types.Coins){
+
+	tostrs := []qbasetypes.Address {}
+
+	toaddresses := strings.Split(toaddressesStr,";")
+	fmt.Println("to address:",toaddresses)
+	for i:=0;i< len(toaddresses);i++{
+		to, err := sdk.AccAddressFromBech32(toaddresses[i])
+		if err != nil {
+			fmt.Println(err)
+		}
+		tostrs = append(tostrs, to)
+	}
+
+	fromstrs := []string{}
+
+	fromaddresses := strings.Split(fromaddressesStr,";")
+	fmt.Println("private key:",fromaddresses)
+	for i:=0;i< len(fromaddresses);i++{
+		fromstrs = append(fromstrs, fromaddresses[i])
+	}
+
+	scoins :=[]types.Coins {}
+
+	// parse coins trying to be sent
+	fromamounts := strings.Split(fromamountstr,";")
+	fmt.Println("from mounts:",fromamounts)
+	for i:=0;i< len(fromamounts);i++ {
+		secointmp, err := sdk.ParseCoins(fromamounts[i])
+		if err != nil {
+			fmt.Println(err)
+		}
+		scoins = append(scoins, secointmp)
+	}
+
+
+	rcoins :=[]types.Coins {}
+
+	toamounts := strings.Split(toamountstr,";")
+	fmt.Println("to mounts:",toamounts)
+	for i:=0;i< len(toamounts);i++ {
+		// parse coins trying to be sent
+		recointmp, err := sdk.ParseCoins(toamounts[i])
+		if err != nil {
+			fmt.Println(err)
+		}
+		rcoins = append(rcoins, recointmp)
+	}
+	return fromstrs, tostrs, scoins, rcoins
+
 }
