@@ -36,7 +36,7 @@ func SetBlockchainEntrance(qstarshost, qmoonhost string) {
 	Accounturl = "http://" + Shost + "/accounts/"
 	KVurl = "http://" + Shost + "/kv/"
 	QResulturl = "http://" + Shost + "/commits/"
-	TRurl = "http://" + Mhost + "/node/"
+	TRurl = "http://" + Mhost + "/nodes/"
 
 }
 
