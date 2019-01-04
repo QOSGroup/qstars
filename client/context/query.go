@@ -261,6 +261,15 @@ func (ctx CLIContext) query(path string, key common.HexBytes) (res []byte, err e
 	if !resp.IsOK() {
 		return res, errors.Errorf("query failed: (%d) %s", resp.Code, resp.Log)
 	}
+	// data from trusted node or subspace query doesn't need verification
+	if ctx.TrustNode || !isQueryStoreWithProof(path) {
+		return resp.Value, nil
+	}
+
+	err = ctx.verifyProof(path, resp)
+	if err != nil {
+		return nil, err
+	}
 
 	return resp.Value, nil
 }
@@ -270,4 +279,24 @@ func (ctx CLIContext) query(path string, key common.HexBytes) (res []byte, err e
 func (ctx CLIContext) queryStore(key cmn.HexBytes, storeName, endPath string) ([]byte, error) {
 	path := fmt.Sprintf("/store/%s/%s", storeName, endPath)
 	return ctx.query(path, key)
+}
+
+// isQueryStoreWithProof expects a format like /<queryType>/<storeName>/<subpath>
+// queryType must be "store" and subpath must be "key" to require a proof.
+func isQueryStoreWithProof(path string) bool {
+	if !strings.HasPrefix(path, "/") {
+		return false
+	}
+
+	paths := strings.SplitN(path[1:], "/", 3)
+	switch {
+	case len(paths) != 3:
+		return false
+	case paths[0] != "store":
+		return false
+	case store.RequireProof("/" + paths[2]):
+		return true
+	}
+
+	return false
 }
