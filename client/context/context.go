@@ -1,7 +1,11 @@
 package context
 
 import (
+	"fmt"
+	"github.com/QOSGroup/qbase/store"
+	"github.com/pkg/errors"
 	"io"
+	"strings"
 
 	"github.com/QOSGroup/qstars/client"
 	"github.com/QOSGroup/qstars/wire"
@@ -9,6 +13,16 @@ import (
 	"github.com/spf13/viper"
 
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
+	tmlite "github.com/tendermint/tendermint/lite"
+
+
+
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto/merkle"
+	tmliteErr "github.com/tendermint/tendermint/lite/errors"
+	tmliteProxy "github.com/tendermint/tendermint/lite/proxy"
+	rpcclient "github.com/tendermint/tendermint/rpc/client"
+	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 const ctxAccStoreName = "qosaccount"
@@ -30,6 +44,7 @@ type CLIContext struct {
 	Async           bool
 	JSON            bool
 	PrintResponse   bool
+	Verifier      tmlite.Verifier
 }
 
 // NewCLIContext returns a new initialized CLIContext with parameters from the
@@ -112,3 +127,51 @@ func (ctx CLIContext) WithUseLedger(useLedger bool) CLIContext {
 	ctx.UseLedger = useLedger
 	return ctx
 }
+
+// verifyProof perform response proof verification.
+func (ctx CLIContext) verifyProof(queryPath string, resp abci.ResponseQuery) error {
+	if ctx.Verifier == nil {
+		return fmt.Errorf("missing valid certifier to verify data from distrusted node")
+	}
+
+	// the AppHash for height H is in header H+1
+	commit, err := ctx.Verify(resp.Height + 1)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Instead of reconstructing, stash on CLIContext field?
+	prt := store.DefaultProofRuntime()
+
+	// TODO: Better convention for path?
+	storeName, err := parseQueryStorePath(queryPath)
+	if err != nil {
+		return err
+	}
+
+	kp := merkle.KeyPath{}
+	kp = kp.AppendKey([]byte(storeName), merkle.KeyEncodingURL)
+	kp = kp.AppendKey(resp.Key, merkle.KeyEncodingURL)
+
+	err = prt.VerifyValue(resp.Proof, commit.Header.AppHash, kp.String(), resp.Value)
+	if err != nil {
+		return errors.Wrap(err, "failed to prove merkle proof")
+	}
+
+	return nil
+}
+
+
+// Verify verifies the consensus proof at given height.
+func (ctx CLIContext) Verify(height int64) (tmtypes.SignedHeader, error) {
+	check, err := tmliteProxy.GetCertifiedCommit(height, ctx.Client, ctx.Verifier)
+	switch {
+	case tmliteErr.IsErrCommitNotFound(err):
+		return tmtypes.SignedHeader{}, ErrVerifyCommit(height)
+	case err != nil:
+		return tmtypes.SignedHeader{}, err
+	}
+
+	return check, nil
+}
+
