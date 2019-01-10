@@ -6,6 +6,7 @@ import (
 	"github.com/QOSGroup/qstars/star"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"
+	qosdinit "github.com/QOSGroup/qos/cmd/qosd/init"
 	"os"
 )
 
@@ -29,12 +30,14 @@ func main() {
 		Short:             "qstars Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
+	rootDir := os.ExpandEnv("$HOME/.qstarsd")
+	rootCmd.AddCommand(server.InitCmd(ctx, cdc, qosdinit.GenQOSGenesisDoc, rootDir))
 
-	server.AddCommands(ctx, cdc, rootCmd, server.DefaultAppInit,
-		server.ConstructAppCreator(star.NewApp, "qstars"))
+
+	server.AddCommands(ctx, cdc, rootCmd, star.NewApp)
 
 	// prepare and add flags
-	rootDir := os.ExpandEnv("$HOME/.qstarsd")
+
 	executor := cli.PrepareBaseCmd(rootCmd, "QSC", rootDir)
 
 	err := executor.Execute()
