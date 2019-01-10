@@ -65,7 +65,7 @@ func (tx DispatchAOETx) Exec(ctx context.Context) (result types.Result, crossTxQ
 	crossTxQcps.To = config.GetServerConf().QOSChainName
 	crossTxQcps.Extends=key
 	result = types.Result{
-		Code: types.ABCICodeOK,
+		Code: types.CodeOK,
 	}
 	return
 }

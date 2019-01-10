@@ -34,7 +34,7 @@ func GetResultKey(heigth1 string, tx1 string) string {
 func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTxQcps *txs.TxQcp) {
 
 	result = btypes.Result{
-		Code: btypes.ABCICodeOK,
+		Code: btypes.CodeOK,
 	}
 	fmt.Println("--------------------------------------------")
 	fmt.Println("--------------------------------------------")
@@ -56,7 +56,7 @@ func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTx
 	crossTxQcps.Extends = qstarskey
 
 	r := btypes.Result{
-		Code: btypes.ABCICodeOK,
+		Code: btypes.CodeOK,
 	}
 	return r, &cross
 }

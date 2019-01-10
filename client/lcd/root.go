@@ -16,6 +16,7 @@ import (
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 	tmserver "github.com/tendermint/tendermint/rpc/lib/server"
+	rpcserver "github.com/tendermint/tendermint/rpc/lib/server"
 )
 
 // ServeCommand will generate a long-running rest server
@@ -34,11 +35,12 @@ func ServeCommand(cdc *wire.Codec) *cobra.Command {
 			handler := createHandler(cdc)
 			logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "rest-server")
 			maxOpen := viper.GetInt(flagMaxOpenConnections)
-
-			listener, err := tmserver.StartHTTPServer(
-				listenAddr, handler, logger,
-				tmserver.Config{MaxOpenConnections: maxOpen},
+			listener, err := rpcserver.Listen(
+				listenAddr,
+				rpcserver.Config{MaxOpenConnections: maxOpen},
 			)
+			err = tmserver.StartHTTPServer(
+				listener, handler, logger)
 			if err != nil {
 				return err
 			}

@@ -38,7 +38,7 @@ func (s InvestadStub) RegisterCdc(cdc *go_amino.Codec) {
 
 func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	result := &types.Result{}
-	result.Code = types.ABCICodeType(types.CodeOK)
+	result.Code = types.CodeOK
 
 	in := txQcpResult.(*txs.QcpTxResult)
 	log.Printf("investad.InvestadStub ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)

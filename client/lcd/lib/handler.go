@@ -11,21 +11,22 @@ import (
 	"github.com/tendermint/go-amino"
 	tmserver "github.com/tendermint/tendermint/rpc/lib/server"
 	tmtype "github.com/tendermint/tendermint/rpc/lib/types"
+
 )
 
 func HttpResponseWrapper(w http.ResponseWriter, cdc *amino.Codec, result interface{}, err error) {
 	if err != nil {
-		tmserver.WriteRPCResponseHTTP(w, tmtype.NewRPCErrorResponse("", 0, err.Error(), ""))
+		tmserver.WriteRPCResponseHTTP(w, tmtype.NewRPCErrorResponse(tmtype.JSONRPCStringID(""), 0, err.Error(), ""))
 	} else {
-		tmserver.WriteRPCResponseHTTP(w, tmtype.NewRPCSuccessResponse(cdc, "", result))
+		tmserver.WriteRPCResponseHTTP(w, tmtype.NewRPCSuccessResponse(cdc, tmtype.JSONRPCStringID(""), result))
 	}
 }
 
 func ResponseWrapper(cdc *amino.Codec, result interface{}, err error) ([]byte, error) {
 	if err != nil {
-		return writeResponse(tmtype.NewRPCErrorResponse("", 0, err.Error(), ""))
+		return writeResponse(tmtype.NewRPCErrorResponse(tmtype.JSONRPCStringID(""), 0, err.Error(), ""))
 	} else {
-		return writeResponse(tmtype.NewRPCSuccessResponse(cdc, "", result))
+		return writeResponse(tmtype.NewRPCSuccessResponse(cdc, tmtype.JSONRPCStringID(""), result))
 	}
 }
 

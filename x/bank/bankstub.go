@@ -45,11 +45,11 @@ func (kv BankStub) CustomerQuery(ctx ctx.Context, route []string, req abci.Reque
 func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
 	in := txQcpResult.(*txs.QcpTxResult)
 	log.Debugf("ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
-	var resultCode types.ABCICodeType
+	var resultCode types.CodeType
 	qcpTxResult, ok := baseabci.ConvertTxQcpResult(txQcpResult)
 	if ok == false {
 		log.Errorf("ResultNotify ConvertTxQcpResult error.")
-		resultCode = types.ABCICodeType(types.CodeTxDecode)
+		resultCode = types.CodeTxDecode
 	} else {
 		//get original cross chain transaction
 		//orginalSeq := qcpTxResult.QcpOriginalSequence
@@ -75,7 +75,7 @@ func (kv BankStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *t
 		c = c + " " + qcpTxResult.Result.Log
 		log.Errorf("--------update key:" + common.QSCResultMapperName + " key:" + orginalTxHash + " value:" + c)
 		kvMapper.Set([]byte(orginalTxHash), c)
-		resultCode = types.ABCICodeType(types.CodeOK)
+		resultCode = types.CodeOK
 	}
 	rr := types.Result{
 		Code: resultCode,
