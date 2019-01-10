@@ -12,7 +12,6 @@ import (
 
 	"github.com/spf13/viper"
 
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
 	tmlite "github.com/tendermint/tendermint/lite"
 
 
@@ -161,6 +160,24 @@ func (ctx CLIContext) verifyProof(queryPath string, resp abci.ResponseQuery) err
 	return nil
 }
 
+// parseQueryStorePath expects a format like /store/<storeName>/key.
+func parseQueryStorePath(path string) (storeName string, err error) {
+	if !strings.HasPrefix(path, "/") {
+		return "", errors.New("expected path to start with /")
+	}
+
+	paths := strings.SplitN(path[1:], "/", 3)
+	switch {
+	case len(paths) != 3:
+		return "", errors.New("expected format like /store/<storeName>/key")
+	case paths[0] != "store":
+		return "", errors.New("expected format like /store/<storeName>/key")
+	case paths[2] != "key":
+		return "", errors.New("expected format like /store/<storeName>/key")
+	}
+
+	return paths[1], nil
+}
 
 // Verify verifies the consensus proof at given height.
 func (ctx CLIContext) Verify(height int64) (tmtypes.SignedHeader, error) {

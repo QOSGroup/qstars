@@ -81,7 +81,7 @@ func getInvestAmount(qscs qostypes.QSCs) qbasetypes.BigInt {
 
 func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps *txs.TxQcp) {
 	result = qbasetypes.Result{
-		Code: qbasetypes.ABCICodeOK,
+		Code: qbasetypes.CodeOK,
 	}
 	//set for qos result
 	investUncheckedMapper := ctx.Mapper(jianqian.InvestUncheckedMapperName).(*jianqian.InvestUncheckedMapper)

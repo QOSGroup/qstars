@@ -38,7 +38,7 @@ func (bs BuyadStub) RegisterCdc(cdc *go_amino.Codec) {
 
 func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *qbasetypes.Result {
 	result := &qbasetypes.Result{}
-	result.Code = qbasetypes.ABCICodeType(qbasetypes.CodeOK)
+	result.Code = qbasetypes.CodeOK
 
 	log.Printf("buyad.BuyadStub ResultNotify")
 	in := txQcpResult.(*txs.QcpTxResult)

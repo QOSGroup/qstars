@@ -145,13 +145,13 @@ func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps
 	log.Printf("buyad.handler Exec")
 
 	result = qbasetypes.Result{
-		Code: qbasetypes.ABCICodeOK,
+		Code: qbasetypes.CodeOK,
 	}
 	//set for qos result
 	buyMapper := ctx.Mapper(jianqian.BuyMapperName).(*jianqian.BuyMapper)
 	transferTx, _ := it.Std.ITx.(*qostxs.TxTransfer)
 	if len(transferTx.Senders) != 1 {
-		result.Code = qbasetypes.ToABCICode(qbasetypes.CodespaceRoot, qbasetypes.CodeInternal)
+		result.Code = qbasetypes.CodeInternal
 		return result, nil
 	}
 

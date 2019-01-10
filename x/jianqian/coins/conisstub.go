@@ -42,7 +42,7 @@ func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 	in := txQcpResult.(*txs.QcpTxResult)
 	log.Printf("ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
 	result := &types.Result{}
-	result.Code = types.ABCICodeType(types.CodeOK)
+	result.Code = types.CodeOK
 	qcpTxResult, ok := baseabci.ConvertTxQcpResult(txQcpResult)
 	if ok == false {
 		log.Printf("coins.CoinsStub ResultNotify ConvertTxQcpResult error.")
