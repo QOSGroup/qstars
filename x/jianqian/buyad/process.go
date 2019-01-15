@@ -37,7 +37,7 @@ func BuyAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) string 
 	log.Printf("buyad.BuyAdBackground SendTx commitresult:%+v, err:%+v", commitresult, err)
 
 	if err != nil {
-		return common.NewErrorResult(SENDTXERRCode, 0, "", err.Error()).Marshal()
+		return common.NewErrorResult(common.ResultCodeInternalError, 0, "", err.Error()).Marshal()
 	}
 
 	height := strconv.FormatInt(commitresult.Height, 10)

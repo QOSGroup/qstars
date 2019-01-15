@@ -38,7 +38,7 @@ func InvestAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) stri
 	_, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
 	fmt.Printf("SendTx commitresult:%+v, err:%+v \n", commitresult, err)
 	if err != nil {
-		return common.NewErrorResult(SENDTXERRCode, 0, "", err.Error()).Marshal()
+		return common.NewErrorResult(common.ResultCodeInternalError, 0, "", err.Error()).Marshal()
 	}
 
 	height := strconv.FormatInt(commitresult.Height, 10)
