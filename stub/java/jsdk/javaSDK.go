@@ -84,13 +84,13 @@ func BuyAd(articleHash, coins, buyer string) string {
 	qscnonce = int64(qscacc.Nonce)
 	tx := buyad.BuyAd(CDC, chainid, articleHash, coins, buyer, qosnonce, qscnonce)
 
-	var rb ResultBuy
+	var rb ResultInvest
 	if err := json.Unmarshal([]byte(tx), &rb); err != nil {
 		return fmt.Sprintf("Unmarshal tx error:%s ", err.Error())
 	}
 
 	if rb.Code != "0" {
-		return fmt.Sprintf("InvestAd tx error:%s ", rb.Reason)
+		return tx
 	}
 
 	timeout := time.Second * 60
