@@ -70,11 +70,18 @@ func BuyAd(articleHash, coins, buyer string) string {
 	from, err := types.AccAddressFromBech32(addrben32)
 	key := account.AddressStoreKey(from)
 
-	qosacc, _ := config.GetCLIContext().QOSCliContext.GetAccount(key, CDC)
+	qosacc, err1 := config.GetCLIContext().QOSCliContext.GetAccount(key, CDC)
+	if err1 != nil {
+		return err1.Error()
+	}
 	qosnonce := int64(qosacc.Nonce)
 
-	qscacc, _ := config.GetCLIContext().QSCCliContext.GetAccount(key, CDC)
-	qscnonce := int64(qscacc.Nonce)
+	qscacc, err2 := config.GetCLIContext().QSCCliContext.GetAccount(key, CDC)
+	var qscnonce int64
+	if err2 != nil {
+		qscnonce = int64(1)
+	}
+	qscnonce = int64(qscacc.Nonce)
 	tx := buyad.BuyAd(CDC, chainid, articleHash, coins, buyer, qosnonce, qscnonce)
 
 	var rb ResultBuy
