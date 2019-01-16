@@ -123,11 +123,7 @@ func (bs BuyadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *
 	}
 
 	investors := investMapper.AllInvestors(buyerSta.ArticleHash)
-	investors, err = calculateRevenue(buyMapper.GetCodec(), article, buyer.Buy, investors, communityAddr)
-	if err != nil {
-		log.Printf("buyad.BuyadStub calculateRevenue err:%s", err.Error())
-		return result
-	}
+	investors = calculateRevenue(buyMapper.GetCodec(), article, buyer.Buy, investors, communityAddr)
 
 	for _, v := range investors {
 		investMapper.SetInvestor(jianqian.GetInvestKey(buyer.ArticleHash, v.Address, v.InvestorType), v)
