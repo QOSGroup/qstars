@@ -134,7 +134,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	_, commitresult, err1 := utils.SendTx(cliCtx, cdc, txsd)
 	if err1 != nil {
-		return common.NewErrorResult(ARTICLE_SENDTX_ERR, commitresult.Height, commitresult.Hash.String(), err1.Error()).Marshal()
+		return common.NewErrorResult(ARTICLE_SENDTX_ERR, 0, "", err1.Error()).Marshal()
 	}
 	return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), "").Marshal()
 }

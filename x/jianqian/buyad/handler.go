@@ -76,10 +76,7 @@ func checkRevenue(ctx context.Context, articleKey []byte, totalAmount qbasetypes
 		return err
 	}
 
-	receivers, err := warpperReceivers(articleMapper.GetCodec(), a, totalAmount, investors, communityAddr)
-	if err != nil {
-		return err
-	}
+	receivers := warpperReceivers(articleMapper.GetCodec(), a, totalAmount, investors, communityAddr)
 
 	if len(receivers) != len(items) {
 		return errors.New("invalid Receivers")

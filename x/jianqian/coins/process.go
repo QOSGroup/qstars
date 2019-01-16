@@ -62,14 +62,6 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 	qosnonce++
 	fmt.Println("qosnonce", qosnonce)
 
-
-
-
-
-
-
-
-
 	var ccs []types.BaseCoin
 	for _, coin := range amount {
 		ccs = append(ccs, types.BaseCoin{
@@ -79,12 +71,12 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 	}
 
 	//合并接收地址
-	addmap:=make(map[string]types.BaseCoin)
-	for i,addv:=range to{
-		if v,ok:=addmap[addv.String()];ok{
+	addmap := make(map[string]types.BaseCoin)
+	for i, addv := range to {
+		if v, ok := addmap[addv.String()]; ok {
 			v.Amount.Add(ccs[i].Amount)
-		}else{
-			addmap[addv.String()]=ccs[i]
+		} else {
+			addmap[addv.String()] = ccs[i]
 		}
 	}
 
@@ -154,7 +146,7 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd, directTOQOS bool) string {
 	}
 	hash, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 	if err != nil {
-		return common.NewErrorResult(COINS_SENDTX_ERR, commitresult.Height, commitresult.Hash.String(), err.Error()).Marshal()
+		return common.NewErrorResult(COINS_SENDTX_ERR, 0, "", err.Error()).Marshal()
 	}
 	height := strconv.FormatInt(commitresult.Height, 10)
 	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)

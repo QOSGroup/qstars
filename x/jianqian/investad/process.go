@@ -4,7 +4,6 @@ package investad
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
@@ -39,7 +38,7 @@ func InvestAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) stri
 	_, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
 	fmt.Printf("SendTx commitresult:%+v, err:%+v \n", commitresult, err)
 	if err != nil {
-		return common.NewErrorResult(common.ResultCodeInternalError, 0, "", err.Error()).Marshal()
+		return common.NewErrorResult(SENDTXERRCode, 0, "", err.Error()).Marshal()
 	}
 
 	height := strconv.FormatInt(commitresult.Height, 10)
@@ -118,11 +117,11 @@ func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, q
 	var result common.Result
 	result.Code = common.ResultCodeSuccess
 
-	tx, err := investAd(cdc, chainId, articleHash, coins, privatekey, qosnonce, qscnonce)
-	if err != nil {
-		log.Printf("investAd err:%s", err.Error())
-		result.Code = common.ResultCodeInternalError
-		result.Reason = err.Error()
+	tx, berr := investAd(cdc, chainId, articleHash, coins, privatekey, qosnonce, qscnonce)
+	if berr != nil {
+		log.Printf("investAd err:%s", berr.Error())
+		result.Code = berr.Code()
+		result.Reason = berr.Error()
 		return result.Marshal()
 	}
 
@@ -139,15 +138,21 @@ func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, q
 }
 
 // investAd 投资广告
-func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosnonce, qscnonce int64) (*txs.TxStd, error) {
+func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosnonce, qscnonce int64) (*txs.TxStd, *InvestadErr) {
+	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, articleHash)
+	log.Printf("investad.investAd QueryArticle article:%+v, err:%+v", article, err)
+	if err != nil {
+		return nil, NewInvestadErr(InvalidArticleErrCode, err.Error())
+	}
+
 	cs, err := types.ParseCoins(coins)
 	if err != nil {
-		return nil, err
+		return nil, NewInvestadErr(CoinsErrCode, err.Error())
 	}
 
 	for _, v := range cs {
 		if v.Denom != coinsName {
-			return nil, errors.New("only support AOE")
+			return nil, CoinsErr
 		}
 	}
 
