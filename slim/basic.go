@@ -34,6 +34,7 @@ const (
 	// Bech32 prefixes
 	//Bech32PrefixAccPub = "cosmosaccpub"
 	AccountResultType = "local"
+	Denomtype         = "qos"
 )
 
 func AccountCreate(password string) *ResultCreateAccount {
@@ -170,4 +171,65 @@ func PubAddrRetrievalStr(s string) string {
 	resp, _ := respwrap.ResponseWrapper(Cdc, result, nil)
 	out := string(resp)
 	return out
+}
+
+//new account result with field of Denom
+type AccountKeyOut struct {
+	PubKey   string `json:"pubKey"`
+	PrivKey  string `json:"privKey"`
+	Addr     string `json:"addr"`
+	Mnemonic string `json:"mnemonic"`
+	Type     string `json:"type"`
+	Denom    string `json:"denom"`
+}
+
+//add new function for Account Creation with seed input
+func AccountCreateFromSeed(mncode string) string {
+	// add mnemonics validation
+	if bip39local.IsMnemonicValid(mncode) == false {
+		err := errors.Errorf("Invalid mnemonic!")
+		resp, _ := respwrap.ResponseWrapper(Cdc, nil, err)
+		return string(resp)
+
+	}
+
+	var defaultBIP39Passphrase = ""
+	seed := bip39local.NewSeed(mncode, defaultBIP39Passphrase)
+	key := ed25519local.GenPrivKeyFromSecret(seed)
+	pub := key.PubKey()
+	pubkeyAmino, _ := Cdc.MarshalJSON(pub)
+	var pubkeyAminoStc PubkeyAmino
+	err := Cdc.UnmarshalJSON(pubkeyAmino, &pubkeyAminoStc)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	pubkeyAminoStr := pubkeyAminoStc.Value
+
+	addr := key.PubKey().Address()
+	//bech32Pub, _ := bech32local.ConvertAndEncode("cosmosaccpub", pub)
+	bech32Addr, _ := bech32local.ConvertAndEncode(PREF_ADD, addr.Bytes())
+
+	privkeyAmino, _ := Cdc.MarshalJSON(key)
+	var privkeyAminoStc PrivkeyAmino
+	err1 := Cdc.UnmarshalJSON(privkeyAmino, &privkeyAminoStc)
+	if err1 != nil {
+		log.Fatalln(err1.Error())
+	}
+	privkeyAminoStr := privkeyAminoStc.Value
+
+	Type := AccountResultType
+	Denom := Denomtype
+
+	result := &AccountKeyOut{}
+	result.PubKey = pubkeyAminoStr
+	result.PrivKey = privkeyAminoStr
+	result.Addr = bech32Addr
+	result.Mnemonic = mncode
+	result.Type = Type
+	result.Denom = Denom
+
+	resp, _ := respwrap.ResponseWrapper(Cdc, result, nil)
+	out := string(resp)
+	return out
+
 }
