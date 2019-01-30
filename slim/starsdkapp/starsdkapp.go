@@ -9,6 +9,11 @@ func AccountCreate(password string) string {
 	return output
 }
 
+func AccountCreateFromSeed(mncode string) string {
+	output := slim.AccountCreateFromSeed(mncode)
+	return output
+}
+
 //for QSCKVStoreset
 func QSCKVStoreSet(k, v, privkey, chain string) string {
 	output := slim.QSCKVStoreSetPost(k, v, privkey, chain)
