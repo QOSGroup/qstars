@@ -33,6 +33,8 @@ func main() {
 	rootDir := os.ExpandEnv("$HOME/.qstarsd")
 	rootCmd.AddCommand(server.InitCmd(ctx, cdc, qosdinit.GenQOSGenesisDoc, rootDir))
 
+	rootCmd.AddCommand(qosdinit.AddGenesisAccount(cdc))
+	rootCmd.AddCommand(qosdinit.AddGenesisValidator(cdc))
 
 	server.AddCommands(ctx, cdc, rootCmd, star.NewApp)
 
