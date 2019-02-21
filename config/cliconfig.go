@@ -42,7 +42,7 @@ func CreateCLIContextTwo(cdc *wire.Codec, cfg *CLIConfig) QStarsClientContext {
 		WithCodec(cdc).
 		WithLogger(os.Stdout)
 
-	pQSCCliContext := context.NewCLIContext1(cfg.QOSNodeURI,cfg.QOSChainID,"qsc").
+	pQSCCliContext := context.NewCLIContext1(cfg.QSTARSNodeURI,cfg.QSCChainID,"qsc").
 		WithCodec(cdc).
 		WithLogger(os.Stdout)
 
