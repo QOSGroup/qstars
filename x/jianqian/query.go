@@ -21,6 +21,17 @@ func QueryArticle(cdc *amino.Codec, ctx *context.CLIContext, hash string) (artic
 	return
 }
 
+
+func QueryAllAcution(cdc *amino.Codec, ctx *context.CLIContext, hash string) (auction AuctionMap, err error) {
+	res, err := ctx.QueryStore([]byte(hash), AuctionMapperName)
+	if err != nil {
+		return nil, err
+	}
+	err = cdc.UnmarshalBinaryBare(res, &auction)
+
+	return
+}
+
 func QueryCoins(cdc *amino.Codec, ctx *context.CLIContext, tx string) (coins *Coins, err error) {
 	fmt.Println("tx=", tx)
 	res, err := ctx.QueryStore([]byte(tx), CoinsMapperName)

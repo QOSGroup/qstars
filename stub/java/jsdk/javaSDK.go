@@ -2,46 +2,80 @@ package jsdk
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qstars/config"
-	"github.com/QOSGroup/qstars/types"
-	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian/article"
-	"github.com/QOSGroup/qstars/x/jianqian/buyad"
+	"github.com/QOSGroup/qstars/x/jianqian/auction"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
+	"github.com/QOSGroup/qstars/x/jianqian/buyad"
+
 	"github.com/QOSGroup/qstars/x/jianqian/investad"
 	"time"
 )
 
+//发放活动奖励 aoe
+//addrs        奖励地址
+//cns          数额
+//causecodes   活动类型编号
+//causestrings 活动描述
 func DispatchCoins(addrs, cns, causecodes, causestrings, gas string) string {
 	result := coins.DispatchAOE(CDC, CONF, addrs, cns, causecodes, causestrings, gas)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
 	return result
 }
 
-func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate string) string {
-	result := article.NewArticle(CDC, CONF, authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
+//创建文章
+//AuthorAddr                   //作者地址(必填) 0qos 1cosmos
+//AuthorOtherAddr              //作者其他帐户地址
+//ArticleType                  //是否原创 0原创 1转载
+//ArticleHash                  //作品唯一标识hash
+//ShareAuthor                  //作者收入比例(必填)
+//ShareOriginalAuthor          //原创收入比例(转载作品必填)
+//ShareCommunity               //社区收入比例(必填)
+//ShareInvestor                //投资者收入比例(必填)
+//InvestHours                  //可供投资的小时数(必填)
+//BuyHours                     //可供购买广告位的小时数(必填)
+//CoinType                     //币种
+func NewArticle(authorAddress, authorOtherAddr, articleType, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate, cointype string) string {
+	result := article.NewArticle(CDC, CONF, authorAddress, authorOtherAddr, articleType, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate, cointype)
 	return result
 }
 
-//for investAdbckaground testing
-type ResultInvest struct {
-	Code   string          `json:"code"`
-	Height int64           `json:"height"`
-	Hash   string          `json:"hash,omitempty"`
-	Reason string          `json:"reason,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
+//竞拍广告上链
+func AcutionAdBackground(txb string) string {
+	timeout := time.Second * 60
+	var ri ResultInvest
+	err := json.Unmarshal([]byte(txb), &ri)
+	if err != nil {
+		return err.Error()
+	}
+	Txresult := string(ri.Result)
+	result := auction.AcutionAdBackground(CDC, Txresult, timeout)
+	return result
 }
 
+//查询当前最高出价
+//txHash 广告位标识
+func QueryMaxAcution(txHash string) string {
+	result := auction.QueryMaxAcution(CDC, config.GetCLIContext().QSCCliContext, txHash)
+
+	return result
+}
+
+//查询全部竞拍信息
+//txHash 广告位标识
+func QueryAllAcution(txHash string) string {
+	result := auction.QueryAllAcution(CDC, config.GetCLIContext().QSCCliContext, txHash)
+	return result
+}
+
+//分配利润 竞拍期过后分配出价最高者分配  竞拍失败部分原路退回
+//txHash 广告位标识
+func Distribution(txHash string) string {
+	result:=buyad.BuyAd(CDC,txHash)
+	return result
+}
+
+//投资上链
 func InvestAdBackground(txb string) string {
 	timeout := time.Second * 60
 	var ri ResultInvest
@@ -52,89 +86,23 @@ func InvestAdBackground(txb string) string {
 	Txresult := string(ri.Result)
 	result := investad.InvestAdBackground(CDC, Txresult, timeout)
 	return result
-
 }
 
-type ResultBuy struct {
-	Code   string          `json:"code"`
-	Reason string          `json:"reason,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
-}
-
-func BuyAd(articleHash, coins, buyer string) string {
-	chainid := config.GetCLIContext().Config.QSCChainID
-	if len(buyer) == 0 {
-		buyer = config.GetCLIContext().Config.Adbuyermock
-	}
-	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(buyer, CDC)
-	from, err := types.AccAddressFromBech32(addrben32)
-	key := account.AddressStoreKey(from)
-
-	qosacc, err1 := config.GetCLIContext().QOSCliContext.GetAccount(key, CDC)
-	if err1 != nil {
-		return err1.Error()
-	}
-	qosnonce := int64(qosacc.Nonce)
-
-	qscacc, err2 := config.GetCLIContext().QSCCliContext.GetAccount(key, CDC)
-	var qscnonce int64
-	if err2 != nil {
-		qscnonce = int64(1)
-	}
-	qscnonce = int64(qscacc.Nonce)
-	tx := buyad.BuyAd(CDC, chainid, articleHash, coins, buyer, qosnonce, qscnonce)
-
-	var rb ResultBuy
-	if err := json.Unmarshal([]byte(tx), &rb); err != nil {
-		return fmt.Sprintf("Unmarshal tx error:%s ", err.Error())
-	}
-
-	if rb.Code != "0" {
-		return fmt.Sprintf("InvestAd tx error:%s ", rb.Reason)
-	}
-
-	timeout := time.Second * 60
-	result := buyad.BuyAdBackground(CDC, string(rb.Result), timeout)
-	//output, err := CDC.MarshalJSON(result)
-	if err != nil {
-		return err.Error()
-	}
-	return result
-}
-
+//查询投资信息
 func RetrieveInvestors(articleHash string) string {
 	result := investad.RetrieveInvestors(CDC, articleHash)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
 	return result
 }
 
-func RetrieveBuyer(articleHash string) string {
-	result := buyad.RetrieveBuyer(CDC, articleHash)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
-	return result
-}
-
+//查询文章信息
 func QueryArticle(articleHash string) string {
 	result := article.GetArticle(CDC, articleHash)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
 	return result
 }
 
+//查询活动奖励信息
 func QueryCoins(txHash string) string {
 	result := coins.GetCoins(CDC, config.GetCLIContext().QSCCliContext, txHash)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
 	return result
 }
 
@@ -153,4 +121,13 @@ func QSCCommitResultCheck(txhash, height string) string {
 		return err.Error()
 	}
 	return string(res)
+}
+
+//for investAdbckaground testing
+type ResultInvest struct {
+	Code   string          `json:"code"`
+	Height int64           `json:"height"`
+	Hash   string          `json:"hash,omitempty"`
+	Reason string          `json:"reason,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
 }
