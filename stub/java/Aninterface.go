@@ -50,15 +50,20 @@ func NewArticle(authorAddress, authorOtherAddr, articleType, articleHash, shareA
 //	return output
 //}
 
+//export AcutionAdBackground
 func AcutionAdBackground(txb *C.char) *C.char {
 	output := jsdk.AcutionAdBackground(C.GoString(txb))
 	return C.CString(output)
 }
 
+//export QueryMaxAcution
 func QueryMaxAcution(txb *C.char) *C.char {
 	output := jsdk.QueryMaxAcution(C.GoString(txb))
 	return C.CString(output)
 }
+
+
+//export QueryAllAcution
 func QueryAllAcution(txb *C.char) *C.char {
 	output := jsdk.QueryAllAcution(C.GoString(txb))
 	return C.CString(output)
