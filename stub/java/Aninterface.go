@@ -56,18 +56,34 @@ func AcutionAdBackground(txb *C.char) *C.char {
 	return C.CString(output)
 }
 
+//for AcutionAdBackground
+//func AcutionAdBackground(txb string) string {
+//	output := jsdk.AcutionAdBackground(txb)
+//	return output
+//}
+
+
 //export QueryMaxAcution
 func QueryMaxAcution(txb *C.char) *C.char {
 	output := jsdk.QueryMaxAcution(C.GoString(txb))
 	return C.CString(output)
 }
-
+//for QueryMaxAcution
+//func QueryMaxAcution(txb string) string {
+//	output := jsdk.QueryMaxAcution(txb)
+//	return output
+//}
 
 //export QueryAllAcution
 func QueryAllAcution(txb *C.char) *C.char {
 	output := jsdk.QueryAllAcution(C.GoString(txb))
 	return C.CString(output)
 }
+//for QueryAllAcution
+//func QueryAllAcution(txb string) string {
+//	output := jsdk.QueryAllAcution(txb)
+//	return output
+//}
 
 //export InvestAdBackground
 func InvestAdBackground(txb *C.char) *C.char {
@@ -86,6 +102,11 @@ func Distribution(articleHash *C.char) *C.char {
 	output := jsdk.Distribution(C.GoString(articleHash))
 	return C.CString(output)
 }
+//for Distribution
+//func Distribution(articleHash string) string {
+//	output := jsdk.Distribution(articleHash)
+//	return output
+//}
 
 //for BuyAd
 //func BuyAd(articleHash, coins, buyer string) string {
