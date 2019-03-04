@@ -4,23 +4,20 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
-	"github.com/QOSGroup/qstars/client/context"
-	"github.com/QOSGroup/qstars/x/common"
-	"github.com/QOSGroup/qstars/x/jianqian"
-	"log"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	qstartypes "github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/x/common"
+	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/QOSGroup/qstars/x/jianqian/tx"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"log"
+	"strings"
 )
 
 //type SendResult struct {
@@ -62,65 +59,35 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 	qosnonce++
 	fmt.Println("qosnonce", qosnonce)
 
-
-
-
-
-
-
-
-
-	var ccs []types.BaseCoin
-	for _, coin := range amount {
-		ccs = append(ccs, types.BaseCoin{
-			Name:   COINNAME,
-			Amount: types.NewInt(coin.Int64()),
+	var ccs []jianqian.AoeAccount
+	for i, coin := range amount {
+		ccs = append(ccs, jianqian.AoeAccount{
+			Address: to[i],
+			Amount:  types.NewInt(coin.Int64()),
 		})
 	}
 
 	//合并接收地址
-	addmap:=make(map[string]types.BaseCoin)
-	for i,addv:=range to{
-		if v,ok:=addmap[addv.String()];ok{
+	addmap := make(map[string]jianqian.AoeAccount)
+	for i, addv := range to {
+		if v, ok := addmap[addv.String()]; ok {
 			v.Amount.Add(ccs[i].Amount)
-		}else{
-			addmap[addv.String()]=ccs[i]
+		} else {
+			addmap[addv.String()] = ccs[i]
 		}
 	}
-
-	var newto []types.Address
-	var newccs []types.BaseCoin
-	for k, v := range addmap {
-		addres, _ := qstartypes.AccAddressFromBech32(k)
-		newto = append(newto, addres)
+	var newccs []jianqian.AoeAccount
+	for _, v := range addmap {
 		newccs = append(newccs, v)
 	}
 
-	transtx := tx.NewTransfer([]types.Address{from}, newto, newccs)
-	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
+	transtx := NewDispatchAOE(newccs, from, to, amount, causecode, causeStr, types.ZeroInt())
+
 	var msg *txs.TxStd
 
-	if directTOQOS == true {
-		//直接连接公链
-		msg = genStdSendTx(cdc, transtx, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QOSChainID, qosnonce)
+	msg = genStdSendTx(cdc, transtx, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QOSChainID, qosnonce)
 
-	} else {
-		//走跨链
-		var qscnonce int64 = 0
-		qscacc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
-		if err != nil {
-			qscnonce = 0
-		} else {
-			qscnonce = int64(qscacc.Nonce)
-		}
-		qscnonce++
-		fmt.Println("qscnonce", qscnonce)
-
-		msg = genStdWrapTx(cdc, transtx, priv, qosnonce, qscnonce, from, to, amount, causecode, causeStr)
-	}
-	//	chainid := ctx.QOSChainID
-	//chainid := config.GetCLIContext().Config.QSCChainID
-	return wrapperResult(cdc, msg, directTOQOS)
+	return wrapperResult(cdc, msg)
 }
 
 //封装公链交易信息
@@ -138,57 +105,19 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 }
 
 //封装奖励发放跨链交易信息
-func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, qosnonce, qscnonce int64, from types.Address, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) *txs.TxStd {
-	stx := genStdSendTx(cdc, sendTx, priKey, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QSCChainID, qosnonce)
-	//tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
-	dispatchTx := NewDispatchAOE(stx, from, to, amount, causecode, causeStr, types.ZeroInt())
-	return genStdSendTx(cdc, dispatchTx, priKey, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID, qscnonce)
-}
+//func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, qosnonce, qscnonce int64, from types.Address, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) *txs.TxStd {
+//	stx := genStdSendTx(cdc, sendTx, priKey, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QSCChainID, qosnonce)
+//	//tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
+//	dispatchTx := NewDispatchAOE(stx, from, to, amount, causecode, causeStr, types.ZeroInt())
+//	return genStdSendTx(cdc, dispatchTx, priKey, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID, qscnonce)
+//}
 
-func wrapperResult(cdc *wire.Codec, msg *txs.TxStd, directTOQOS bool) string {
+func wrapperResult(cdc *wire.Codec, msg *txs.TxStd) string {
 	var cliCtx context.CLIContext
-	if directTOQOS == true {
-		cliCtx = *config.GetCLIContext().QOSCliContext
-	} else {
-		cliCtx = *config.GetCLIContext().QSCCliContext
-	}
+	cliCtx = *config.GetCLIContext().QSCCliContext
 	hash, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
 	if err != nil {
-		return common.NewErrorResult(COINS_SENDTX_ERR, commitresult.Height, commitresult.Hash.String(), err.Error()).Marshal()
-	}
-	height := strconv.FormatInt(commitresult.Height, 10)
-	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
-	if err != nil {
-		waittime = 30
-	}
-	if directTOQOS == false {
-		counter := 0
-		for {
-			if counter >= waittime {
-				log.Println("time out")
-				return common.ResultQOSTimeoutError(commitresult.Height, commitresult.Hash.String()).Marshal()
-			}
-			resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
-			log.Printf("fetchResult result:%s, err:%+v\n", resultstr, err)
-			if err != nil {
-				log.Printf("fetchResult error:%s\n", err.Error())
-				return common.NewErrorResult(COINS_FETCH_RESULT_ERR, commitresult.Height, commitresult.Hash.String(), err.Error()).Marshal()
-			}
-
-			if resultstr != "" && resultstr != (CoinsStub{}).Name() {
-				log.Printf("fetchResult result:[%+v]\n", resultstr)
-				rs := []rune(resultstr)
-				index1 := strings.Index(resultstr, " ")
-				reason := string(rs[index1+1:])
-				code := string(rs[:index1])
-				result := common.NewErrorResult(code, commitresult.Height, commitresult.Hash.String(), reason)
-				result.Hash = hash
-				result.Height = commitresult.Height
-				return result.Marshal()
-			}
-			time.Sleep(500 * time.Millisecond)
-			counter++
-		}
+		return common.NewErrorResult(COINS_SENDTX_ERR, 0, "", err.Error()).Marshal()
 	}
 	return common.NewSuccessResult(cdc, commitresult.Height, hash, hash).Marshal()
 }
@@ -202,7 +131,6 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd, directTOQOS bool) string {
 func DispatchAOE(cdc *wire.Codec, ctx *config.CLIConfig, address, coins, causecodes, causestrings, gas string) string {
 	if address == "" || coins == "" || causecodes == "" || causestrings == "" {
 		return common.NewErrorResult(COINS_PARA_LEN_ERR, 0, "", "Dispatch AOE parameters must not empty").Marshal()
-		//return "{Code:\"1\",Reason:\"Parameter cannot be empty \"}"
 	}
 	addrs := strings.Split(address, "|")
 	addlen := len(addrs)

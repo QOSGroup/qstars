@@ -4,7 +4,6 @@ package investad
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
@@ -114,15 +113,15 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 }
 
 // InvestAd 投资广告
-func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosnonce, qscnonce int64) string {
+func InvestAd(cdc *wire.Codec, chainId, articleHash, amount, privatekey,otheraddr string, qscnonce int64) string {
 	var result common.Result
 	result.Code = common.ResultCodeSuccess
 
-	tx, err := investAd(cdc, chainId, articleHash, coins, privatekey, qosnonce, qscnonce)
-	if err != nil {
-		log.Printf("investAd err:%s", err.Error())
-		result.Code = common.ResultCodeInternalError
-		result.Reason = err.Error()
+	tx, berr := investAd(cdc, chainId, articleHash, amount, privatekey, otheraddr, qscnonce)
+	if berr != nil {
+		log.Printf("investAd err:%s", berr.Error())
+		result.Code = berr.Code()
+		result.Reason = berr.Error()
 		return result.Marshal()
 	}
 
@@ -139,52 +138,32 @@ func InvestAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, q
 }
 
 // investAd 投资广告
-func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosnonce, qscnonce int64) (*txs.TxStd, error) {
-	cs, err := types.ParseCoins(coins)
+func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey ,otheraddr string, qscnonce int64) (*txs.TxStd, *InvestadErr) {
+	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, articleHash)
+	log.Printf("investad.investAd QueryArticle article:%+v, err:%+v", article, err)
 	if err != nil {
-		return nil, err
+		return nil, NewInvestadErr(InvalidArticleErrCode, err.Error())
 	}
-
-	for _, v := range cs {
-		if v.Denom != coinsName {
-			return nil, errors.New("only support AOE")
-		}
+	amount,ok:=qbasetypes.NewIntFromString(coins)
+	if !ok{
+		return nil, NewInvestadErr(CoinsErrCode, err.Error())
 	}
-
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privatekey, cdc)
-	investor, err := types.AccAddressFromBech32(addrben32)
-	var ccs []qbasetypes.BaseCoin
-	for _, coin := range cs {
-		ccs = append(ccs, qbasetypes.BaseCoin{
-			Name:   coin.Denom,
-			Amount: qbasetypes.NewInt(coin.Amount.Int64()),
-		})
-	}
-	qosnonce += 1
-
-	transferTx := NewTransfer(investor, tempAddr, ccs)
-	// TODO set zero, temp
+	investor, _ := types.AccAddressFromBech32(addrben32)
 	gas := qbasetypes.NewInt(int64(0))
-	stx := txs.NewTxStd(transferTx, config.GetCLIContext().Config.QOSChainID, gas)
-	signature, _ := stx.SignTx(priv, qosnonce, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QOSChainID)
-	stx.Signature = []txs.Signature{txs.Signature{
-		Pubkey:    priv.PubKey(),
-		Signature: signature,
-		Nonce:     qosnonce,
-	}}
-
 	qscnonce += 1
 	it := &InvestTx{}
 	it.ArticleHash = []byte(articleHash)
-	it.Std = stx
-	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
+	it.Invest = amount
+	it.Address=investor
+	it.OtherAddr=otheraddr
+	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, gas)
 	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
 		Signature: signature2,
 		Nonce:     qscnonce,
 	}}
-
 	return tx2, nil
 }
 

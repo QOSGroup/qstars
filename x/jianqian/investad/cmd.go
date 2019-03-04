@@ -23,6 +23,7 @@ const (
 	flagInvestor    = "investor"
 	flagCoins       = "coins"
 	flagArticleHash = "articleHash"
+	flagOtherAddr = "otheraddr"
 	flagChainid     = "chainid"
 )
 
@@ -64,6 +65,7 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 			chainid := viper.GetString(flagChainid)
 			investor := viper.GetString(flagInvestor) //Teddy changes
 			coins := viper.GetString(flagCoins)
+			otheraddr:=viper.GetString(flagOtherAddr)
 
 			_, addrben32, _ := utility.PubAddrRetrievalFromAmino(investor, cdc)
 			from, err := types.AccAddressFromBech32(addrben32)
@@ -71,19 +73,12 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			qosacc, err := getQOSAcc(key, cdc)
-			if err != nil {
-				return err
-			}
-			qosnonce := int64(qosacc.Nonce)
-
 			qscacc, err := getQSCAcc(key, cdc)
 			if err != nil {
 				return err
 			}
 			qscnonce := int64(qscacc.Nonce)
-
-			tx := InvestAd(cdc, chainid, articleHash, coins, investor, qosnonce, qscnonce)
+			tx := InvestAd(cdc, chainid, articleHash, coins, investor, otheraddr, qscnonce)
 			fmt.Printf("InvestAd:%s\n", tx)
 			var ri common.Result
 			if err := json.Unmarshal([]byte(tx), &ri); err != nil {

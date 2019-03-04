@@ -30,6 +30,9 @@ type CLIConfig struct {
 	Adbuyermock string `mapstructure:"adbuyermock"`
 	Banker      string `mapstructure:"banker"`
 	Dappowner   string `mapstructure:"dappowner"`
+
+	OrgAuthor_Other string
+	Community_Other string
 }
 
 func GetCLIContext() QStarsClientContext {

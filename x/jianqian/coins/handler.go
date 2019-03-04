@@ -5,7 +5,7 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qstars/config"
+	//"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -15,8 +15,7 @@ import (
 
 //活动奖励
 type DispatchAOETx struct {
-	Wrapper *txs.TxStd //已封装好的 TxCreateQSC 结构体
-
+	Wrapper    []jianqian.AoeAccount//已封装好的 转几明细
 	From       types.Address
 	Address    []types.Address
 	CoinAmount []types.BigInt
@@ -24,6 +23,7 @@ type DispatchAOETx struct {
 	CausesStr  []string
 	Gas        types.BigInt
 }
+
 
 func (tx DispatchAOETx) ValidateData(ctx context.Context) error {
 	if len(tx.Address) == 0 {
@@ -59,14 +59,20 @@ func (tx DispatchAOETx) Exec(ctx context.Context) (result types.Result, crossTxQ
 	kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
 	kvMapper.Set([]byte(key), CoinsStub{}.Name())
 
-	//跨链
-	crossTxQcps = &txs.TxQcp{}
-	crossTxQcps.TxStd = tx.Wrapper
-	crossTxQcps.To = config.GetServerConf().QOSChainName
-	crossTxQcps.Extends=key
-	result = types.Result{
-		Code: types.ABCICodeOK,
-	}
+	//批量追加余额
+	aoeAccMapper := ctx.Mapper(jianqian.AoeAccountMapperName).(*jianqian.AoeAccountMapper)
+	aoeAccMapper.AddBalanceBatch(tx.Wrapper)
+
+
+
+	////跨链
+	//crossTxQcps = &txs.TxQcp{}
+	//crossTxQcps.TxStd = tx.Wrapper
+	//crossTxQcps.To = config.GetServerConf().QOSChainName
+	//crossTxQcps.Extends=key
+	//result = types.Result{
+	//	Code: types.CodeOK,
+	//}
 	return
 }
 
@@ -80,7 +86,10 @@ func (tx DispatchAOETx) GetGasPayer() types.Address {
 	return types.Address{}
 }
 func (tx DispatchAOETx) GetSignData() (ret []byte) {
-	ret = append(ret, tx.Wrapper.ITx.GetSignData()...)
+	for _, v := range tx.Wrapper{
+		ret = append(ret, v.Address...)
+		ret = append(ret,types.Int2Byte(v.Amount.Int64())...)
+	}
 	ret = append(ret, []byte(tx.From)...)
 	for i, _ := range tx.Address {
 		ret = append(ret, tx.Address[i]...)
@@ -95,7 +104,7 @@ func (tx DispatchAOETx) Name() string {
 	return "DispatchAOETx"
 }
 
-func NewDispatchAOE(Wrapper *txs.TxStd, From types.Address, to []types.Address, coinAmount []types.BigInt, causecode, causestr []string, gas types.BigInt) DispatchAOETx {
+func NewDispatchAOE(Wrapper []jianqian.AoeAccount, From types.Address, to []types.Address, coinAmount []types.BigInt, causecode, causestr []string, gas types.BigInt) DispatchAOETx {
 
 	return DispatchAOETx{Wrapper, From, to, coinAmount, causecode, causestr, gas}
 }

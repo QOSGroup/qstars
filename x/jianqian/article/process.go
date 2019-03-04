@@ -15,7 +15,6 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"strconv"
-	"strings"
 )
 
 const (
@@ -62,19 +61,21 @@ const (
 //shareInvestor          投资者收入比例(必填)
 //endInvestDate          投资结束时间(必填) 单位 小时
 //endBuyDate             广告位购买结果时间(必填) 单位 小时
-func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, originalAuthor, articleHash, shareAuthor, shareOriginalAuthor,
-	shareCommunity, shareInvestor, endInvestDate, endBuyDate string) string {
+func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, authorOtherAddr ,articleType, articleHash, shareAuthor, shareOriginalAuthor,
+	shareCommunity, shareInvestor, endInvestDate, endBuyDate string,coinType string) string {
+
 	privkey := tx.GetConfig().Dappowner
+
+
 	authorAddr, err := qstartypes.AccAddressFromBech32(authorAddress)
 	if err != nil {
 		return common.NewErrorResult(ARTICLE_ADDRES_ERR, 0, "", err.Error()).Marshal()
 	}
-	var originaladdr types.Address
-	if strings.TrimSpace(originalAuthor) != "" {
-		originaladdr, _ = qstartypes.AccAddressFromBech32(originalAuthor)
-		if err != nil {
-			return common.NewErrorResult(ARTICLE_ORIGIN_ERR, 0, "", err.Error()).Marshal()
-		}
+
+
+	articletype, err := strconv.Atoi(articleType)
+	if err != nil {
+		return common.NewErrorResult(ARTICLE_AUTHOR_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
 
 	authshare, err := strconv.Atoi(shareAuthor)
@@ -107,6 +108,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	if buyhours <= 0 {
 		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR, 0, "", "广告竞拍期需大于0").Marshal()
 	}
+
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
 	if err != nil {
@@ -117,7 +119,9 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 		//非作者本人私钥
 		return common.NewErrorResult(ARTICLE_PRIV_AUTHOR_ERR, 0, "", "非作者本人私钥").Marshal()
 	}
+
 	key := account.AddressStoreKey(from)
+
 	var nonce int64 = 0
 	acc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
 	if err != nil {
@@ -129,12 +133,12 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 	nonce++
 	fromchainid := config.GetCLIContext().Config.QSCChainID
 	tochainid := config.GetCLIContext().Config.QOSChainID
-	tx := NewArticlesTx(authorAddr, originaladdr, articleHash, authshare, origshare, commushare, invesshare, investhours, buyhours, types.ZeroInt())
+	tx := NewArticlesTx(authorAddr, authorOtherAddr,articletype, articleHash, authshare, origshare, commushare, invesshare, investhours, buyhours,coinType, types.ZeroInt())
 	txsd := genStdSendTx(cdc, tx, priv, fromchainid, tochainid, nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	_, commitresult, err1 := utils.SendTx(cliCtx, cdc, txsd)
 	if err1 != nil {
-		return common.NewErrorResult(ARTICLE_SENDTX_ERR, commitresult.Height, commitresult.Hash.String(), err1.Error()).Marshal()
+		return common.NewErrorResult(ARTICLE_SENDTX_ERR, 0, "", err1.Error()).Marshal()
 	}
 	return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), "").Marshal()
 }

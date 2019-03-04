@@ -39,8 +39,8 @@ func DispatchCoins(addrs, coins, causestrings, causecodes, gas *C.char) *C.char 
 //}
 
 //export NewArticle
-func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate *C.char) *C.char {
-	output := jsdk.NewArticle(C.GoString(authorAddress), C.GoString(originAuthor), C.GoString(articleHash), C.GoString(shareAuthor), C.GoString(shareOriginAuthor), C.GoString(shareCommunity), C.GoString(shareInvestor), C.GoString(endInvestDate), C.GoString(endBuyDate))
+func NewArticle(authorAddress, authorOtherAddr, articleType, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate, cointype *C.char) *C.char {
+	output := jsdk.NewArticle(C.GoString(authorAddress), C.GoString(authorOtherAddr), C.GoString(articleType), C.GoString(articleHash), C.GoString(shareAuthor), C.GoString(shareOriginAuthor), C.GoString(shareCommunity), C.GoString(shareInvestor), C.GoString(endInvestDate), C.GoString(endBuyDate),C.GoString(cointype))
 	return C.CString(output)
 }
 
@@ -49,6 +49,20 @@ func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOrig
 //	output := jsdk.NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate)
 //	return output
 //}
+
+func AcutionAdBackground(txb *C.char) *C.char {
+	output := jsdk.AcutionAdBackground(C.GoString(txb))
+	return C.CString(output)
+}
+
+func QueryMaxAcution(txb *C.char) *C.char {
+	output := jsdk.QueryMaxAcution(C.GoString(txb))
+	return C.CString(output)
+}
+func QueryAllAcution(txb *C.char) *C.char {
+	output := jsdk.QueryAllAcution(C.GoString(txb))
+	return C.CString(output)
+}
 
 //export InvestAdBackground
 func InvestAdBackground(txb *C.char) *C.char {
@@ -62,9 +76,9 @@ func InvestAdBackground(txb *C.char) *C.char {
 //	return output
 //}
 
-//export BuyAd
-func BuyAd(articleHash, coins, buyer *C.char) *C.char {
-	output := jsdk.BuyAd(C.GoString(articleHash), C.GoString(coins), C.GoString(buyer))
+//export Distribution
+func Distribution(articleHash *C.char) *C.char {
+	output := jsdk.Distribution(C.GoString(articleHash))
 	return C.CString(output)
 }
 
@@ -93,11 +107,11 @@ func RetrieveInvestors(articleHash *C.char) *C.char {
 //	return output
 //}
 
-//export RetrieveBuyer
-func RetrieveBuyer(articleHash *C.char) *C.char {
-	output := jsdk.RetrieveBuyer(C.GoString(articleHash))
-	return C.CString(output)
-}
+////export RetrieveBuyer
+//func RetrieveBuyer(articleHash *C.char) *C.char {
+//	output := jsdk.RetrieveBuyer(C.GoString(articleHash))
+//	return C.CString(output)
+//}
 
 //for RetrieveBuyer
 //func RetrieveBuyer(articleHash string) string {

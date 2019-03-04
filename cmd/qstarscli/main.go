@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/QOSGroup/qstars/star"
+	"github.com/QOSGroup/qstars/x/jianqian/auction"
 
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/investad"
@@ -82,6 +83,7 @@ func main() {
 	//
 	rootCmd.AddCommand(
 		client.PostCommands(
+			auction.NewAuctionCmd(cdc),
 			coins.DispatchAOECmd(cdc),
 			article.NewArticleCmd(cdc),
 			article.QueryArticleCmd(cdc),
