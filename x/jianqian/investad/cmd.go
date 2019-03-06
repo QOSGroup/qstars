@@ -24,7 +24,6 @@ const (
 	flagCoins       = "coins"
 	flagArticleHash = "articleHash"
 	flagOtherAddr = "otheraddr"
-	flagChainid     = "chainid"
 )
 
 // InvestadCmd will create a send tx and sign it with the given key.
@@ -62,10 +61,9 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 			}()
 
 			articleHash := viper.GetString(flagArticleHash)
-			chainid := viper.GetString(flagChainid)
 			investor := viper.GetString(flagInvestor) //Teddy changes
 			coins := viper.GetString(flagCoins)
-			otheraddr:=viper.GetString(flagOtherAddr)
+			otheraddr := viper.GetString(flagOtherAddr)
 
 			_, addrben32, _ := utility.PubAddrRetrievalFromAmino(investor, cdc)
 			from, err := types.AccAddressFromBech32(addrben32)
@@ -73,12 +71,15 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			var qscnonce int64 = 0
 			qscacc, err := getQSCAcc(key, cdc)
 			if err != nil {
-				return err
+				qscnonce = 0
+			} else {
+				qscnonce = int64(qscacc.Nonce)
 			}
-			qscnonce := int64(qscacc.Nonce)
-			tx := InvestAd(cdc, chainid, articleHash, coins, investor, otheraddr, qscnonce)
+
+			tx := InvestAd(cdc, articleHash, coins, investor, otheraddr, qscnonce)
 			fmt.Printf("InvestAd:%s\n", tx)
 			var ri common.Result
 			if err := json.Unmarshal([]byte(tx), &ri); err != nil {
@@ -98,7 +99,7 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagArticleHash, "", "articleHash")
-	cmd.Flags().String(flagChainid, "", "Chainid")
+	cmd.Flags().String(flagOtherAddr, "", "otheraddr")
 	cmd.Flags().String(flagInvestor, "", "investor private key")
 	cmd.Flags().String(flagCoins, "", "coins 1AOE")
 

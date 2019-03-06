@@ -49,21 +49,21 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 		return common.NewErrorResult(COINS_PRIV_ERR, 0, "", err.Error()).Marshal()
 	}
 	key := account.AddressStoreKey(from)
-	var qosnonce int64 = 0
-	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
+	var qscnonce int64 = 0
+	acc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
 	if err != nil {
-		qosnonce = 0
+		qscnonce = 0
 	} else {
-		qosnonce = int64(acc.Nonce)
+		qscnonce = int64(acc.Nonce)
 	}
-	qosnonce++
-	fmt.Println("qosnonce", qosnonce)
+	qscnonce++
+	fmt.Println("qosnonce", qscnonce)
 
 	var ccs []jianqian.AoeAccount
 	for i, coin := range amount {
 		ccs = append(ccs, jianqian.AoeAccount{
-			Address: to[i],
-			Amount:  types.NewInt(coin.Int64()),
+			Address: to[i].String(),
+			Amount:  coin,
 		})
 	}
 
@@ -85,7 +85,7 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 
 	var msg *txs.TxStd
 
-	msg = genStdSendTx(cdc, transtx, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QOSChainID, qosnonce)
+	msg = genStdSendTx(cdc, transtx, priv, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID, qscnonce)
 
 	return wrapperResult(cdc, msg)
 }
@@ -197,3 +197,16 @@ func GetCoins(cdc *wire.Codec, ctx *context.CLIContext, tx string) string {
 	}
 	return common.NewSuccessResult(cdc, 0, "", coins).Marshal()
 }
+
+
+func GetBlance(cdc *wire.Codec, ctx *context.CLIContext, tx string) string {
+	coins, err := jianqian.QueryBlance(cdc, ctx, tx)
+	if err != nil {
+		return common.NewErrorResult(COINS_QUERY_ERR, 0, "", err.Error()).Marshal()
+	}
+	if coins == nil {
+		return common.NewErrorResult(COINS_QUERY_ERR, 0, "", fmt.Sprintf("query blance failure,%s not exist", tx)).Marshal()
+	}
+	return common.NewSuccessResult(cdc, 0, "", coins).Marshal()
+}
+

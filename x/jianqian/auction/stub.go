@@ -68,7 +68,7 @@ func (cstub AuctionStub) ResultNotify(ctx context.Context, txQcpResult interface
 		in := txQcpResult.(*txs.QcpTxResult)
 		key:=in.QcpOriginalExtends
 		auctionMapper := ctx.Mapper(jianqian.AuctionMapperName).(*jianqian.AuctionMapper)
-		tmpacution, ok := auctionMapper.GetTempAuction([]byte(key))
+		tmpacution, ok := auctionMapper.GetTempAuction(key)
 		if !ok {
 			log.Printf("acution.AuctionStub unexpected buyerSta.")
 			return result

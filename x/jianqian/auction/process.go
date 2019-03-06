@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
@@ -36,17 +35,16 @@ const (
 	AUCTION_QUERY_ERR        = "505" //查询跨链结果错误
 )
 
-
-func AcutionAd(cdc *wire.Codec, articleHash, address, otherAddr, coinsType, coinAmount string,qscnonce, qosnonce int64) string {
+func AcutionAd(cdc *wire.Codec, articleHash, address, otherAddr, coinsType, coinAmount string, qscnonce, qosnonce int64) string {
 	var result common.Result
 	result.Code = common.ResultCodeSuccess
-	amount,ok:=qbasetypes.NewIntFromString(coinAmount)
-	if !ok{
+	amount, ok := qbasetypes.NewIntFromString(coinAmount)
+	if !ok {
 		result.Code = common.ResultCodeInternalError
 		result.Reason = "AcutionAd invalid amount"
 		return result.Marshal()
 	}
-	tx,err:=acutionAd(cdc,articleHash,address,otherAddr,coinsType,amount,qscnonce,qosnonce)
+	tx, err := acutionAd(cdc, articleHash, address, otherAddr, coinsType, amount, qscnonce, qosnonce)
 	if err != nil {
 		log.Printf("AcutionAd err:%s", err.Error())
 		result.Code = common.ResultCodeInternalError
@@ -78,11 +76,12 @@ func acutionAd(cdc *wire.Codec, articleHash, private, otherAddr, coinsType strin
 	if err != nil {
 		return nil, err
 	}
+
 	if articleHash == "" {
 		return nil, errors.New("invalid article hash")
 	}
-	article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, articleHash)
-	log.Printf("AcutionAd. QueryArticle article:%+v, err:%+v", article, err)
+	//article, err := jianqian.QueryArticle(cdc, config.GetCLIContext().QSCCliContext, articleHash)
+	//log.Printf("AcutionAd. QueryArticle article:%+v, err:%+v", article, err)
 	if err != nil {
 		return nil, err
 	}
@@ -110,14 +109,14 @@ func acutionAd(cdc *wire.Codec, articleHash, private, otherAddr, coinsType strin
 
 	qscnonce += 1
 	it := &AuctionTx{}
-	it.ArticleHash = []byte(articleHash)
+	it.ArticleHash = articleHash
 	it.Wrapper = stx
-	it.Address=sendAddress
-	it.OtherAddr=otherAddr
-	it.CoinsType=coinsType
-	it.Gas=qbasetypes.ZeroInt()
-	it.CoinAmount=coinAmount
-	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID,qbasetypes.ZeroInt())
+	it.Address = sendAddress
+	it.OtherAddr = otherAddr
+	it.CoinsType = coinsType
+	it.Gas = qbasetypes.ZeroInt()
+	it.CoinAmount = coinAmount
+	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, qbasetypes.ZeroInt())
 	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
@@ -129,73 +128,79 @@ func acutionAd(cdc *wire.Codec, articleHash, private, otherAddr, coinsType strin
 }
 
 //竞拍广告 提交上链
-func AcutionAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) string {
+func AcutionAdBackground(cdc *wire.Codec, txb string, timeout time.Duration, coinType string) string {
+
 	ts := new(txs.TxStd)
 	err := cdc.UnmarshalJSON([]byte(txb), ts)
-	fmt.Printf("AcutionAdBackground ts:%+v, txb:%s\n", ts, txb)
+
 	if err != nil {
 		return common.InternalError(err.Error()).Marshal()
 	}
 
+	//判断是否跨链
+	auction := ts.ITx.(*AuctionTx)
+
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	_, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
-	fmt.Printf("SendTx commitresult:%+v, err:%+v \n", commitresult, err)
 	if err != nil {
 		return common.NewErrorResult(AUCTION_PARA_LEN_ERR, 0, "", err.Error()).Marshal()
 	}
+	if strings.ToUpper(strings.TrimSpace(auction.CoinsType)) == "QOS" {
+		height := strconv.FormatInt(commitresult.Height, 10)
+		code := common.ResultCodeSuccess
+		var reason string
+		var result interface{}
 
-	height := strconv.FormatInt(commitresult.Height, 10)
-	code := common.ResultCodeSuccess
-	var reason string
-	var result interface{}
-
-	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
-	if err != nil {
-		panic("WaitingForQosResult should be able to convert to integer." + err.Error())
-	}
-	counter := 0
-
-	for {
-		resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
-		log.Printf("fetchResult result:%s, err:%+v\n", resultstr, err)
+		waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
 		if err != nil {
-			log.Printf("fetchResult error:%s\n", err.Error())
-			reason = err.Error()
-			code = common.ResultCodeInternalError
-			break
+			panic("WaitingForQosResult should be able to convert to integer." + err.Error())
 		}
+		counter := 0
 
-		if resultstr != "" && resultstr != (AuctionStub{}).Name() {
-			log.Printf("fetchResult result:[%+v]\n", resultstr)
-			rs := []rune(resultstr)
-			index1 := strings.Index(resultstr, " ")
-
-			reason = ""
-			result = string(rs[index1+1:])
-			code = string(rs[:index1])
-			break
-		}
-
-		if counter >= waittime {
-			log.Println("time out")
-			result = "time out"
-			if resultstr == "" {
-				code = common.ResultCodeQstarsTimeout
-			} else {
-				code = common.ResultCodeQOSTimeout
+		for {
+			resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
+			log.Printf("fetchResult result:%s, err:%+v\n", resultstr, err)
+			if err != nil {
+				log.Printf("fetchResult error:%s\n", err.Error())
+				reason = err.Error()
+				code = common.ResultCodeInternalError
+				break
 			}
-			break
+
+			if resultstr != "" && resultstr != (AuctionStub{}).Name() {
+				log.Printf("fetchResult result:[%+v]\n", resultstr)
+				rs := []rune(resultstr)
+				index1 := strings.Index(resultstr, " ")
+
+				reason = ""
+				result = string(rs[index1+1:])
+				code = string(rs[:index1])
+				break
+			}
+
+			if counter >= waittime {
+				log.Println("time out")
+				result = "time out"
+				if resultstr == "" {
+					code = common.ResultCodeQstarsTimeout
+				} else {
+					code = common.ResultCodeQOSTimeout
+				}
+				break
+			}
+
+			time.Sleep(500 * time.Millisecond)
+			counter++
 		}
 
-		time.Sleep(500 * time.Millisecond)
-		counter++
-	}
+		if code != common.ResultCodeSuccess {
+			return common.NewErrorResult(code, commitresult.Height, commitresult.Hash.String(), reason).Marshal()
+		}
+		return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), result).Marshal()
 
-	if code != common.ResultCodeSuccess {
-		return common.NewErrorResult(code, commitresult.Height, commitresult.Hash.String(), reason).Marshal()
 	}
+	return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), "").Marshal()
 
-	return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), result).Marshal()
 }
 
 func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
@@ -223,7 +228,7 @@ func GetResultKey(heigth1 string, tx1 string) string {
 	return qstarskey
 }
 
-func QueryMaxAcution(cdc *wire.Codec, ctx *context.CLIContext, key string) string {
+func QueryMaxAcution(cdc *wire.Codec, key string) string {
 	auctionMap, err := jianqian.QueryAllAcution(cdc, config.GetCLIContext().QSCCliContext, key)
 	if err != nil {
 		return common.NewErrorResult(AUCTION_QUERY_ERR, 0, "", err.Error()).Marshal()
@@ -238,7 +243,7 @@ func QueryMaxAcution(cdc *wire.Codec, ctx *context.CLIContext, key string) strin
 	return common.NewSuccessResult(cdc, 0, "", auction).Marshal()
 }
 
-func QueryAllAcution(cdc *wire.Codec, ctx *context.CLIContext, key string) string {
+func QueryAllAcution(cdc *wire.Codec, key string) string {
 	auctionMap, err := jianqian.QueryAllAcution(cdc, config.GetCLIContext().QSCCliContext, key)
 	if err != nil {
 		return common.NewErrorResult(AUCTION_QUERY_ERR, 0, "", err.Error()).Marshal()

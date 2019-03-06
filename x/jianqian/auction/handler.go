@@ -20,7 +20,7 @@ import (
 //广告竞买
 type AuctionTx struct {
 	Wrapper      *txs.TxStd     //已封装好的 TxTransfer 结构体
-	ArticleHash  []byte         // 文章hash
+	ArticleHash  string         // 文章hash
 	Address      types.Address  //qos地址
 	CoinsType    string         //币种
 	OtherAddr    string         //转出方地址
@@ -37,6 +37,9 @@ func (tx AuctionTx) ValidateData(ctx context.Context) error {
 	}
 	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
 	a := articleMapper.GetArticle(string(tx.ArticleHash))
+	if a==nil{
+		return errors.New("竞拍作品不存在")
+	}
 
 	if err := checkArticleBase(a, ctx.BlockHeader().Time); err != nil {
 		return err
@@ -96,6 +99,7 @@ func (tx AuctionTx) Exec(ctx context.Context) (result types.Result, crossTxQcps 
 		auction, ok := auctionMapper.GetAuctionByAddress(tx.ArticleHash, tx.Address.String())
 		if ok {
 			auction.Amount = auction.Amount.Add(tx.CoinAmount)
+			auction.AuctionTime=ctx.BlockHeader().Time
 		} else {
 			auction=jianqian.Auction{tx.ArticleHash,tx.Address,tx.CoinsType,tx.OtherAddr,tx.CoinAmount,ctx.BlockHeader().Time}
 		}
@@ -114,7 +118,9 @@ func (tx AuctionTx) GetGasPayer() types.Address {
 	return types.Address{}
 }
 func (tx AuctionTx) GetSignData() (ret []byte) {
-	ret = append(ret, tx.Wrapper.ITx.GetSignData()...)
+	if tx.Wrapper!=nil {
+		ret = append(ret, tx.Wrapper.ITx.GetSignData()...)
+	}
 	ret = append(ret, []byte(tx.Address)...)
 	ret = append(ret, tx.CoinsType...)
 	ret = append(ret, tx.OtherAddr...)
@@ -126,7 +132,7 @@ func (tx AuctionTx) Name() string {
 	return "AuctionTx"
 }
 
-func NewAuctionTx(wrapper *txs.TxStd,articleHash []byte, address types.Address, CoinsType string, OtherAddr string,coinAmount types.BigInt, gas types.BigInt) AuctionTx {
+func NewAuctionTx(wrapper *txs.TxStd,articleHash string, address types.Address, CoinsType string, OtherAddr string,coinAmount types.BigInt, gas types.BigInt) AuctionTx {
 
 	return AuctionTx{wrapper,articleHash, address, CoinsType,OtherAddr, coinAmount, gas}
 }

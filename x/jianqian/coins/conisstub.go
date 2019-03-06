@@ -22,6 +22,8 @@ func NewCoinsStub() CoinsStub {
 func (cstub CoinsStub) StartX(base *baseapp.QstarsBaseApp) error {
 	var coinsMapper = jianqian.NewCoinsMapper(jianqian.CoinsMapperName)
 	base.Baseapp.RegisterMapper(coinsMapper)
+	var aoeMapper = jianqian.NewAccountMapper(jianqian.AoeAccountMapperName)
+	base.Baseapp.RegisterMapper(aoeMapper)
 	return nil
 }
 func (cstub CoinsStub) EndBlockNotify(ctx context.Context) {

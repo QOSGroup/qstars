@@ -70,3 +70,29 @@ func QueryCoinsCmd(cdc *wire.Codec) *cobra.Command {
 
 	return cmd
 }
+
+func QueryBlanceCmd(cdc *wire.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryBlance",
+		Short: "query  blance ",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Println(r)
+				}
+			}()
+
+			tx := viper.GetString(flag_address)
+			result:= GetBlance(cdc,config.GetCLIContext().QSCCliContext,tx)
+
+			fmt.Println(result)
+
+			return nil
+		},
+	}
+
+	cmd.Flags().String(flag_address, "", "query coins by tx")
+
+	return cmd
+}
+

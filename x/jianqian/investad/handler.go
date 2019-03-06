@@ -15,7 +15,7 @@ import (
 
 type InvestTx struct {
 	Address      qbasetypes.Address `json:"address"`      // 投资者地址
-	OtherAddr    string             `json:"address"`      // 投资者其他地址
+	OtherAddr    string             `json:"otherAddr"`      // 投资者其他地址
 	Invest       qbasetypes.BigInt  `json:"investad"`     // 投资金额
 	ArticleHash  []byte             `json:"articleHash"`  // 文章hash
 	Gas          qbasetypes.BigInt
@@ -44,7 +44,7 @@ func (it InvestTx) ValidateData(ctx context.Context) error {
 		return err
 	}
 	aoeaccount := ctx.Mapper(jianqian.AoeAccountMapperName).(*jianqian.AoeAccountMapper)
-	blance:=aoeaccount.GetBalance(it.Address.Bytes())
+	blance:=aoeaccount.GetBalance(it.Address.String())
 	if blance.IsZero()||blance.IsNil()||blance.Int64()<0{
 		return errors.New("投资者余额不足")
 	}

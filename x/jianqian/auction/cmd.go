@@ -6,9 +6,9 @@ import (
 	"github.com/QOSGroup/qbase/account"
 	qosaccount "github.com/QOSGroup/qos/account"
 	"github.com/QOSGroup/qstars/config"
+	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/types"
 
-	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/spf13/cobra"
@@ -45,6 +45,7 @@ func NewAuctionCmd(cdc *wire.Codec) *cobra.Command {
 			cointype := viper.GetString(flag_cointype)
 			amount := viper.GetString(flag_amount)
 
+			fmt.Println(articleHash,private,otherAddres,cointype,amount)
 			_, addrben32, _ := utility.PubAddrRetrievalFromAmino(private, cdc)
 			from, err := types.AccAddressFromBech32(addrben32)
 			key := account.AddressStoreKey(from)
@@ -62,8 +63,8 @@ func NewAuctionCmd(cdc *wire.Codec) *cobra.Command {
 				return err
 			}
 			qscnonce := int64(qscacc.Nonce)
-			tx := AcutionAd(cdc, articleHash, from.String(), otherAddres, cointype, amount, qosnonce, qscnonce)
-			log.Printf("BuyAd tx:%+v", tx)
+			tx := AcutionAd(cdc, articleHash, private, otherAddres, cointype, amount, qosnonce, qscnonce)
+			log.Printf("NewAuction tx:%+v", tx)
 
 			var rb common.Result
 			if err := json.Unmarshal([]byte(tx), &rb); err != nil {
@@ -73,7 +74,7 @@ func NewAuctionCmd(cdc *wire.Codec) *cobra.Command {
 			if rb.Code != "0" {
 				return fmt.Errorf("InvestAd tx error:%s ", rb.Reason)
 			}
-			result := AcutionAdBackground(cdc, string(rb.Result), time.Second*60)
+			result := AcutionAdBackground(cdc, string(rb.Result), time.Second*60,cointype)
 			log.Printf(result)
 
 			return nil
@@ -90,29 +91,55 @@ func NewAuctionCmd(cdc *wire.Codec) *cobra.Command {
 	return cmd
 }
 
-//func QueryArticleCmd(cdc *wire.Codec) *cobra.Command {
-//	cmd := &cobra.Command{
-//		Use:   "QueryArticle",
-//		Short: "query  Article and send tx",
-//		RunE: func(cmd *cobra.Command, args []string) error {
-//			defer func() {
-//				if r := recover(); r != nil {
-//					fmt.Println(r)
-//				}
-//			}()
-//
-//			articleHash := viper.GetString(flag_articleHash)
-//
-//			result:= GetArticle(cdc,articleHash)
-//
-//			fmt.Println(result)
-//
-//			return nil
-//		},
-//	}
-//
-//
-//	cmd.Flags().String(flag_articleHash, "", "query article hash")
-//
-//	return cmd
-//}
+func QueryMaxAcutionCMD(cdc *wire.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryMaxAcution",
+		Short: "query  max acution",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Println(r)
+				}
+			}()
+
+			articleHash := viper.GetString(flag_articleHash)
+
+			result:= QueryMaxAcution(cdc,articleHash)
+
+			fmt.Println(result)
+
+			return nil
+		},
+	}
+
+
+	cmd.Flags().String(flag_articleHash, "", "query article hash")
+
+	return cmd
+}
+func QueryAllAcutionCMD(cdc *wire.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryAllAcution",
+		Short: "query  all acution",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Println(r)
+				}
+			}()
+
+			articleHash := viper.GetString(flag_articleHash)
+
+			result:= QueryAllAcution(cdc,articleHash)
+
+			fmt.Println(result)
+
+			return nil
+		},
+	}
+
+
+	cmd.Flags().String(flag_articleHash, "", "query article hash")
+
+	return cmd
+}

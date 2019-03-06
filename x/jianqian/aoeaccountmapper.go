@@ -13,7 +13,7 @@ type AoeAccountMapper struct {
 
 //账户
 type AoeAccount struct {
-	Address types.Address
+	Address string
 	Amount  types.BigInt
 }
 
@@ -31,10 +31,10 @@ func (cm *AoeAccountMapper) Copy() mapper.IMapper {
 var _ mapper.IMapper = (*AoeAccountMapper)(nil)
 
 // Get 查询账户余额
-func (cm *AoeAccountMapper) GetBalance(key []byte) types.BigInt {
-	var balance types.BigInt = types.ZeroInt()
+func (cm *AoeAccountMapper) GetBalance(key string) types.BigInt {
+	var balance = types.ZeroInt()
 	var result AoeAccount
-	ok := cm.Get(key, &result)
+	ok := cm.Get([]byte(key), &result)
 	if ok {
 		balance = result.Amount
 	}
@@ -43,10 +43,12 @@ func (cm *AoeAccountMapper) GetBalance(key []byte) types.BigInt {
 
 
 // Set 更新账户 增加余额
-func (cm *AoeAccountMapper) AddBalance(key types.Address,amount types.BigInt) {
-	balance := cm.GetBalance([]byte(key))
-	balance.Add(amount)
-	cm.Set(key.Bytes(), balance)
+func (cm *AoeAccountMapper) AddBalance(aoe AoeAccount) {
+	balance := cm.GetBalance(aoe.Address)
+	balance=balance.Add(aoe.Amount)
+	aoe.Amount=balance
+	cm.Set([]byte(aoe.Address), aoe)
+
 	return
 }
 
@@ -54,16 +56,14 @@ func (cm *AoeAccountMapper) AddBalance(key types.Address,amount types.BigInt) {
 // Set 更新账户 增加余额
 func (cm *AoeAccountMapper) AddBalanceBatch(accs []AoeAccount) {
 	for _,v:=range accs{
-		key:=v.Address
-		amount:=v.Amount
-		cm.AddBalance(key,amount)
+		cm.AddBalance(v)
 	}
 	return
 }
 
 // Set 更新账户 减少余额
 func (cm *AoeAccountMapper) SubtractBalance(key types.Address,amount types.BigInt) {
-	balance := cm.GetBalance(key.Bytes())
+	balance := cm.GetBalance(key.String())
 	balance.Sub(amount)
 	cm.Set(key.Bytes(), balance)
 	return

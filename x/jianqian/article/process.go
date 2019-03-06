@@ -133,6 +133,8 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, authorOt
 	nonce++
 	fromchainid := config.GetCLIContext().Config.QSCChainID
 	tochainid := config.GetCLIContext().Config.QOSChainID
+
+	fmt.Println(fromchainid,"-------------------",tochainid)
 	tx := NewArticlesTx(authorAddr, authorOtherAddr,articletype, articleHash, authshare, origshare, commushare, invesshare, investhours, buyhours,coinType, types.ZeroInt())
 	txsd := genStdSendTx(cdc, tx, priv, fromchainid, tochainid, nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext

@@ -3,11 +3,13 @@
 package jianqian
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/tendermint/go-amino"
 	"log"
+	"strings"
 )
 
 func QueryArticle(cdc *amino.Codec, ctx *context.CLIContext, hash string) (article *Articles, err error) {
@@ -21,14 +23,15 @@ func QueryArticle(cdc *amino.Codec, ctx *context.CLIContext, hash string) (artic
 	return
 }
 
-
 func QueryAllAcution(cdc *amino.Codec, ctx *context.CLIContext, hash string) (auction AuctionMap, err error) {
 	res, err := ctx.QueryStore([]byte(hash), AuctionMapperName)
 	if err != nil {
 		return nil, err
 	}
-	err = cdc.UnmarshalBinaryBare(res, &auction)
-
+	result:=string(res)
+	first:=strings.Index(result,"{")
+	res=res[first:]
+	err = json.Unmarshal(res, &auction)
 	return
 }
 
@@ -39,6 +42,16 @@ func QueryCoins(cdc *amino.Codec, ctx *context.CLIContext, tx string) (coins *Co
 		return nil, err
 	}
 	err = cdc.UnmarshalBinaryBare(res, &coins)
+	return
+}
+
+func QueryBlance(cdc *amino.Codec, ctx *context.CLIContext, tx string) (acc *AoeAccount, err error) {
+	fmt.Println("tx=", tx)
+	res, err := ctx.QueryStore([]byte(tx), AoeAccountMapperName)
+	if err != nil {
+		return nil, err
+	}
+	err = cdc.UnmarshalBinaryBare(res, &acc)
 	return
 }
 

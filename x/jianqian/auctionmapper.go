@@ -1,6 +1,7 @@
 package jianqian
 
 import (
+	"encoding/json"
 	"github.com/QOSGroup/qbase/mapper"
 	"github.com/QOSGroup/qbase/types"
 	"time"
@@ -16,7 +17,7 @@ type AuctionMap map[string]Auction
 
 
 type Auction struct{
-	Article      []byte
+	Article      string
 	Address      types.Address
 	CoinsType    string                      // 币种类型
 	OtherAddr    string                      // 转出地址
@@ -42,9 +43,8 @@ var _ mapper.IMapper = (*AuctionMapper)(nil)
 
 
 // Get 查询文章所有竞拍结果
-func (cm *AuctionMapper) GetAuction(key []byte) (result AuctionMap,ok bool) {
-	var temp AuctionMap
-	ok = cm.Get(key, &temp)
+func (cm *AuctionMapper) GetAuction(key string) (result AuctionMap,ok bool) {
+	temp,ok:=cm.GetAuctionMap(key)
 	if ok{
 		delete(temp,MAXPRICEKEY)
 	}
@@ -52,9 +52,8 @@ func (cm *AuctionMapper) GetAuction(key []byte) (result AuctionMap,ok bool) {
 }
 
 // Get 查询指定人竞拍情况
-func (cm *AuctionMapper) GetAuctionByAddress(article []byte,address string) (result Auction,exist bool) {
-	var temp AuctionMap
-	ok := cm.Get(article, &temp)
+func (cm *AuctionMapper) GetAuctionByAddress(article string,address string) (result Auction,exist bool) {
+	temp,ok:=cm.GetAuctionMap(article)
 	if ok{
 		result,exist= temp[address]
 	}
@@ -63,28 +62,35 @@ func (cm *AuctionMapper) GetAuctionByAddress(article []byte,address string) (res
 
 
 // Get 获取临时状态  跨链确认使用
-func (cm *AuctionMapper) GetTempAuction(key []byte) (result Auction,exist bool) {
-	exist = cm.Get(key, &result)
+func (cm *AuctionMapper) GetTempAuction(key string) (result Auction,exist bool) {
+	exist = cm.Get([]byte(key), &result)
 	return
 }
 
 
 // Get 查询最高最价信息
-func (cm *AuctionMapper) GetMaxAuction(article []byte) (result Auction,exist bool) {
-	var temp AuctionMap
-	ok := cm.Get(article, &temp)
+func (cm *AuctionMapper) GetMaxAuction(article string) (result Auction,exist bool) {
+	temp,ok:=cm.GetAuctionMap(article)
 	if ok{
 		result,exist= temp[MAXPRICEKEY]
 	}
 	return
 }
 // Get 查询最高最价信息
-func (cm *AuctionMapper) GetAuctionMap(article []byte) (result AuctionMap,ok bool) {
-	var temp AuctionMap
-	ok = cm.Get(article, &temp)
+//func (cm *AuctionMapper) GetAuctionMap(article []byte) (result AuctionMap,ok bool) {
+//	var temp[] byte
+//	ok = cm.Get(article, &temp)
+//	var auctionMap AuctionMap
+//
+//	json.Unmarshal(temp,&auctionMap)
+//	return
+//}
+func (cm *AuctionMapper) GetAuctionMap(article string) (result AuctionMap,ok bool) {
+	var temp[] byte
+	ok = cm.Get([]byte(article), &temp)
+	json.Unmarshal(temp,&result)
 	return
 }
-
 
 // Set 保存活动奖励记录
 func (cm *AuctionMapper) SetAuction(auction Auction) {
@@ -103,7 +109,8 @@ func (cm *AuctionMapper) SetAuction(auction Auction) {
 			am[MAXPRICEKEY]=auction
 		}
 	}
-	cm.Set(auction.Article, am)
+    value,_:=json.Marshal(am)
+    cm.Set([]byte(auction.Article), value)
 }
 // Set 保存活动奖励记录
 func (cm *AuctionMapper) SetAuctionByKey(key []byte,i *Auction) {

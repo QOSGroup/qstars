@@ -84,10 +84,13 @@ func main() {
 	rootCmd.AddCommand(
 		client.PostCommands(
 			auction.NewAuctionCmd(cdc),
+			auction.QueryMaxAcutionCMD(cdc),
+			auction.QueryAllAcutionCMD(cdc),
 			coins.DispatchAOECmd(cdc),
 			article.NewArticleCmd(cdc),
 			article.QueryArticleCmd(cdc),
 			coins.QueryCoinsCmd(cdc),
+			coins.QueryBlanceCmd(cdc),
 		)...)
 
 	// add proxy, version and key info

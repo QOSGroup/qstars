@@ -37,7 +37,7 @@ func (it BuyTx) ValidateData(ctx context.Context) error {
 		return errors.New("已被购买")
 	}
 	auctioMapper := ctx.Mapper(jianqian.AuctionMapperName).(*jianqian.AuctionMapper)
-	_, exist := auctioMapper.GetAuction(it.ArticleHash)
+	_, exist := auctioMapper.GetAuction(string(it.ArticleHash))
 	if !exist {
 		return errors.New("没有竞拍者")
 	}
@@ -46,9 +46,9 @@ func (it BuyTx) ValidateData(ctx context.Context) error {
 }
 func checkArticleBase(article *jianqian.Articles, now time.Time) error {
 	log.Printf("checkArticleBase EndInvestDate:%+v, EndBuyDate:%+v, now:%+v", article.EndInvestDate, article.EndBuyDate, now)
-	if article.EndInvestDate.After(now) {
-		return errors.New("投资还没结束")
-	}
+	//if article.EndInvestDate.After(now) {
+	//	return errors.New("投资还没结束")
+	//}
 	if article.EndBuyDate.Before(now) {
 		return errors.New("超过购买期限")
 	}
@@ -125,7 +125,7 @@ func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps
 	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
 	investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
 	auctionMapper := ctx.Mapper(jianqian.AuctionMapperName).(*jianqian.AuctionMapper)
-	auction, ok := auctionMapper.GetMaxAuction(it.ArticleHash)
+	auction, ok := auctionMapper.GetMaxAuction(string(it.ArticleHash))
 	if !ok {
 		return
 	}
