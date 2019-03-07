@@ -5,8 +5,10 @@ require (
 	github.com/QOSGroup/qbase v0.1.0
 	github.com/QOSGroup/qos v0.0.4
 	github.com/bgentry/speakeasy v0.1.0
+	github.com/google/pprof v0.0.0-20190228041337-2ef8d84b2e3c // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.6.2
+	github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6 // indirect
 	github.com/mattn/go-isatty v0.0.4
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/common v0.0.0-20190107103113-2998b132700a

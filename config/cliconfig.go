@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 )
 
+const MaxGas = 20000
+
 var Clictx QStarsClientContext
 
 type QStarsClientContext struct {
@@ -38,11 +40,11 @@ func GetCLIContext() QStarsClientContext {
 
 func CreateCLIContextTwo(cdc *wire.Codec, cfg *CLIConfig) QStarsClientContext {
 
-	pQOSCliContext := context.NewCLIContext1(cfg.QOSNodeURI,cfg.QOSChainID,"qos").
+	pQOSCliContext := context.NewCLIContext1(cfg.QOSNodeURI, cfg.QOSChainID, "qos").
 		WithCodec(cdc).
 		WithLogger(os.Stdout)
 
-	pQSCCliContext := context.NewCLIContext1(cfg.QSTARSNodeURI,cfg.QSCChainID,"qsc").
+	pQSCCliContext := context.NewCLIContext1(cfg.QSTARSNodeURI, cfg.QSCChainID, "qsc").
 		WithCodec(cdc).
 		WithLogger(os.Stdout)
 

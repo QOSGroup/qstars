@@ -170,7 +170,7 @@ func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, q
 
 	transferTx := NewTransfer(investor, tempAddr, ccs)
 	// TODO set zero, temp
-	gas := qbasetypes.NewInt(int64(0))
+	gas := qbasetypes.NewInt(int64(config.MaxGas))
 	stx := txs.NewTxStd(transferTx, config.GetCLIContext().Config.QOSChainID, gas)
 	signature, _ := stx.SignTx(priv, qosnonce, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QOSChainID)
 	stx.Signature = []txs.Signature{txs.Signature{

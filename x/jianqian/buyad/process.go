@@ -398,7 +398,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	transferTx.Senders = []qostxtype.TransItem{warpperTransItem(buyer, ccs)}
 	receivers := warpperReceivers(cdc, article, qbasetypes.NewInt(amount), investors, communityAddr)
 	transferTx.Receivers = receivers
-	gas := qbasetypes.NewInt(int64(0))
+	gas := qbasetypes.NewInt(int64(config.MaxGas))
 	stx := txs.NewTxStd(transferTx, config.GetCLIContext().Config.QOSChainID, gas)
 	signature, _ := stx.SignTx(priv, qosnonce, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QOSChainID)
 	stx.Signature = []txs.Signature{txs.Signature{

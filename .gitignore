@@ -21,3 +21,4 @@ cmd/qstarsd/data
 baseapp/data
 baseapp/testdata
 go.sum
+build

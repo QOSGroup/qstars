@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/bech32local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/ed25519local"
 	"github.com/QOSGroup/qstars/slim/funcInlocal/respwrap"
@@ -227,7 +228,7 @@ func NewTxStd(itx ITx, cid string, mgas BigInt) (rTx *TxStd) {
 }
 
 func genStdSendTx(sendTx ITx, priKey ed25519local.PrivKeyEd25519, chainid string, nonce int64) *TxStd {
-	gas := NewBigInt(int64(0))
+	gas := NewBigInt(int64(config.MaxGas))
 	stx := NewTxStd(sendTx, chainid, gas)
 	signature, _ := stx.SignTx(priKey, nonce, chainid)
 	stx.Signature = []Signature{Signature{
@@ -690,7 +691,7 @@ func investAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) (*T
 	//the first sign with the QOS nonce
 	t := NewTransfer(investor, tempAddr, ccs)
 	//msg := genStdSendTx(t, priv, QSCchainId, qosnonce)
-	gas1 := NewBigInt(int64(0))
+	gas1 := NewBigInt(int64(config.MaxGas))
 	stx := NewTxStd(t, QOSchainId, gas1)
 	signature, _ := stx.SignTx(priv, qosnonce, QSCchainId)
 	stx.Signature = []Signature{Signature{
