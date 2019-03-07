@@ -5,11 +5,13 @@ package tx
 import (
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs/transfer"
+	qostxtype "github.com/QOSGroup/qos/module/transfer/types"
+	qostxs "github.com/QOSGroup/qos/module/transfer"
 )
 
-func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qostxs.TransItem {
-	var ti qostxs.TransItem
+func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qostxtype.TransItem {
+
+	var ti qostxtype.TransItem
 	ti.Address = addr
 	ti.QOS = qbasetypes.NewInt(0)
 

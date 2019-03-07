@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs/transfer"
+	qostxs "github.com/QOSGroup/qos/module/transfer"
+	qostxtype "github.com/QOSGroup/qos/module/transfer/types"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
@@ -193,8 +194,8 @@ func investAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, q
 	return tx2, nil
 }
 
-func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qostxs.TransItem {
-	var ti qostxs.TransItem
+func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qostxtype.TransItem {
+	var ti qostxtype.TransItem
 	ti.Address = addr
 	ti.QOS = qbasetypes.NewInt(0)
 

@@ -7,7 +7,8 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs/transfer"
+	qostxs "github.com/QOSGroup/qos/module/transfer"
+	qostxtype "github.com/QOSGroup/qos/module/transfer/types"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
@@ -56,7 +57,7 @@ func check(ctx context.Context, articleKey []byte) error {
 	return nil
 }
 
-func checkRevenue(ctx context.Context, articleKey []byte, totalAmount qbasetypes.BigInt, items []qostxs.TransItem) error {
+func checkRevenue(ctx context.Context, articleKey []byte, totalAmount qbasetypes.BigInt, items []qostxtype.TransItem) error {
 	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
 	a := articleMapper.GetArticle(string(articleKey))
 	if a == nil {
@@ -82,7 +83,7 @@ func checkRevenue(ctx context.Context, articleKey []byte, totalAmount qbasetypes
 		return errors.New("invalid Receivers")
 	}
 
-	receiverMap := make(map[string]qostxs.TransItem)
+	receiverMap := make(map[string]qostxtype.TransItem)
 	for _, v := range receivers {
 		if vv, ok := receiverMap[v.Address.String()]; ok {
 			vv.QOS = vv.QOS.Add(v.QOS)
