@@ -3,7 +3,7 @@ package context
 import (
 	"fmt"
 	"github.com/QOSGroup/qbase/store"
-	"github.com/QOSGroup/qos/account"
+	account "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/wire"
 	"io"
 	"strings"
