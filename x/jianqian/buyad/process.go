@@ -6,7 +6,8 @@ import (
 	"encoding/json"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs/transfer"
+	qostxs "github.com/QOSGroup/qos/module/transfer"
+	qostxtype "github.com/QOSGroup/qos/module/transfer/types"
 	qostypes "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
@@ -137,9 +138,9 @@ func BuyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	return result.Marshal()
 }
 
-func warpperInvestorTx(cdc *wire.Codec, articleHash string, amount int64) []qostxs.TransItem {
+func warpperInvestorTx(cdc *wire.Codec, articleHash string, amount int64) []qostxtype.TransItem {
 	investors, err := jianqian.ListInvestors(config.GetCLIContext().QSCCliContext, cdc, articleHash)
-	var result []qostxs.TransItem
+	var result []qostxtype.TransItem
 	log.Printf("buyAd warpperInvestorTx investors:%+v", investors)
 
 	if err == nil {
@@ -205,9 +206,9 @@ func mergeQSCs(q1, q2 qostypes.QSCs) qostypes.QSCs {
 	return res
 }
 
-func mergeReceivers(rs []qostxs.TransItem) []qostxs.TransItem {
-	var res []qostxs.TransItem
-	m := make(map[string]qostxs.TransItem)
+func mergeReceivers(rs []qostxtype.TransItem) []qostxtype.TransItem {
+	var res []qostxtype.TransItem
+	m := make(map[string]qostxtype.TransItem)
 
 	for _, v := range rs {
 		if ti, ok := m[v.Address.String()]; ok {
@@ -228,8 +229,8 @@ func mergeReceivers(rs []qostxs.TransItem) []qostxs.TransItem {
 }
 
 func warpperReceivers(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt,
-	investors jianqian.Investors, communityAddr qbasetypes.Address) []qostxs.TransItem {
-	var result []qostxs.TransItem
+	investors jianqian.Investors, communityAddr qbasetypes.Address) []qostxtype.TransItem {
+	var result []qostxtype.TransItem
 	log.Printf("buyad warpperReceivers  article:%+v", article)
 
 	investors = calculateRevenue(cdc, article, amount, investors, communityAddr)
@@ -394,7 +395,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	}
 	qosnonce += 1
 	var transferTx qostxs.TxTransfer
-	transferTx.Senders = []qostxs.TransItem{warpperTransItem(buyer, ccs)}
+	transferTx.Senders = []qostxtype.TransItem{warpperTransItem(buyer, ccs)}
 	receivers := warpperReceivers(cdc, article, qbasetypes.NewInt(amount), investors, communityAddr)
 	transferTx.Receivers = receivers
 	gas := qbasetypes.NewInt(int64(0))
@@ -421,8 +422,8 @@ func buyAd(cdc *wire.Codec, chainId, articleHash, coins, privatekey string, qosn
 	return tx2, nil
 }
 
-func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qostxs.TransItem {
-	var ti qostxs.TransItem
+func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qostxtype.TransItem {
+	var ti qostxtype.TransItem
 	ti.Address = addr
 	ti.QOS = qbasetypes.NewInt(0)
 

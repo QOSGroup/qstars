@@ -15,14 +15,14 @@ import (
 // CreateAccountCmd returns a new account
 func CreateAccountCmd(cdc *wire.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "createaccount password",
+		Use:   "create-account password",
 		Short: "create an account",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("需要参数password")
 			}
-			password := args[0]
 
+			password := args[0]
 			acc := slim.AccountCreate(password)
 
 			output, err := wire.MarshalJSONIndent(cdc, acc)

@@ -7,7 +7,7 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs/transfer"
+	qostxs "github.com/QOSGroup/qos/module/transfer"
 	"github.com/QOSGroup/qstars/x/common"
 	"log"
 

@@ -5,7 +5,9 @@ package tx
 import (
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qos/txs/approve"
+	approve "github.com/QOSGroup/qos/module/approve"
+	approvetype "github.com/QOSGroup/qos/module/approve/types"
+	"github.com/QOSGroup/qos/module/approve/types"
 )
 
 type ApproveTx struct {
@@ -22,8 +24,9 @@ func NewApproveTx(from qbasetypes.Address, to qbasetypes.Address) *ApproveTx {
 
 func (at *ApproveTx) Create(coins []qbasetypes.BaseCoin) txs.ITx {
 	ti := warpperTransItem(nil, coins)
+
 	return approve.TxCreateApprove{
-		Approve: approve.Approve{
+		Approve: types.Approve{
 			From: at.from,
 			To:   at.to,
 			QOS:  ti.QOS,
@@ -36,7 +39,7 @@ func (at *ApproveTx) Increase(coins []qbasetypes.BaseCoin) txs.ITx {
 	ti := warpperTransItem(nil, coins)
 
 	return approve.TxIncreaseApprove{
-		Approve: approve.Approve{
+		Approve: approvetype.Approve{
 			From: at.from,
 			To:   at.to,
 			QOS:  ti.QOS,
@@ -49,7 +52,7 @@ func (at *ApproveTx) Decrease(coins []qbasetypes.BaseCoin) txs.ITx {
 	ti := warpperTransItem(nil, coins)
 
 	return approve.TxDecreaseApprove{
-		Approve: approve.Approve{
+		Approve: approvetype.Approve{
 			From: at.from,
 			To:   at.to,
 			QOS:  ti.QOS,
@@ -62,7 +65,7 @@ func (at *ApproveTx) Use(coins []qbasetypes.BaseCoin) txs.ITx {
 	ti := warpperTransItem(nil, coins)
 
 	return approve.TxUseApprove{
-		Approve: approve.Approve{
+		Approve: approvetype.Approve{
 			From: at.from,
 			To:   at.to,
 			QOS:  ti.QOS,
