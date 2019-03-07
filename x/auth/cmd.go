@@ -10,7 +10,6 @@ import (
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/spf13/cobra"
 
-	"github.com/QOSGroup/qstars/client"
 )
 
 // CreateAccountCmd returns a new account
@@ -63,6 +62,5 @@ func GetAccountCmd(cdc *wire.Codec) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String(client.FlagQOSNode, "", "URL of QOS")
 	return cmd
 }
