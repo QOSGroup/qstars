@@ -117,7 +117,7 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 
 //封装公链交易信息
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid, fromchainid string, nonce int64) *txs.TxStd {
-	gas := types.NewInt(int64(0))
+	gas := types.NewInt(int64(config.MaxGas))
 	stx := txs.NewTxStd(sendTx, tochainid, gas)
 
 	signature, _ := stx.SignTx(priKey, nonce, fromchainid, tochainid)

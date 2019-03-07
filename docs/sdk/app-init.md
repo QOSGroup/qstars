@@ -183,7 +183,7 @@ func WrapToStdTx(cdc *wire.Codec,privkey,key, value, chainID string) string {
 		nonce=int64(acc.Nonce)
 	}
 	nonce++                                                                       //nonce加1 防止双花
-	tx:=txs.NewTxStd(kv, chainID, types.NewInt(int64(10000)))                     //封装标准交易结构体
+	tx:=txs.NewTxStd(kv, chainID, types.NewInt(int64(config.MaxGas)))                     //封装标准交易结构体
 	signdata,_:=tx.SignTx(priv,nonce,chainID)                                     //用私钥签名返回签名信息
 	tx.Signature = []txs.Signature{txs.Signature{                                 //将签名信息填充到交易结构体
 		Pubkey:    priv.PubKey(),

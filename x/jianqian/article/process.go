@@ -141,7 +141,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, original
 
 //封装公链交易信息
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, fromchainid string, tochainid string, nonce int64) *txs.TxStd {
-	gas := types.NewInt(int64(0))
+	gas := types.NewInt(int64(config.MaxGas))
 	stx := txs.NewTxStd(sendTx, fromchainid, gas)
 	signature, _ := stx.SignTx(priKey, nonce, fromchainid, fromchainid)
 	stx.Signature = []txs.Signature{txs.Signature{

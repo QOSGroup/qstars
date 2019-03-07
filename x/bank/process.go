@@ -420,7 +420,7 @@ func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
 
 //add the string input chainid
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid string, fromchainid string, nonce int64) *txs.TxStd {
-	gas := qbasetypes.NewInt(int64(0))
+	gas := qbasetypes.NewInt(int64(config.MaxGas))
 	stx := txs.NewTxStd(sendTx, tochainid, gas)
 	signature, _ := stx.SignTx(priKey, nonce, fromchainid, tochainid)
 	stx.Signature = []txs.Signature{txs.Signature{
