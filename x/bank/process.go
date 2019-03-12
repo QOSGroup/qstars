@@ -91,6 +91,8 @@ func TxSend(cdc *wire.Codec, txb []byte) (*SendResult, error) {
 	}
 
 	cliCtx := *config.GetCLIContext().QOSCliContext
+	cliCtx.Async = true
+
 	response, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
 	result := &SendResult{}
 	if err != nil {
