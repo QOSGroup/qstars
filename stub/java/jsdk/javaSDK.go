@@ -6,8 +6,9 @@ import (
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian/article"
 	"github.com/QOSGroup/qstars/x/jianqian/auction"
-	"github.com/QOSGroup/qstars/x/jianqian/coins"
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
+	"github.com/QOSGroup/qstars/x/jianqian/coins"
+	"strconv"
 
 	"github.com/QOSGroup/qstars/x/jianqian/investad"
 	"time"
@@ -41,9 +42,10 @@ func NewArticle(authorAddress, authorOtherAddr, articleType, articleHash, shareA
 }
 
 
-func AcutionAd(articleHash, address, otherAddr, coinsType, coinAmount string, qscnonce, qosnonce int64) string {
-
-	return auction.AcutionAd(CDC,articleHash, address, otherAddr, coinsType, coinAmount,qscnonce,qosnonce)
+func AcutionAd(articleHash, address, otherAddr, coinsType, coinAmount, qscnonce, qosnonce string) string {
+	qsc, _ := strconv.ParseInt(qscnonce, 10, 64)
+	qos, _ := strconv.ParseInt(qosnonce, 10, 64)
+	return auction.AcutionAd(CDC,articleHash, address, otherAddr, coinsType, coinAmount,qsc,qos)
 }
 
 

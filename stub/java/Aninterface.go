@@ -61,8 +61,8 @@ func AcutionAdBackground(txb *C.char) *C.char {
 }
 
 //export AcutionAd
-func AcutionAd(txb string) string {
-	output := jsdk.AcutionAdBackground(txb)
+func AcutionAd(articleHash, address, otherAddr, coinsType, coinAmount, qscnonce, qosnonce *C.char) string {
+	output := jsdk.AcutionAd(C.GoString(articleHash),C.GoString(address),C.GoString(otherAddr),C.GoString(coinsType),C.GoString(coinAmount),C.GoString(qscnonce),C.GoString(qosnonce))
 	return output
 }
 
