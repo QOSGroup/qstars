@@ -45,7 +45,7 @@ func (it InvestTx) ValidateData(ctx context.Context) error {
 	}
 	aoeaccount := ctx.Mapper(jianqian.AoeAccountMapperName).(*jianqian.AoeAccountMapper)
 	blance:=aoeaccount.GetBalance(it.Address.String())
-	if blance.IsZero()||blance.IsNil()||blance.Int64()<0{
+	if blance.IsZero()||blance.IsNil()||blance.Int64()<0||it.Invest.GT(blance){
 		return errors.New("投资者余额不足")
 	}
 

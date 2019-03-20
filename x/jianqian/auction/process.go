@@ -128,7 +128,7 @@ func acutionAd(cdc *wire.Codec, articleHash, private, otherAddr, coinsType strin
 }
 
 //竞拍广告 提交上链
-func AcutionAdBackground(cdc *wire.Codec, txb string, timeout time.Duration, coinType string) string {
+func AcutionAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) string {
 
 	ts := new(txs.TxStd)
 	err := cdc.UnmarshalJSON([]byte(txb), ts)

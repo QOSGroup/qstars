@@ -40,6 +40,16 @@ func NewArticle(authorAddress, authorOtherAddr, articleType, articleHash, shareA
 	return result
 }
 
+
+func AcutionAd(articleHash, address, otherAddr, coinsType, coinAmount string, qscnonce, qosnonce int64) string {
+
+	return auction.AcutionAd(CDC,articleHash, address, otherAddr, coinsType, coinAmount,qscnonce,qosnonce)
+}
+
+
+
+
+
 //竞拍广告上链
 func AcutionAdBackground(txb string) string {
 	timeout := time.Second * 60
@@ -56,7 +66,7 @@ func AcutionAdBackground(txb string) string {
 //查询当前最高出价
 //txHash 广告位标识
 func QueryMaxAcution(txHash string) string {
-	result := auction.QueryMaxAcution(CDC, config.GetCLIContext().QSCCliContext, txHash)
+	result := auction.QueryMaxAcution(CDC,  txHash)
 
 	return result
 }
@@ -64,7 +74,7 @@ func QueryMaxAcution(txHash string) string {
 //查询全部竞拍信息
 //txHash 广告位标识
 func QueryAllAcution(txHash string) string {
-	result := auction.QueryAllAcution(CDC, config.GetCLIContext().QSCCliContext, txHash)
+	result := auction.QueryAllAcution(CDC, txHash)
 	return result
 }
 

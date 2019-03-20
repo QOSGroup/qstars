@@ -74,7 +74,7 @@ func NewAuctionCmd(cdc *wire.Codec) *cobra.Command {
 			if rb.Code != "0" {
 				return fmt.Errorf("InvestAd tx error:%s ", rb.Reason)
 			}
-			result := AcutionAdBackground(cdc, string(rb.Result), time.Second*60,cointype)
+			result := AcutionAdBackground(cdc, string(rb.Result), time.Second*60)
 			log.Printf(result)
 
 			return nil

@@ -64,7 +64,8 @@ func (cm *AoeAccountMapper) AddBalanceBatch(accs []AoeAccount) {
 // Set 更新账户 减少余额
 func (cm *AoeAccountMapper) SubtractBalance(key types.Address,amount types.BigInt) {
 	balance := cm.GetBalance(key.String())
-	balance.Sub(amount)
-	cm.Set(key.Bytes(), balance)
+	balance=balance.Sub(amount)
+	aoe:=AoeAccount{key.String(),balance}
+	cm.Set([]byte(key.String()), aoe)
 	return
 }
