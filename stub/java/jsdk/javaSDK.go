@@ -41,11 +41,18 @@ func NewArticle(authorAddress, authorOtherAddr, articleType, articleHash, shareA
 	return result
 }
 
-
-func AcutionAd(articleHash, address, otherAddr, coinsType, coinAmount, qscnonce, qosnonce string) string {
+//竞拍广告
+//articleHash             //广告唯一标识
+//privatekey              //竞拍者私钥
+//otherAddr               //竞拍者cosmos地址
+//coinsType               //竞拍者使用币种
+//coinAmount              //竞拍数额
+//qscnonce                //原创收入比例(转载作品必填)
+//qosnonce                //社区收入比例(必填)
+func AcutionAd(articleHash, privatekey, otherAddr, coinsType, coinAmount, qscnonce, qosnonce string) string {
 	qsc, _ := strconv.ParseInt(qscnonce, 10, 64)
 	qos, _ := strconv.ParseInt(qosnonce, 10, 64)
-	return auction.AcutionAd(CDC,articleHash, address, otherAddr, coinsType, coinAmount,qsc,qos)
+	return auction.AcutionAd(CDC,articleHash, privatekey, otherAddr, coinsType, coinAmount,qsc,qos)
 }
 
 
