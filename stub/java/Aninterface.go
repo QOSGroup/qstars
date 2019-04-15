@@ -80,7 +80,7 @@ func QueryArticle(articleHash *C.char) *C.char {
 	return C.CString(output)
 }
 
-//export QueryCoins
+//export QueryBlance
 func QueryBlance(txHash *C.char) *C.char {
 	output := jsdk.QueryBlance(C.GoString(txHash))
 	return C.CString(output)
