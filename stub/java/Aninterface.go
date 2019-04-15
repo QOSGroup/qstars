@@ -87,19 +87,19 @@ func QueryBlance(txHash *C.char) *C.char {
 }
 
 //export AdvertisersTrue
-func AdvertisersTrue(privatekey, coinsType, coinAmount, qscnonce string) string {
+func AdvertisersTrue(privatekey, coinsType, coinAmount, qscnonce *C.char) string {
 	output := jsdk.AdvertisersTrue(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
 	return output
 }
 
 //export AdvertisersFalse
-func AdvertisersFalse(privatekey, coinsType, coinAmount, qscnonce string) string {
+func AdvertisersFalse(privatekey, coinsType, coinAmount, qscnonce *C.char) string {
 	output := jsdk.AdvertisersFalse(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
 	return output
 }
 
 //export Recharge
-func Recharge(privatekey, address, coinsType, coinAmount, qscnonce string) string {
+func Recharge(privatekey, address, coinsType, coinAmount, qscnonce *C.char) string {
 	output := jsdk.Recharge(C.GoString(privatekey), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
 	return C.CString(output)
 }
