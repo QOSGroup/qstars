@@ -110,6 +110,14 @@ func Extract(privatekey, address, coinsType, coinAmount *C.char) *C.char {
 	return C.CString(output)
 }
 
+//export AdvertisersBackground
+func AdvertisersBackground(txb *C.char) *C.char {
+	output := jsdk.AdvertisersBackground(C.GoString(txb))
+	return C.CString(output)
+}
+
+
+
 //export QSCCommitResultCheck
 func QSCCommitResultCheck(txhash, height *C.char) *C.char {
 	output := jsdk.QSCCommitResultCheck(C.GoString(txhash), C.GoString(height))
