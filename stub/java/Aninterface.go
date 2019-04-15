@@ -39,9 +39,9 @@ func AcutionAdBackground(txb *C.char) *C.char {
 }
 
 //export AcutionAd
-func AcutionAd(articleHash, address, coinsType, coinAmount, qscnonce *C.char) string {
+func AcutionAd(articleHash, address, coinsType, coinAmount, qscnonce *C.char) *C.char {
 	output := jsdk.AcutionAd(C.GoString(articleHash), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
-	return output
+	return C.CString(output)
 }
 
 //export QueryMaxAcution
@@ -87,25 +87,25 @@ func QueryBlance(txHash *C.char) *C.char {
 }
 
 //export AdvertisersTrue
-func AdvertisersTrue(privatekey, coinsType, coinAmount, qscnonce *C.char) string {
+func AdvertisersTrue(privatekey, coinsType, coinAmount, qscnonce *C.char) *C.char {
 	output := jsdk.AdvertisersTrue(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
-	return output
+	return C.CString(output)
 }
 
 //export AdvertisersFalse
-func AdvertisersFalse(privatekey, coinsType, coinAmount, qscnonce *C.char) string {
+func AdvertisersFalse(privatekey, coinsType, coinAmount, qscnonce *C.char) *C.char {
 	output := jsdk.AdvertisersFalse(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
-	return output
+	return C.CString(output)
 }
 
 //export Recharge
-func Recharge(privatekey, address, coinsType, coinAmount, qscnonce *C.char) string {
+func Recharge(privatekey, address, coinsType, coinAmount, qscnonce *C.char) *C.char {
 	output := jsdk.Recharge(C.GoString(privatekey), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
 	return C.CString(output)
 }
 
 //export Extract
-func Extract(privatekey, address, coinsType, coinAmount, qscnonce *C.char) string {
+func Extract(privatekey, address, coinsType, coinAmount, qscnonce *C.char) *C.char {
 	output := jsdk.Extract(C.GoString(privatekey), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
 	return C.CString(output)
 }
