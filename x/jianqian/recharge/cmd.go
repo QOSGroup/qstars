@@ -2,7 +2,7 @@ package recharge
 
 import (
 	"fmt"
-	"github.com/QOSGroup/qbase/account"
+	//"github.com/QOSGroup/qbase/account"
 	qosaccount "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
@@ -39,19 +39,19 @@ func RechargeCmd(cdc *wire.Codec) *cobra.Command {
 			deposit := viper.GetString(flagDeposit)
 
 			_, addrben32, _ := utility.PubAddrRetrievalFromAmino(privatekey, cdc)
-			from, err := types.AccAddressFromBech32(addrben32)
-			key := account.AddressStoreKey(from)
-			if err != nil {
-				return err
-			}
-			var qscnonce int64 = 0
-			qscacc, err := getQSCAcc(key, cdc)
-			if err != nil {
-				qscnonce = 0
-			} else {
-				qscnonce = int64(qscacc.Nonce)
-			}
-			result := Recharge(cdc, amount, privatekey,from.String(), cointype, deposit, qscnonce)
+			from, _ := types.AccAddressFromBech32(addrben32)
+			//key := account.AddressStoreKey(from)
+			//if err != nil {
+			//	return err
+			//}
+			//var qscnonce int64 = 0
+			//qscacc, err := getQSCAcc(key, cdc)
+			//if err != nil {
+			//	qscnonce = 0
+			//} else {
+			//	qscnonce = int64(qscacc.Nonce)
+			//}
+			result := Recharge(cdc, amount, privatekey,from.String(), cointype, deposit)
 
 			//fmt.Printf("Recharge:%s\n", tx)
 			//var ri common.Result

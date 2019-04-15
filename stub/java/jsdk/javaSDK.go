@@ -165,9 +165,8 @@ func AdvertisersBackground(txb string) string {
 //coinsType              //押金币种
 //coinAmount             //押金数量
 //qscnonce               //nonce
-func Recharge( privatekey, address, coinsType, coinAmount, qscnonce string) string {
-	qsc, _ := strconv.ParseInt(qscnonce, 10, 64)
-	return recharge.Recharge(CDC,coinAmount,privatekey,address,coinsType,jianqian.CHANGE_TYPE_PLUS,qsc)
+func Recharge( privatekey, address, coinsType, coinAmount string) string {
+	return recharge.Recharge(CDC,coinAmount,privatekey,address,coinsType,jianqian.CHANGE_TYPE_PLUS)
 }
 
 //提现
@@ -176,9 +175,8 @@ func Recharge( privatekey, address, coinsType, coinAmount, qscnonce string) stri
 //coinsType              //押金币种
 //coinAmount             //押金数量
 //qscnonce               //nonce
-func Extract( privatekey, address, coinsType, coinAmount, qscnonce string) string {
-	qsc, _ := strconv.ParseInt(qscnonce, 10, 64)
-	return recharge.Recharge(CDC,coinAmount,privatekey,address,coinsType,jianqian.CHANGE_TYPE_MINUS,qsc)
+func Extract( privatekey, address, coinsType, coinAmount string) string {
+	return recharge.Recharge(CDC,coinAmount,privatekey,address,coinsType,jianqian.CHANGE_TYPE_MINUS)
 }
 
 

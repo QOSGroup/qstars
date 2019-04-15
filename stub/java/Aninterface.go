@@ -99,14 +99,14 @@ func AdvertisersFalse(privatekey, coinsType, coinAmount, qscnonce *C.char) *C.ch
 }
 
 //export Recharge
-func Recharge(privatekey, address, coinsType, coinAmount, qscnonce *C.char) *C.char {
-	output := jsdk.Recharge(C.GoString(privatekey), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
+func Recharge(privatekey, address, coinsType, coinAmount *C.char) *C.char {
+	output := jsdk.Recharge(C.GoString(privatekey), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount))
 	return C.CString(output)
 }
 
 //export Extract
-func Extract(privatekey, address, coinsType, coinAmount, qscnonce *C.char) *C.char {
-	output := jsdk.Extract(C.GoString(privatekey), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
+func Extract(privatekey, address, coinsType, coinAmount *C.char) *C.char {
+	output := jsdk.Extract(C.GoString(privatekey), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount))
 	return C.CString(output)
 }
 
