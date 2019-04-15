@@ -20,39 +20,17 @@ func SendByJNI(fromStr, toStr1, coinstr *C.char) *C.char {
 	return C.CString(output)
 }
 
-//for SendByJNI
-//func SendByJNI(fromStr, toStr1, coinstr string) string {
-//	output := jsdk.SendByJNI(fromStr, toStr1, coinstr)
-//	return output
-//}
-
 //export DispatchCoins
 func DispatchCoins(addrs, coins, causestrings, causecodes, gas *C.char) *C.char {
 	output := jsdk.DispatchCoins(C.GoString(addrs), C.GoString(coins), C.GoString(causestrings), C.GoString(causecodes), C.GoString(gas))
 	return C.CString(output)
 }
 
-//for DispatchCoins
-//func DispatchCoins(addrs, coins, causecodes, causestrings, gas string) string {
-//	output := jsdk.DispatchCoins(addrs, coins, causecodes, causestrings, gas)
-//	return output
-//}
-
 //export NewArticle
 func NewArticle(authorAddress, articleType, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate, cointype *C.char) *C.char {
-	output := jsdk.NewArticle(C.GoString(authorAddress),  C.GoString(articleType), C.GoString(articleHash), C.GoString(shareAuthor), C.GoString(shareOriginAuthor), C.GoString(shareCommunity), C.GoString(shareInvestor), C.GoString(endInvestDate), C.GoString(endBuyDate),C.GoString(cointype))
+	output := jsdk.NewArticle(C.GoString(authorAddress), C.GoString(articleType), C.GoString(articleHash), C.GoString(shareAuthor), C.GoString(shareOriginAuthor), C.GoString(shareCommunity), C.GoString(shareInvestor), C.GoString(endInvestDate), C.GoString(endBuyDate), C.GoString(cointype))
 	return C.CString(output)
 }
-
-//for NewArticle
-//func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate string) string {
-//	output := jsdk.NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate)
-//	return output
-//}
-
-
-
-
 
 //export AcutionAdBackground
 func AcutionAdBackground(txb *C.char) *C.char {
@@ -61,33 +39,22 @@ func AcutionAdBackground(txb *C.char) *C.char {
 }
 
 //export AcutionAd
-func AcutionAd(articleHash, address,  coinsType, coinAmount, qscnonce *C.char) string {
-	output := jsdk.AcutionAd(C.GoString(articleHash),C.GoString(address),C.GoString(coinsType),C.GoString(coinAmount),C.GoString(qscnonce))
+func AcutionAd(articleHash, address, coinsType, coinAmount, qscnonce *C.char) string {
+	output := jsdk.AcutionAd(C.GoString(articleHash), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
 	return output
 }
-
 
 //export QueryMaxAcution
 func QueryMaxAcution(txb *C.char) *C.char {
 	output := jsdk.QueryMaxAcution(C.GoString(txb))
 	return C.CString(output)
 }
-//for QueryMaxAcution
-//func QueryMaxAcution(txb string) string {
-//	output := jsdk.QueryMaxAcution(txb)
-//	return output
-//}
 
 //export QueryAllAcution
 func QueryAllAcution(txb *C.char) *C.char {
 	output := jsdk.QueryAllAcution(C.GoString(txb))
 	return C.CString(output)
 }
-//for QueryAllAcution
-//func QueryAllAcution(txb string) string {
-//	output := jsdk.QueryAllAcution(txb)
-//	return output
-//}
 
 //export InvestAdBackground
 func InvestAdBackground(txb *C.char) *C.char {
@@ -95,35 +62,11 @@ func InvestAdBackground(txb *C.char) *C.char {
 	return C.CString(output)
 }
 
-//for InvestAdBackground
-//func InvestAdBackground(txb string) string {
-//	output := jsdk.InvestAdBackground(txb)
-//	return output
-//}
-
 //export Distribution
 func Distribution(articleHash *C.char) *C.char {
 	output := jsdk.Distribution(C.GoString(articleHash))
 	return C.CString(output)
 }
-//for Distribution
-//func Distribution(articleHash string) string {
-//	output := jsdk.Distribution(articleHash)
-//	return output
-//}
-
-//for BuyAd
-//func BuyAd(articleHash, coins, buyer string) string {
-//	output := jsdk.BuyAd(articleHash, coins, buyer)
-//	return output
-//}
-
-//for investAdbckaground testing
-//type ResultInvest struct {
-//	Code   string          `json:"code"`
-//	Reason string          `json:"reason,omitempty"`
-//	Result json.RawMessage `json:"result,omitempty"`
-//}
 
 //export RetrieveInvestors
 func RetrieveInvestors(articleHash *C.char) *C.char {
@@ -131,35 +74,11 @@ func RetrieveInvestors(articleHash *C.char) *C.char {
 	return C.CString(output)
 }
 
-//for RetrieveInvestors
-//func RetrieveInvestors(articleHash string) string {
-//	output := jsdk.RetrieveInvestors(articleHash)
-//	return output
-//}
-
-////export RetrieveBuyer
-//func RetrieveBuyer(articleHash *C.char) *C.char {
-//	output := jsdk.RetrieveBuyer(C.GoString(articleHash))
-//	return C.CString(output)
-//}
-
-//for RetrieveBuyer
-//func RetrieveBuyer(articleHash string) string {
-//	output := jsdk.RetrieveBuyer(articleHash)
-//	return output
-//}
-
 //export QueryArticle
 func QueryArticle(articleHash *C.char) *C.char {
 	output := jsdk.QueryArticle(C.GoString(articleHash))
 	return C.CString(output)
 }
-
-//for QueryArticle
-//func QueryArticle(articleHash string) string {
-//	output := jsdk.QueryArticle(articleHash)
-//	return output
-//}
 
 //export QueryCoins
 func QueryBlance(txHash *C.char) *C.char {
@@ -167,11 +86,29 @@ func QueryBlance(txHash *C.char) *C.char {
 	return C.CString(output)
 }
 
-//for QueryCoins
-//func QueryCoins(articleHash string) string {
-//	output := jsdk.QueryCoins(articleHash)
-//	return output
-//}
+//export AdvertisersTrue
+func AdvertisersTrue(privatekey, coinsType, coinAmount, qscnonce string) string {
+	output := jsdk.AdvertisersTrue(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
+	return output
+}
+
+//export AdvertisersFalse
+func AdvertisersFalse(privatekey, coinsType, coinAmount, qscnonce string) string {
+	output := jsdk.AdvertisersFalse(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
+	return output
+}
+
+//export Recharge
+func Recharge(privatekey, address, coinsType, coinAmount, qscnonce string) string {
+	output := jsdk.Recharge(C.GoString(privatekey), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
+	return C.CString(output)
+}
+
+//export Extract
+func Extract(privatekey, address, coinsType, coinAmount, qscnonce *C.char) string {
+	output := jsdk.Extract(C.GoString(privatekey), C.GoString(address), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
+	return C.CString(output)
+}
 
 //export QSCCommitResultCheck
 func QSCCommitResultCheck(txhash, height *C.char) *C.char {
