@@ -20,7 +20,7 @@ type Auction struct{
 	Article      string
 	Address      types.Address
 	CoinsType    string                      // 币种类型
-	OtherAddr    string                      // 转出地址
+	//OtherAddr    string                      // 转出地址
 	Amount       types.BigInt                // 竞拍金额
 	AuctionTime  time.Time                   // 最后竞拍时间
 }

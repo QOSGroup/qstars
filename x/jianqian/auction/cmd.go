@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
-	qosaccount "github.com/QOSGroup/qos/account"
+	qosaccount "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/types"
@@ -52,18 +52,12 @@ func NewAuctionCmd(cdc *wire.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			qosacc, err := getQOSAcc(key, cdc)
-			if err != nil {
-				return err
-			}
-			qosnonce := int64(qosacc.Nonce)
-
 			qscacc, err := getQSCAcc(key, cdc)
 			if err != nil {
 				return err
 			}
 			qscnonce := int64(qscacc.Nonce)
-			tx := AcutionAd(cdc, articleHash, private, otherAddres, cointype, amount, qosnonce, qscnonce)
+			tx := AcutionAd(cdc, articleHash, private,  cointype, amount, qscnonce)
 			log.Printf("NewAuction tx:%+v", tx)
 
 			var rb common.Result

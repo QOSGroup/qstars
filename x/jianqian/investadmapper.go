@@ -29,8 +29,8 @@ func GetInvestKey(article []byte, user , investorType string) []byte {
 // Investor 投资者
 type Investor struct {
 	InvestorType string             `json:"investorType"` // 投资者类型 author, originalAuthor, community, commonInvestor
-	//Address      qbasetypes.Address `json:"address"`      // 投资者地址
-	OtherAddr    string             `json:"address"`      // 投资者其他地址
+	Address      qbasetypes.Address `json:"address"`      // 投资者地址
+	//OtherAddr    string             `json:"address"`      // 投资者其他地址
 	Invest       qbasetypes.BigInt  `json:"investad"`     // 投资金额
 	Revenue      qbasetypes.BigInt  `json:"revenue"`      // 投资收益
 	InvestTime   time.Time          `json:"investTime"`   // 投资时间

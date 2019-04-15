@@ -62,7 +62,7 @@ func SendKVOptionSequence(sequence string) SetSendKVOption {
 func wrapToStdTx(key, value, chainID string) *txs.TxStd {
 	kv := NewKvstoreTx([]byte(key), []byte(value))
 
-	return txs.NewTxStd(kv, chainID, types.NewInt(int64(10000)))
+	return txs.NewTxStd(kv, chainID, types.NewInt(int64(config.MaxGas)))
 }
 
 // SendKV process of set kv

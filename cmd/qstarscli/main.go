@@ -2,7 +2,9 @@ package main
 
 import (
 	"github.com/QOSGroup/qstars/star"
+	"github.com/QOSGroup/qstars/x/jianqian/advertisers"
 	"github.com/QOSGroup/qstars/x/jianqian/auction"
+	"github.com/QOSGroup/qstars/x/jianqian/recharge"
 
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/investad"
@@ -39,7 +41,7 @@ func main() {
 	// get the codec
 	cdc := star.MakeCodec()
 
-	rootCmd := &cobra.Command{
+	rootCmd = &cobra.Command{
 		Use:   "cmd",
 		Short: "qstars Command Line Interface(command)",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -54,6 +56,7 @@ func main() {
 			return nil
 		},
 	}
+
 
 	// TODO: Setup keybase, viper object, etc. to be passed into
 	// the below functions and eliminate global vars, like we do
@@ -83,14 +86,13 @@ func main() {
 	//
 	rootCmd.AddCommand(
 		client.PostCommands(
-			auction.NewAuctionCmd(cdc),
-			auction.QueryMaxAcutionCMD(cdc),
-			auction.QueryAllAcutionCMD(cdc),
 			coins.DispatchAOECmd(cdc),
 			article.NewArticleCmd(cdc),
 			article.QueryArticleCmd(cdc),
-			coins.QueryCoinsCmd(cdc),
 			coins.QueryBlanceCmd(cdc),
+			recharge.RechargeCmd(cdc),
+			auction.NewAuctionCmd(cdc),
+			advertisers.AdvertisersCmd(cdc),
 		)...)
 
 	// add proxy, version and key info

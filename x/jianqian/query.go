@@ -45,7 +45,7 @@ func QueryCoins(cdc *amino.Codec, ctx *context.CLIContext, tx string) (coins *Co
 	return
 }
 
-func QueryBlance(cdc *amino.Codec, ctx *context.CLIContext, tx string) (acc *AoeAccount, err error) {
+func QueryBlance(cdc *amino.Codec, ctx *context.CLIContext, tx string) (acc *AOETokens, err error) {
 	fmt.Println("tx=", tx)
 	res, err := ctx.QueryStore([]byte(tx), AoeAccountMapperName)
 	if err != nil {

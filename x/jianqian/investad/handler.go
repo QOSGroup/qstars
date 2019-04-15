@@ -15,36 +15,39 @@ import (
 
 type InvestTx struct {
 	Address      qbasetypes.Address `json:"address"`      // 投资者地址
-	OtherAddr    string             `json:"otherAddr"`      // 投资者其他地址
+	//OtherAddr    string             `json:"otherAddr"`      // 投资者其他地址
 	Invest       qbasetypes.BigInt  `json:"investad"`     // 投资金额
 	ArticleHash  []byte             `json:"articleHash"`  // 文章hash
 	Gas          qbasetypes.BigInt
-
+	cointype     string
 }
+
 
 var _ txs.ITx = (*InvestTx)(nil)
 
-func checkArticle(ctx context.Context, articleKey []byte) error {
-	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
-	a := articleMapper.GetArticle(string(articleKey))
+func checkArticle(ctx context.Context,a *jianqian.Articles) error {
 	if a == nil {
 		return errors.New("invalid article")
 	}
-
 	log.Printf("--- checkArticle: EndInvestDate:%+v, Time:%+v", a.EndInvestDate, ctx.BlockHeader().Time)
 	if a.EndInvestDate.Before(ctx.BlockHeader().Time) {
 		return errors.New("超过投资期限")
 	}
-
 	return nil
 }
 
 func (it InvestTx) ValidateData(ctx context.Context) error {
-	if err := checkArticle(ctx, it.ArticleHash); err != nil {
+
+	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
+	a := articleMapper.GetArticle(string(it.ArticleHash))
+
+	if err := checkArticle(ctx, a); err != nil {
 		return err
 	}
+
+	it.cointype=a.CoinType
 	aoeaccount := ctx.Mapper(jianqian.AoeAccountMapperName).(*jianqian.AoeAccountMapper)
-	blance:=aoeaccount.GetBalance(it.Address.String())
+	blance:=aoeaccount.GetBalance(it.Address.String(),it.cointype)
 	if blance.IsZero()||blance.IsNil()||blance.Int64()<0||it.Invest.GT(blance){
 		return errors.New("投资者余额不足")
 	}
@@ -65,13 +68,12 @@ func getInvestAmount(qscs qostypes.QSCs) qbasetypes.BigInt {
 			amount = amount.Add(v.Amount)
 		}
 	}
-
 	return amount
 }
 
 func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps *txs.TxQcp) {
 	investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
-	key := jianqian.GetInvestKey(it.ArticleHash, it.OtherAddr, jianqian.InvestorTypeCommonInvestor)
+	key := jianqian.GetInvestKey(it.ArticleHash, it.Address.String(), jianqian.InvestorTypeCommonInvestor)
 	investor, ok := investMapper.GetInvestor(key)
 	if ok {
 		investor.Invest = investor.Invest.Add(it.Invest)
@@ -82,7 +84,7 @@ func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQ
 		investor = jianqian.Investor{
 			InvestorType: jianqian.InvestorTypeCommonInvestor,
 			//Address:      it.Address,
-			OtherAddr:    it.OtherAddr,
+			//OtherAddr:    it.OtherAddr,
 			InvestTime:   ctx.BlockHeader().Time,
 			Invest:       it.Invest,
 		}
@@ -91,7 +93,7 @@ func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQ
 	}
     //账户余额中减掉投资金额
 	aoeaccount := ctx.Mapper(jianqian.AoeAccountMapperName).(*jianqian.AoeAccountMapper)
-	aoeaccount.SubtractBalance(it.Address,it.Invest)
+	aoeaccount.SubtractBalance(it.Address.String(),it.cointype,it.Invest)
 
 	return
 }
@@ -111,8 +113,8 @@ func (it InvestTx) GetGasPayer() qbasetypes.Address {
 func (it InvestTx) GetSignData() (ret []byte) {
 	ret = append(ret, it.ArticleHash...)
 	ret = append(ret, it.Address.Bytes()...)
+	ret = append(ret, []byte(it.cointype)...)
 	ret = append(ret, qbasetypes.Int2Byte(it.Invest.Int64())...)
-	ret = append(ret, it.OtherAddr...)
 	return
 }
 

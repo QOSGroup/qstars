@@ -6,7 +6,7 @@ import (
 	"github.com/QOSGroup/qbase/server"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qos/account"
+	account "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/x/common"

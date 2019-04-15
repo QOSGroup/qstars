@@ -57,10 +57,10 @@ func QueryCoinsCmd(cdc *wire.Codec) *cobra.Command {
 				}
 			}()
 
-			tx := viper.GetString(flag_tx)
-			result:= GetCoins(cdc,config.GetCLIContext().QSCCliContext,tx)
-
-			fmt.Println(result)
+			//tx := viper.GetString(flag_tx)
+			//result:= GetCoins(cdc,config.GetCLIContext().QSCCliContext,tx)
+			//
+			//fmt.Println(result)
 
 			return nil
 		},

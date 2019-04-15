@@ -31,7 +31,8 @@ func (cstub CoinsStub) EndBlockNotify(ctx context.Context) {
 }
 
 func (cstub CoinsStub) RegisterCdc(cdc *go_amino.Codec) {
-	cdc.RegisterConcrete(&DispatchAOETx{}, "jianqian/DispatchAOETx", nil)
+	cdc.RegisterConcrete(&CoinsTx{}, "jianqian/CoinsTx", nil)
+	cdc.RegisterConcrete(&AOETx{}, "jianqian/AOETx", nil)
 }
 
 func (cstub CoinsStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {

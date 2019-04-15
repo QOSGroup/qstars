@@ -14,6 +14,7 @@ const (
 	flag_articletype="articleType"
 	flag_articleHash="articleHash"
 	flag_shareAuthor="shareAuthor"
+
 	flag_shareOriginalAuthor="shareOriginalAuthor"
 	flag_shareCommunity="shareCommunity"
 	flag_shareInvestor="shareInvestor"
@@ -37,7 +38,7 @@ func NewArticleCmd(cdc *wire.Codec) *cobra.Command {
 
 
 			authorAddress := viper.GetString(flag_authoraddress)
-			authorOtherAddress := viper.GetString(flag_authorotheraddress)
+			//authorOtherAddress := viper.GetString(flag_authorotheraddress)
 			articleType := viper.GetString(flag_articletype)
 			articleHash := viper.GetString(flag_articleHash)
 			shareAuthor := viper.GetString(flag_shareAuthor)
@@ -49,10 +50,10 @@ func NewArticleCmd(cdc *wire.Codec) *cobra.Command {
 			coinType := viper.GetString(flag_cointype)
 
 
-			fmt.Println(authorAddress,authorOtherAddress,articleType,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,shareInvestor,endInvestDate,endBuyDate,coinType)
+			fmt.Println(authorAddress,articleType,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,shareInvestor,endInvestDate,endBuyDate,coinType)
 
 
-			result := NewArticle(cdc,config.GetCLIContext().Config,authorAddress,authorOtherAddress,articleType,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,
+			result := NewArticle(cdc,config.GetCLIContext().Config,authorAddress,articleType,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,
 				shareInvestor,endInvestDate,endBuyDate,coinType)
 			fmt.Println(result)
 			return nil

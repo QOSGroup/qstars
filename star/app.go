@@ -6,7 +6,9 @@ import (
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/bank"
+	"github.com/QOSGroup/qstars/x/jianqian/advertisers"
 	"github.com/QOSGroup/qstars/x/jianqian/auction"
+	"github.com/QOSGroup/qstars/x/jianqian/recharge"
 
 	"github.com/QOSGroup/qstars/x/jianqian/article"
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
@@ -35,22 +37,23 @@ var _ baseapp.BaseXTransaction = kvstore.KVStub{}
 
 var _ baseapp.BaseXTransaction = investad.InvestadStub{}
 var _ baseapp.BaseXTransaction = buyad.BuyadStub{}
-var _ baseapp.BaseXTransaction = auction.AuctionStub{}
 
 var _ baseapp.BaseXTransaction = coins.CoinsStub{}
 var _ baseapp.BaseXTransaction = article.AricleStub{}
+var _ baseapp.BaseXTransaction = advertisers.AdvertisersStub{}
+var _ baseapp.BaseXTransaction = auction.AuctionStub{}
+var _ baseapp.BaseXTransaction = recharge.RechargeStub{}
 
 func init() {
 	registerType((*bank.BankStub)(nil))
 	registerType((*kvstore.KVStub)(nil))
-
 	registerType((*investad.InvestadStub)(nil))
 	registerType((*buyad.BuyadStub)(nil))
-	registerType((*auction.AuctionStub)(nil))
-
 	registerType((*coins.CoinsStub)(nil))
 	registerType((*article.AricleStub)(nil))
-
+	registerType((*advertisers.AdvertisersStub)(nil))
+	registerType((*auction.AuctionStub)(nil))
+	registerType((*recharge.RechargeStub)(nil))
 }
 
 /**

@@ -13,7 +13,7 @@ type ArticlesMapper struct {
 
 type Articles struct {
 	AuthorAddr          types.Address  //作者地址(必填) 0qos 1cosmos
-	AuthorOtherAddr     string         //作者其他帐户地址
+	//AuthorOtherAddr     string         //作者其他帐户地址
 	ArticleType         int            //是否原创 0原创 1转载
 	ArticleHash         string         //作品唯一标识hash
 	ShareAuthor         int            //作者收入比例(必填)

@@ -39,22 +39,22 @@ func InvestAdBackground(cdc *wire.Codec, txb string, timeout time.Duration) stri
 	return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), "").Marshal()
 }
 
-func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
-	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
-	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), common.QSCResultMapperName)
-	if err != nil {
-		return "", err
-	}
-	if d == nil {
-		return "", nil
-	}
-	var res []byte
-	err = cdc.UnmarshalBinaryBare(d, &res)
-	if err != nil {
-		return "", err
-	}
-	return string(res), err
-}
+//func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
+//	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
+//	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), common.QSCResultMapperName)
+//	if err != nil {
+//		return "", err
+//	}
+//	if d == nil {
+//		return "", nil
+//	}
+//	var res []byte
+//	err = cdc.UnmarshalBinaryBare(d, &res)
+//	if err != nil {
+//		return "", err
+//	}
+//	return string(res), err
+//}
 
 // InvestAd 投资广告
 func InvestAd(cdc *wire.Codec, articleHash, amount, privatekey,otheraddr string, qscnonce int64) string {
@@ -94,13 +94,13 @@ func investAd(cdc *wire.Codec, articleHash, coins, privatekey ,otheraddr string,
 	}
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privatekey, cdc)
 	investor, _ := types.AccAddressFromBech32(addrben32)
-	gas := qbasetypes.NewInt(int64(0))
+	gas := qbasetypes.NewInt(int64(200000))
 	qscnonce += 1
 	it := &InvestTx{}
 	it.ArticleHash = []byte(articleHash)
 	it.Invest = amount
 	it.Address=investor
-	it.OtherAddr=otheraddr
+	//it.OtherAddr=otheraddr
 	fmt.Println(articleHash,amount,investor,otheraddr)
 
 	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, gas)

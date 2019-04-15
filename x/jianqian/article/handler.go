@@ -13,7 +13,7 @@ import (
 
 type ArticleTx struct {
 	AuthorAddr          types.Address  //作者地址(必填) 0qos 1cosmos
-	AuthorOtherAddr     string         //作者其他帐户地址
+	//AuthorOtherAddr     string         //作者其他帐户地址
 	ArticleType         int            //是否原创 0原创 1转载
 	ArticleHash         string         //作品唯一标识hash
 	ShareAuthor         int            //作者收入比例(必填)
@@ -64,7 +64,7 @@ func (tx *ArticleTx) Exec(ctx context.Context) (result types.Result, crossTxQcp 
 	buyhours := ctx.BlockHeader().Time.Add(time.Hour * ( time.Duration(tx.BuyHours)))
 	investhours := ctx.BlockHeader().Time.Add(time.Hour * ( time.Duration(tx.InvestHours)))
 
-	art := jianqian.Articles{tx.AuthorAddr, tx.AuthorOtherAddr, tx.ArticleType, tx.ArticleHash,tx.ShareAuthor, tx.ShareOriginalAuthor,
+	art := jianqian.Articles{tx.AuthorAddr,  tx.ArticleType, tx.ArticleHash,tx.ShareAuthor, tx.ShareOriginalAuthor,
 		tx.ShareCommunity, tx.ShareInvestor, tx.InvestHours, investhours, tx.BuyHours, buyhours, tx.CoinType,tx.Gas}
 
 	if !articleMapper.SetArticle(tx.ArticleHash, &art) {
@@ -90,7 +90,7 @@ func (tx *ArticleTx) GetSignData() (ret []byte) {
 
 	ret = append(ret, tx.ArticleHash...)
 	ret = append(ret, tx.AuthorAddr...)
-	ret = append(ret, tx.AuthorOtherAddr...)
+	//ret = append(ret, tx.AuthorOtherAddr...)
 	ret = append(ret, tx.CoinType...)
 	ret = append(ret, fmt.Sprint(tx.ShareInvestor)...)
 	ret = append(ret, fmt.Sprint(tx.ShareOriginalAuthor)...)
@@ -104,8 +104,8 @@ func (tx ArticleTx) Name() string {
 	return "ArticleTx"
 }
 
-func NewArticlesTx(authoraddress types.Address,authorOtherAddr string, articleType int,articleHash string, shareAuthor, shareOriginalAuthor,
+func NewArticlesTx(authoraddress types.Address , articleType int,articleHash string, shareAuthor, shareOriginalAuthor,
 	shareCommunity, shareInvestor, endInvestDate, endBuyDate int, cointype string,gas types.BigInt) *ArticleTx {
-	return &ArticleTx{authoraddress, authorOtherAddr,articleType, articleHash, shareAuthor, shareOriginalAuthor,
+	return &ArticleTx{authoraddress, articleType, articleHash, shareAuthor, shareOriginalAuthor,
 		shareCommunity, shareInvestor, endInvestDate, endBuyDate,cointype, gas}
 }

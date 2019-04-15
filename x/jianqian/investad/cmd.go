@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
-	qosaccount "github.com/QOSGroup/qos/account"
 	"github.com/QOSGroup/qstars/x/common"
+	qosaccount "github.com/QOSGroup/qos/types"
 
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"

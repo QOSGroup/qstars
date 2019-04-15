@@ -20,3 +20,9 @@ func TestPubAddrRetrievalStr(t *testing.T) {
 	output := PubAddrRetrievalStr(s)
 	t.Log(output)
 }
+
+func TestAccountCreateFromSeed(t *testing.T) {
+	mncode := "oyster leave weird tiger road rose anger garden planet price small rain cradle rhythm wine spider manual wave plastic solar spray battle parent match"
+	output := AccountCreateFromSeed(mncode)
+	t.Log(output)
+}

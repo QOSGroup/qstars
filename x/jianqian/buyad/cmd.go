@@ -3,7 +3,6 @@ package buyad
 import (
 	"errors"
 	"fmt"
-	qosaccount "github.com/QOSGroup/qos/account"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/jianqian"
@@ -34,13 +33,13 @@ func BuyadCmd(cdc *wire.Codec) *cobra.Command {
 	return cmd
 }
 
-func getQOSAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
-	return config.GetCLIContext().QOSCliContext.GetAccount(address, cdc)
-}
-
-func getQSCAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
-	return config.GetCLIContext().QSCCliContext.GetAccount(address, cdc)
-}
+//func getQOSAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
+//	return config.GetCLIContext().QOSCliContext.GetAccount(address, cdc)
+//}
+//
+//func getQSCAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
+//	return config.GetCLIContext().QSCCliContext.GetAccount(address, cdc)
+//}
 
 func buyadCmd(cdc *wire.Codec) *cobra.Command {
 	cmd := &cobra.Command{

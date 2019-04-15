@@ -3,19 +3,28 @@ package jianqian
 import (
 	"github.com/QOSGroup/qbase/mapper"
 	"github.com/QOSGroup/qbase/types"
+	"github.com/pkg/errors"
+	"strings"
 )
 
-const AoeAccountMapperName = "aoeaccount"
+const (
+	AoeAccountMapperName = "aoeaccount"
+	CHANGE_TYPE_PLUS="1"
+	CHANGE_TYPE_MINUS="2"
+)
 
 type AoeAccountMapper struct {
 	*mapper.BaseMapper
 }
 
-//账户
-type AoeAccount struct {
-	Address string
-	Amount  types.BigInt
+type CoinsTx struct {
+	Address types.Address
+	Cointype string
+	Amount types.BigInt
+	ChangeType string     //0 plus  1 minus
 }
+
+type AOETokens = types.BaseCoins
 
 func NewAccountMapper(kvMapperName string) *AoeAccountMapper {
 	var txMapper = AoeAccountMapper{}
@@ -30,42 +39,55 @@ func (cm *AoeAccountMapper) Copy() mapper.IMapper {
 
 var _ mapper.IMapper = (*AoeAccountMapper)(nil)
 
-// Get 查询账户余额
-func (cm *AoeAccountMapper) GetBalance(key string) types.BigInt {
+// Get 查询指定币种账户余额
+func (cm *AoeAccountMapper) GetBalance(addr,cointype string) types.BigInt {
 	var balance = types.ZeroInt()
-	var result AoeAccount
-	ok := cm.Get([]byte(key), &result)
+	var result AOETokens
+	ok := cm.Get([]byte(addr), &result)
 	if ok {
-		balance = result.Amount
+		for _,v:=range result{
+			if v.Name==strings.ToUpper(cointype){
+				return v.Amount
+			}
+		}
 	}
 	return balance
 }
-
-
-// Set 更新账户 增加余额
-func (cm *AoeAccountMapper) AddBalance(aoe AoeAccount) {
-	balance := cm.GetBalance(aoe.Address)
-	balance=balance.Add(aoe.Amount)
-	aoe.Amount=balance
-	cm.Set([]byte(aoe.Address), aoe)
-
-	return
-}
-
-
-// Set 更新账户 增加余额
-func (cm *AoeAccountMapper) AddBalanceBatch(accs []AoeAccount) {
-	for _,v:=range accs{
-		cm.AddBalance(v)
+// Get 查询账户余额
+func (cm *AoeAccountMapper) GetAllBalanceByAddr(addr string) (AOETokens,error) {
+	var result AOETokens
+	ok := cm.Get([]byte(addr), &result)
+	if ok {
+		return result,nil
 	}
+	return nil,errors.New(addr+" account not exist")
+}
+
+// Set 更新账户 增加余额
+func (cm *AoeAccountMapper) AddBalance(addr ,cointype string, amount types.BigInt) {
+	var newtokens AOETokens
+	result:=types.BaseCoins{&types.BaseCoin{strings.ToUpper(cointype),amount}}
+	oldTokens,err:=cm.GetAllBalanceByAddr(addr)
+	if err!=nil{
+		newtokens= result
+	}else{
+		newtokens=oldTokens.Plus(result)
+	}
+	cm.Set([]byte(addr), newtokens)
 	return
 }
+
 
 // Set 更新账户 减少余额
-func (cm *AoeAccountMapper) SubtractBalance(key types.Address,amount types.BigInt) {
-	balance := cm.GetBalance(key.String())
-	balance=balance.Sub(amount)
-	aoe:=AoeAccount{key.String(),balance}
-	cm.Set([]byte(key.String()), aoe)
+func (cm *AoeAccountMapper) SubtractBalance(addr,cointype string,amount types.BigInt) {
+	var newtokens AOETokens
+	result:=types.BaseCoins{&types.BaseCoin{strings.ToUpper(cointype),amount}}
+	oldTokens,err:=cm.GetAllBalanceByAddr(addr)
+	if err!=nil{
+		newtokens= result
+	}else{
+		newtokens=oldTokens.Minus(result)
+	}
+	cm.Set([]byte(addr), newtokens)
 	return
 }

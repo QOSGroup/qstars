@@ -61,7 +61,7 @@ const (
 //shareInvestor          投资者收入比例(必填)
 //endInvestDate          投资结束时间(必填) 单位 小时
 //endBuyDate             广告位购买结果时间(必填) 单位 小时
-func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, authorOtherAddr ,articleType, articleHash, shareAuthor, shareOriginalAuthor,
+func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, articleType, articleHash, shareAuthor, shareOriginalAuthor,
 	shareCommunity, shareInvestor, endInvestDate, endBuyDate string,coinType string) string {
 
 	privkey := tx.GetConfig().Dappowner
@@ -72,35 +72,49 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, authorOt
 		return common.NewErrorResult(ARTICLE_ADDRES_ERR, 0, "", err.Error()).Marshal()
 	}
 
+	fmt.Println("11111111111111111111111111")
 
 	articletype, err := strconv.Atoi(articleType)
 	if err != nil {
 		return common.NewErrorResult(ARTICLE_AUTHOR_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
+	fmt.Println("2222222222222222222222222")
 
 	authshare, err := strconv.Atoi(shareAuthor)
 	if err != nil {
 		return common.NewErrorResult(ARTICLE_AUTHOR_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
+	fmt.Println("333")
+
 	origshare, err := strconv.Atoi(shareOriginalAuthor)
 	if err != nil {
 		return common.NewErrorResult(ARTICLE_ORIGIN_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
+	fmt.Println("444")
+
 	commushare, err := strconv.Atoi(shareCommunity)
 	if err != nil {
 		return common.NewErrorResult(ARTICLE_COMMUNITY_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
+	fmt.Println("555")
+
 	invesshare, err := strconv.Atoi(shareInvestor)
 	if err != nil {
 		return common.NewErrorResult(ARTICLE_INVESTOR_SHARE_ERR, 0, "", err.Error()).Marshal()
 	}
+	fmt.Println("6666")
+
 	investhours, err := strconv.Atoi(endInvestDate)
 	if err != nil {
 		return common.NewErrorResult(ARTICLE_INVESTOR_DATE_ERR, 0, "", err.Error()).Marshal()
 	}
+	fmt.Println("77777")
+
 	if investhours <= 0 {
 		return common.NewErrorResult(ARTICLE_INVESTOR_DATE_ERR, 0, "", "投资期需大于0").Marshal()
 	}
+	fmt.Println("8888")
+
 	buyhours, err := strconv.Atoi(endBuyDate)
 	if err != nil {
 		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR, 0, "", err.Error()).Marshal()
@@ -108,22 +122,27 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, authorOt
 	if buyhours <= 0 {
 		return common.NewErrorResult(ARTICLE_BUY_DATE_ERR, 0, "", "广告竞拍期需大于0").Marshal()
 	}
+	fmt.Println("99999")
 
 	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privkey, cdc)
 	from, err := qstartypes.AccAddressFromBech32(addrben32)
 	if err != nil {
 		return common.NewErrorResult(ARTICLE_PRIV_ERR, 0, "", err.Error()).Marshal()
 	}
+	fmt.Println("101010")
 
 	if authorAddr.String() != from.String() {
 		//非作者本人私钥
 		return common.NewErrorResult(ARTICLE_PRIV_AUTHOR_ERR, 0, "", "非作者本人私钥").Marshal()
 	}
+	fmt.Println("11----------")
 
 	key := account.AddressStoreKey(from)
+	fmt.Println("12----------",from,key)
 
 	var nonce int64 = 0
 	acc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
+	fmt.Println("13----------",acc)
 	if err != nil {
 		nonce = 0
 	} else {
@@ -135,7 +154,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, authorOt
 	tochainid := config.GetCLIContext().Config.QOSChainID
 
 	fmt.Println(fromchainid,"-------------------",tochainid)
-	tx := NewArticlesTx(authorAddr, authorOtherAddr,articletype, articleHash, authshare, origshare, commushare, invesshare, investhours, buyhours,coinType, types.ZeroInt())
+	tx := NewArticlesTx(authorAddr, articletype, articleHash, authshare, origshare, commushare, invesshare, investhours, buyhours,coinType, types.NewInt(20000))
 	txsd := genStdSendTx(cdc, tx, priv, fromchainid, tochainid, nonce)
 	cliCtx := *config.GetCLIContext().QSCCliContext
 	_, commitresult, err1 := utils.SendTx(cliCtx, cdc, txsd)
@@ -147,7 +166,7 @@ func NewArticle(cdc *amino.Codec, ctx *config.CLIConfig, authorAddress, authorOt
 
 //封装公链交易信息
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, fromchainid string, tochainid string, nonce int64) *txs.TxStd {
-	gas := types.NewInt(int64(0))
+	gas := types.NewInt(int64(200000))
 	stx := txs.NewTxStd(sendTx, fromchainid, gas)
 	signature, _ := stx.SignTx(priKey, nonce, fromchainid, fromchainid)
 	stx.Signature = []txs.Signature{txs.Signature{

@@ -7,7 +7,6 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs/transfer"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
@@ -70,55 +69,55 @@ func check(ctx context.Context, articleKey []byte) error {
 	return nil
 }
 
-func checkRevenue(ctx context.Context, articleKey []byte, totalAmount qbasetypes.BigInt, items []qostxs.TransItem) error {
-	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
-	a := articleMapper.GetArticle(string(articleKey))
-	if a == nil {
-		return errors.New("invalid article")
-	}
-	investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
-	investors := investMapper.AllInvestors(articleKey)
-
-	communityPri := config.GetServerConf().Community
-	if communityPri == "" {
-		return errors.New("no community")
-	}
-
-	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(communityPri, articleMapper.GetCodec())
-	communityAddr, err := types.AccAddressFromBech32(addrben32)
-	if err != nil {
-		return err
-	}
-
-	receivers := warpperReceivers(articleMapper.GetCodec(), a, totalAmount, investors, communityAddr)
-
-	if len(receivers) != len(items) {
-		return errors.New("invalid Receivers")
-	}
-
-	receiverMap := make(map[string]qostxs.TransItem)
-	for _, v := range receivers {
-		if vv, ok := receiverMap[v.Address.String()]; ok {
-			vv.QOS = vv.QOS.Add(v.QOS)
-			receiverMap[v.Address.String()] = vv
-		} else {
-			receiverMap[v.Address.String()] = v
-		}
-	}
-
-	for _, v := range items {
-		if vv, ok := receiverMap[v.Address.String()]; ok {
-			if !v.QOS.Equal(vv.QOS) {
-				return errors.New("qos invalid")
-			}
-
-		} else {
-			return errors.New("invest not found")
-		}
-	}
-
-	return nil
-}
+//func checkRevenue(ctx context.Context, articleKey []byte, totalAmount qbasetypes.BigInt, items []qostxs.TransItem) error {
+//	articleMapper := ctx.Mapper(jianqian.ArticlesMapperName).(*jianqian.ArticlesMapper)
+//	a := articleMapper.GetArticle(string(articleKey))
+//	if a == nil {
+//		return errors.New("invalid article")
+//	}
+//	investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
+//	investors := investMapper.AllInvestors(articleKey)
+//
+//	communityPri := config.GetServerConf().Community
+//	if communityPri == "" {
+//		return errors.New("no community")
+//	}
+//
+//	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(communityPri, articleMapper.GetCodec())
+//	communityAddr, err := types.AccAddressFromBech32(addrben32)
+//	if err != nil {
+//		return err
+//	}
+//
+//	receivers := warpperReceivers(articleMapper.GetCodec(), a, totalAmount, investors, communityAddr)
+//
+//	if len(receivers) != len(items) {
+//		return errors.New("invalid Receivers")
+//	}
+//
+//	receiverMap := make(map[string]qostxs.TransItem)
+//	for _, v := range receivers {
+//		if vv, ok := receiverMap[v.Address.String()]; ok {
+//			vv.QOS = vv.QOS.Add(v.QOS)
+//			receiverMap[v.Address.String()] = vv
+//		} else {
+//			receiverMap[v.Address.String()] = v
+//		}
+//	}
+//
+//	for _, v := range items {
+//		if vv, ok := receiverMap[v.Address.String()]; ok {
+//			if !v.QOS.Equal(vv.QOS) {
+//				return errors.New("qos invalid")
+//			}
+//
+//		} else {
+//			return errors.New("invest not found")
+//		}
+//	}
+//
+//	return nil
+//}
 
 func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps *txs.TxQcp) {
 	buyMapper := ctx.Mapper(jianqian.BuyMapperName).(*jianqian.BuyMapper)
@@ -151,7 +150,7 @@ func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps
 	investors = calculateRevenue(auctionMapper.GetCodec(), article, auction.Amount, investors, communityAddr)
 
 	for _, v := range investors {
-		investMapper.SetInvestor(jianqian.GetInvestKey(it.ArticleHash, v.OtherAddr, v.InvestorType), v)
+		investMapper.SetInvestor(jianqian.GetInvestKey(it.ArticleHash, v.Address.String(), v.InvestorType), v)
 	}
 	buyer := &jianqian.Buyer{}
 	buyer.ArticleHash = it.ArticleHash

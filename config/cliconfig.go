@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 )
 
+const MaxGas = 20000
+
 var Clictx QStarsClientContext
 
 type QStarsClientContext struct {
@@ -30,9 +32,6 @@ type CLIConfig struct {
 	Adbuyermock string `mapstructure:"adbuyermock"`
 	Banker      string `mapstructure:"banker"`
 	Dappowner   string `mapstructure:"dappowner"`
-
-	OrgAuthor_Other string
-	Community_Other string
 }
 
 func GetCLIContext() QStarsClientContext {
@@ -41,11 +40,11 @@ func GetCLIContext() QStarsClientContext {
 
 func CreateCLIContextTwo(cdc *wire.Codec, cfg *CLIConfig) QStarsClientContext {
 
-	pQOSCliContext := context.NewCLIContext1(cfg.QOSNodeURI).
+	pQOSCliContext := context.NewCLIContext1(cfg.QOSNodeURI, cfg.QOSChainID, "qos").
 		WithCodec(cdc).
 		WithLogger(os.Stdout)
 
-	pQSCCliContext := context.NewCLIContext1(cfg.QSTARSNodeURI).
+	pQSCCliContext := context.NewCLIContext1(cfg.QSTARSNodeURI, cfg.QSCChainID, "qsc").
 		WithCodec(cdc).
 		WithLogger(os.Stdout)
 

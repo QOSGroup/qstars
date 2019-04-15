@@ -3,7 +3,7 @@
 package auth
 
 import (
-	qosaccount "github.com/QOSGroup/qos/account"
+	qosaccount "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/client/lcd/lib"
 	"github.com/QOSGroup/qstars/star"
 	"github.com/gorilla/mux"

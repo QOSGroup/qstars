@@ -39,8 +39,8 @@ func DispatchCoins(addrs, coins, causestrings, causecodes, gas *C.char) *C.char 
 //}
 
 //export NewArticle
-func NewArticle(authorAddress, authorOtherAddr, articleType, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate, cointype *C.char) *C.char {
-	output := jsdk.NewArticle(C.GoString(authorAddress), C.GoString(authorOtherAddr), C.GoString(articleType), C.GoString(articleHash), C.GoString(shareAuthor), C.GoString(shareOriginAuthor), C.GoString(shareCommunity), C.GoString(shareInvestor), C.GoString(endInvestDate), C.GoString(endBuyDate),C.GoString(cointype))
+func NewArticle(authorAddress, articleType, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate, cointype *C.char) *C.char {
+	output := jsdk.NewArticle(C.GoString(authorAddress),  C.GoString(articleType), C.GoString(articleHash), C.GoString(shareAuthor), C.GoString(shareOriginAuthor), C.GoString(shareCommunity), C.GoString(shareInvestor), C.GoString(endInvestDate), C.GoString(endBuyDate),C.GoString(cointype))
 	return C.CString(output)
 }
 
@@ -61,8 +61,8 @@ func AcutionAdBackground(txb *C.char) *C.char {
 }
 
 //export AcutionAd
-func AcutionAd(articleHash, address, otherAddr, coinsType, coinAmount, qscnonce, qosnonce *C.char) string {
-	output := jsdk.AcutionAd(C.GoString(articleHash),C.GoString(address),C.GoString(otherAddr),C.GoString(coinsType),C.GoString(coinAmount),C.GoString(qscnonce),C.GoString(qosnonce))
+func AcutionAd(articleHash, address,  coinsType, coinAmount, qscnonce *C.char) string {
+	output := jsdk.AcutionAd(C.GoString(articleHash),C.GoString(address),C.GoString(coinsType),C.GoString(coinAmount),C.GoString(qscnonce))
 	return output
 }
 
@@ -162,8 +162,8 @@ func QueryArticle(articleHash *C.char) *C.char {
 //}
 
 //export QueryCoins
-func QueryCoins(txHash *C.char) *C.char {
-	output := jsdk.QueryCoins(C.GoString(txHash))
+func QueryBlance(txHash *C.char) *C.char {
+	output := jsdk.QueryBlance(C.GoString(txHash))
 	return C.CString(output)
 }
 

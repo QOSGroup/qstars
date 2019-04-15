@@ -156,7 +156,7 @@ func ApproveCmd(cdc *wire.Codec) *cobra.Command {
 //
 //	return &stdTx
 //}
-const SEPERATOR = ","
+const SEPERATOR = ":"
 // MsgSend - high level transaction of the coin module
 type MsgSend struct {
 	Inputs  []Input  `json:"inputs"`

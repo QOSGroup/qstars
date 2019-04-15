@@ -7,7 +7,6 @@ import (
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/txs/transfer"
 	qostypes "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
@@ -18,7 +17,6 @@ import (
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/QOSGroup/qstars/x/jianqian/tx"
 	"log"
-	"strings"
 )
 
 const coinsName = "QOS"
@@ -65,44 +63,44 @@ func mergeQSCs(q1, q2 qostypes.QSCs) qostypes.QSCs {
 	return res
 }
 
-func mergeReceivers(rs []qostxs.TransItem) []qostxs.TransItem {
-	var res []qostxs.TransItem
-	m := make(map[string]qostxs.TransItem)
+//func mergeReceivers(rs []qostxs.TransItem) []qostxs.TransItem {
+//	var res []qostxs.TransItem
+//	m := make(map[string]qostxs.TransItem)
+//
+//	for _, v := range rs {
+//		if ti, ok := m[v.Address.String()]; ok {
+//			v.QOS = v.QOS.Add(ti.QOS)
+//			v.QSCs = mergeQSCs(v.QSCs, ti.QSCs)
+//			m[v.Address.String()] = v
+//		} else {
+//			m[v.Address.String()] = v
+//		}
+//	}
+//
+//	for _, v := range m {
+//		res = append(res, v)
+//	}
+//
+//	log.Printf("buyad.mergeReceivers rs:%+v, res:%+v", rs, res)
+//	return res
+//}
 
-	for _, v := range rs {
-		if ti, ok := m[v.Address.String()]; ok {
-			v.QOS = v.QOS.Add(ti.QOS)
-			v.QSCs = mergeQSCs(v.QSCs, ti.QSCs)
-			m[v.Address.String()] = v
-		} else {
-			m[v.Address.String()] = v
-		}
-	}
-
-	for _, v := range m {
-		res = append(res, v)
-	}
-
-	log.Printf("buyad.mergeReceivers rs:%+v, res:%+v", rs, res)
-	return res
-}
-
-func warpperReceivers(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt,
-	investors jianqian.Investors, communityAddr qbasetypes.Address) []qostxs.TransItem {
-	var result []qostxs.TransItem
-	log.Printf("buyad warpperReceivers  article:%+v", article)
-
-	investors = calculateRevenue(cdc, article, amount, investors, communityAddr)
-
-	for _, v := range investors {
-		if !v.Revenue.IsZero() {
-			addres,_:=types.AccAddressFromBech32(v.OtherAddr)
-			result = append(result,	warpperTransItem(addres,[]qbasetypes.BaseCoin{{Name: coinsName, Amount: v.Revenue}}))
-		}
-	}
-
-	return mergeReceivers(result)
-}
+//func warpperReceivers(cdc *wire.Codec, article *jianqian.Articles, amount qbasetypes.BigInt,
+//	investors jianqian.Investors, communityAddr qbasetypes.Address) []qostxs.TransItem {
+//	var result []qostxs.TransItem
+//	log.Printf("buyad warpperReceivers  article:%+v", article)
+//
+//	investors = calculateRevenue(cdc, article, amount, investors, communityAddr)
+//
+//	for _, v := range investors {
+//		if !v.Revenue.IsZero() {
+//			addres,_:=types.AccAddressFromBech32(v.Address.String())
+//			result = append(result,	warpperTransItem(addres,[]qbasetypes.BaseCoin{{Name: coinsName, Amount: v.Revenue}}))
+//		}
+//	}
+//
+//	return mergeReceivers(result)
+//}
 
 // calculateInvestorRevenue 计算投资者收入
 func calculateInvestorRevenue(cdc *wire.Codec, investors jianqian.Investors, amount qbasetypes.BigInt) jianqian.Investors {
@@ -125,7 +123,7 @@ func calculateInvestorRevenue(cdc *wire.Codec, investors jianqian.Investors, amo
 			investors[i].Revenue = revenue
 			curAmount = curAmount.Add(revenue)
 			log.Printf("buyad calculateRevenue  investorAddr:%s invest:%d, revenue:%d",
-				investors[i].OtherAddr, investors[i].Invest.Int64(), revenue.Int64())
+				investors[i].Address.String(), investors[i].Invest.Int64(), revenue.Int64())
 		}
 	}
 
@@ -139,16 +137,10 @@ func calculateRevenue(cdc *wire.Codec, article *jianqian.Articles, amount qbaset
 	log.Printf("buyad calculateRevenue  article:%+v, amount:%d", article, amount.Int64())
 
 
-	var addrstr,orgaddr,communitystr string
-	if article.CoinType=="QOS"{
-		addrstr=article.AuthorAddr.String()
-		orgaddr=communityAddr.String()
-		communitystr=communityAddr.String()
-	}else{
-		addrstr=article.AuthorOtherAddr
-		orgaddr=config.GetCLIContext().Config.OrgAuthor_Other
-		communitystr=config.GetCLIContext().Config.Community_Other
-	}
+		//addrstr=article.AuthorAddr.String()
+		//orgaddr=communityAddr.String()
+		//communitystr=communityAddr.String()
+
 
 
 
@@ -159,19 +151,19 @@ func calculateRevenue(cdc *wire.Codec, article *jianqian.Articles, amount qbaset
 		result,
 		jianqian.Investor{
 			InvestorType: jianqian.InvestorTypeAuthor, // 投资者类型
-			OtherAddr:      addrstr,             // 投资者地址
+			Address:      article.AuthorAddr,             // 投资者地址
 			Invest:       qbasetypes.NewInt(0),        // 投资金额
 			Revenue:      authorTotal,                 // 投资收益
 		})
 
 	// 原创作者地址
 	shareOriginalTotal := amount.Mul(qbasetypes.NewInt(int64(article.ShareOriginalAuthor))).Div(qbasetypes.NewInt(100))
-	log.Printf("buyad calculateRevenue  OriginalAuthor:%s amount:%d", orgaddr, shareOriginalTotal.Int64())
+	log.Printf("buyad calculateRevenue  OriginalAuthor:%s amount:%d", communityAddr.String(), shareOriginalTotal.Int64())
 	result = append(
 		result,
 		jianqian.Investor{
 			InvestorType: jianqian.InvestorTypeOriginalAuthor, // 投资者类型
-			OtherAddr:      orgaddr,              // 投资者地址
+			Address:      communityAddr,              // 投资者地址
 			Invest:       qbasetypes.NewInt(0),                // 投资金额
 			Revenue:      shareOriginalTotal,                  // 投资收益
 		})
@@ -189,7 +181,7 @@ func calculateRevenue(cdc *wire.Codec, article *jianqian.Articles, amount qbaset
 		result,
 		jianqian.Investor{
 			InvestorType: jianqian.InvestorTypeCommunity, // 投资者类型
-			OtherAddr:      communitystr,                  // 投资者地址
+			Address:      communityAddr,                  // 投资者地址
 			Invest:       qbasetypes.NewInt(0),           // 投资金额
 			Revenue:      shareCommunityTotal,            // 投资收益
 		})
@@ -215,7 +207,7 @@ func buyAd(cdc *wire.Codec, chainId, articleHash,  privatekey string) (*txs.TxSt
 	nonce++
 	it := &BuyTx{}
 	it.ArticleHash = []byte(articleHash)
-	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, qbasetypes.ZeroInt())
+	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, qbasetypes.NewInt(200000))
 	signature2, _ := tx2.SignTx(priv, nonce, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priv.PubKey(),
@@ -225,21 +217,21 @@ func buyAd(cdc *wire.Codec, chainId, articleHash,  privatekey string) (*txs.TxSt
 	return tx2, nil
 }
 
-func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qostxs.TransItem {
-	var ti qostxs.TransItem
-	ti.Address = addr
-	ti.QOS = qbasetypes.NewInt(0)
-
-	for _, coin := range coins {
-		if strings.ToUpper(coin.Name) == "QOS" {
-			ti.QOS = ti.QOS.Add(coin.Amount)
-		} else {
-			ti.QSCs = append(ti.QSCs, &coin)
-		}
-	}
-
-	return ti
-}
+//func warpperTransItem(addr qbasetypes.Address, coins []qbasetypes.BaseCoin) qostxs.TransItem {
+//	var ti qostxs.TransItem
+//	ti.Address = addr
+//	ti.QOS = qbasetypes.NewInt(0)
+//
+//	for _, coin := range coins {
+//		if strings.ToUpper(coin.Name) == "QOS" {
+//			ti.QOS = ti.QOS.Add(coin.Amount)
+//		} else {
+//			ti.QSCs = append(ti.QSCs, &coin)
+//		}
+//	}
+//
+//	return ti
+//}
 
 // RetrieveBuyer 查询购买者
 func RetrieveBuyer(cdc *wire.Codec, articleHash string) string {
