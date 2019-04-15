@@ -3,7 +3,10 @@ package main
 import "C"
 import (
 	"github.com/QOSGroup/qstars/slim"
-	"github.com/QOSGroup/qstars/stub/java/jsdk"
+	"github.com/QOSGroup/qstars/star"
+	"github.com/QOSGroup/qstars/x/jianqian"
+	"github.com/QOSGroup/qstars/x/jianqian/advertisers"
+	"strconv"
 )
 
 //export AccountCreate
@@ -119,20 +122,17 @@ func JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) s
 }
 
 
-
-//export AdvertisersTrue
-func AdvertisersTrue(privatekey, coinsType, coinAmount, qscnonce *C.char) *C.char {
-	output := jsdk.AdvertisersTrue(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
-	return C.CString(output)
+//for AdvertisersTrue
+func AdvertisersTrue( privatekey,  coinsType, coinAmount, qscnonce string) string {
+	qsc, _ := strconv.ParseInt(qscnonce, 10, 64)
+	return advertisers.Advertisers(star.MakeCodec(),coinAmount,privatekey,coinsType,jianqian.CHANGE_TYPE_MINUS,qsc)
 }
 
-//export AdvertisersFalse
-func AdvertisersFalse(privatekey, coinsType, coinAmount, qscnonce *C.char) *C.char {
-	output := jsdk.AdvertisersFalse(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
-	return C.CString(output)
+//for AdvertisersFalse
+func AdvertisersFalse( privatekey,  coinsType, coinAmount, qscnonce string) string {
+	qsc, _ := strconv.ParseInt(qscnonce, 10, 64)
+	return advertisers.Advertisers(star.MakeCodec(),coinAmount,privatekey,coinsType,jianqian.CHANGE_TYPE_PLUS,qsc)
 }
-
-
 
 
 func main() {
