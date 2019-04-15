@@ -3,6 +3,7 @@ package main
 import "C"
 import (
 	"github.com/QOSGroup/qstars/slim"
+	"github.com/QOSGroup/qstars/stub/java/jsdk"
 )
 
 //export AccountCreate
@@ -116,6 +117,23 @@ func JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey string) s
 	output := slim.JQInvestAd(QOSchainId, QSCchainId, articleHash, coins, privatekey)
 	return output
 }
+
+
+
+//export AdvertisersTrue
+func AdvertisersTrue(privatekey, coinsType, coinAmount, qscnonce *C.char) *C.char {
+	output := jsdk.AdvertisersTrue(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
+	return C.CString(output)
+}
+
+//export AdvertisersFalse
+func AdvertisersFalse(privatekey, coinsType, coinAmount, qscnonce *C.char) *C.char {
+	output := jsdk.AdvertisersFalse(C.GoString(privatekey), C.GoString(coinsType), C.GoString(coinAmount), C.GoString(qscnonce))
+	return C.CString(output)
+}
+
+
+
 
 func main() {
 	//SetBlockchainEntrance("192.168.1.23:1317", "forQmoonAddr")
