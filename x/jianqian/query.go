@@ -31,9 +31,9 @@ func QueryAllAcution(cdc *amino.Codec, ctx *context.CLIContext, hash string) (au
 	if err != nil {
 		return nil, err
 	}
-	result:=string(res)
-	first:=strings.Index(result,"{")
-	res=res[first:]
+	result := string(res)
+	first := strings.Index(result, "{")
+	res = res[first:]
 	err = json.Unmarshal(res, &auction)
 	return
 }
@@ -58,25 +58,46 @@ func QueryBlance(cdc *amino.Codec, ctx *context.CLIContext, tx string) (acc *AOE
 	return
 }
 
+type Result struct {
+	Type  string
+	Value interface{}
+	Error string
+}
 
-func QueryTx(cdc *amino.Codec,ctx *context.CLIContext,txstring string)string{
+func QueryTx(cdc *amino.Codec, ctx *context.CLIContext, txstring string) string {
+	result := Result{}
 	hash, err := hex.DecodeString(txstring)
 	if err != nil {
-		return "",err
+		result.Error = err.Error()
+		resp, _ := json.Marshal(result)
+		return string(resp)
 	}
 	//
 	resTx, err := ctx.Client.Tx(hash, !ctx.TrustNode)
-	if (err!=nil){
-		return "",err
+	if err != nil {
+		result.Error = err.Error()
+		resp, _ := json.Marshal(result)
+		return string(resp)
 	}
 	//parse Tx
 	var tx *txs.TxStd
-	errz := cdc.UnmarshalBinaryBare(resTx.Tx, &tx)
-	if errz != nil {
-		return "",errz
+	err = cdc.UnmarshalBinaryBare(resTx.Tx, &tx)
+	if err != nil {
+		result.Error = err.Error()
+		resp, _ := json.Marshal(result)
+		return string(resp)
 	}
-	resp, err := cdc.MarshalJSON(tx.ITx)
-	return string(resp),err
+
+	resp, _ := cdc.MarshalJSON(tx.ITx)
+	err = json.Unmarshal(resp, &result)
+	if err != nil {
+		result.Error = err.Error()
+		resp, _ :=json.Marshal(result)
+		return string(resp)
+	}
+	result.Error = ""
+	temp, _ := json.Marshal(result)
+	return string(temp)
 }
 
 func ListInvestors(ctx *context.CLIContext, cdc *amino.Codec, articleHash string) (Investors, error) {

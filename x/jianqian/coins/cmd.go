@@ -111,15 +111,9 @@ func QueryTxCmd(cdc *wire.Codec) *cobra.Command {
 
 			tx := viper.GetString(flag_tx)
 
-			fmt.Println("tx",tx)
-			result,err:= jianqian.QueryTx(cdc,config.GetCLIContext().QSCCliContext,tx)
+			result:= jianqian.QueryTx(cdc,config.GetCLIContext().QSCCliContext,tx)
 
-
-			if err!=nil{
-				fmt.Println(err.Error())
-			}
-
-			fmt.Println(result)
+			fmt.Println("result",result)
 
 			return nil
 		},
