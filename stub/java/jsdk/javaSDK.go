@@ -182,7 +182,7 @@ func Extract( privatekey, address, coinsType, coinAmount string) string {
 
 
 //查询Tx
-func QueryTx( tx string) (string,error) {
+func QueryTx( tx string) string {
 	return jianqian.QueryTx(CDC, config.GetCLIContext().QSCCliContext,tx)
 }
 

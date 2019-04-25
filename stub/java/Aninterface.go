@@ -117,8 +117,9 @@ func AdvertisersBackground(txb *C.char) *C.char {
 }
 
 //export QueryTx
-func QueryTx( tx *C.char) (string,error) {
-	return jsdk.QueryTx(C.GoString(tx))
+func QueryTx( tx *C.char)*C.char {
+	output:=jsdk.QueryTx(C.GoString(tx))
+	return C.CString(output)
 }
 
 
