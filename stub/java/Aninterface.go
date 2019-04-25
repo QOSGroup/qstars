@@ -116,6 +116,10 @@ func AdvertisersBackground(txb *C.char) *C.char {
 	return C.CString(output)
 }
 
+//export QueryTx
+func QueryTx( tx *C.char) (string,error) {
+	return jsdk.QueryTx(C.GoString(tx))
+}
 
 
 //export QSCCommitResultCheck

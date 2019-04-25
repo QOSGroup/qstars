@@ -1,6 +1,8 @@
 package recharge
 
 import (
+	"encoding/hex"
+	//"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
@@ -12,6 +14,9 @@ import (
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
+	"github.com/tendermint/tendermint/crypto/tmhash"
+	//"log"
+	"strings"
 )
 
 const (
@@ -39,6 +44,10 @@ func Recharge(cdc *wire.Codec, amount, privatekey,address, cointype,isDeposit st
 	var result common.Result
 	result.Code = common.ResultCodeSuccess
 	tx, berr := recharge(cdc, amount, privatekey,address, cointype,isDeposit)
+
+	//txBytes, err := cdc.MarshalBinaryBare(tx)
+	//fmt.Println("tx=",	strings.ToUpper(hex.EncodeToString(tmhash.Sum(txBytes))))
+
 	if berr != "" {
 		return berr
 	}
@@ -84,4 +93,19 @@ func recharge(cdc *wire.Codec, coins, privatekey,address, cointype,isDeposit str
 		Nonce:     qscnonce,
 	}}
 	return tx2, ""
+}
+
+
+func GetTx(tx string)string{
+	txhashs := strings.ToUpper(hex.EncodeToString(tmhash.Sum([]byte(tx))))
+	return string(txhashs)
+}
+
+func GetTx1(tx string)string{
+	txBytes, err := hex.DecodeString(tx)
+	if err != nil {
+		return err.Error()
+	}
+	txhashs := strings.ToUpper(hex.EncodeToString(tmhash.Sum(txBytes)))
+	return string(txhashs)
 }

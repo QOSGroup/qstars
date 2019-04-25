@@ -3,9 +3,12 @@
 package jianqian
 
 import (
+	"encoding/hex"
+	//"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/tendermint/go-amino"
 	"log"
@@ -53,6 +56,27 @@ func QueryBlance(cdc *amino.Codec, ctx *context.CLIContext, tx string) (acc *AOE
 	}
 	err = cdc.UnmarshalBinaryBare(res, &acc)
 	return
+}
+
+
+func QueryTx(cdc *amino.Codec,ctx *context.CLIContext,txstring string)string{
+	hash, err := hex.DecodeString(txstring)
+	if err != nil {
+		return "",err
+	}
+	//
+	resTx, err := ctx.Client.Tx(hash, !ctx.TrustNode)
+	if (err!=nil){
+		return "",err
+	}
+	//parse Tx
+	var tx *txs.TxStd
+	errz := cdc.UnmarshalBinaryBare(resTx.Tx, &tx)
+	if errz != nil {
+		return "",errz
+	}
+	resp, err := cdc.MarshalJSON(tx.ITx)
+	return string(resp),err
 }
 
 func ListInvestors(ctx *context.CLIContext, cdc *amino.Codec, articleHash string) (Investors, error) {

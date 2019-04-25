@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	)
@@ -95,4 +96,39 @@ func QueryBlanceCmd(cdc *wire.Codec) *cobra.Command {
 
 	return cmd
 }
+
+
+func QueryTxCmd(cdc *wire.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryTx",
+		Short: "query  tx ",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Println(r)
+				}
+			}()
+
+			tx := viper.GetString(flag_tx)
+
+			fmt.Println("tx",tx)
+			result,err:= jianqian.QueryTx(cdc,config.GetCLIContext().QSCCliContext,tx)
+
+
+			if err!=nil{
+				fmt.Println(err.Error())
+			}
+
+			fmt.Println(result)
+
+			return nil
+		},
+	}
+
+	cmd.Flags().String(flag_tx, "", "query  tx")
+
+	return cmd
+}
+
+
 

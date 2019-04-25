@@ -90,6 +90,7 @@ func main() {
 			article.NewArticleCmd(cdc),
 			article.QueryArticleCmd(cdc),
 			coins.QueryBlanceCmd(cdc),
+			coins.QueryTxCmd(cdc),
 			recharge.RechargeCmd(cdc),
 			auction.NewAuctionCmd(cdc),
 			advertisers.AdvertisersCmd(cdc),

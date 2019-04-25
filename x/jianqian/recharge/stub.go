@@ -26,6 +26,7 @@ func (cstub RechargeStub) EndBlockNotify(ctx context.Context) {
 
 func (cstub RechargeStub) RegisterCdc(cdc *go_amino.Codec) {
 	cdc.RegisterConcrete(&RechargeTx{}, "jianqian/RechargeTx", nil)
+	cdc.RegisterConcrete(&ExtractTx{}, "jianqian/ExtractTx", nil)
 }
 
 func (cstub RechargeStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
