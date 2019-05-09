@@ -8,6 +8,7 @@ import (
 	"github.com/QOSGroup/qstars/x/bank"
 	"github.com/QOSGroup/qstars/x/jianqian/advertisers"
 	"github.com/QOSGroup/qstars/x/jianqian/auction"
+	"github.com/QOSGroup/qstars/x/jianqian/comm"
 	"github.com/QOSGroup/qstars/x/jianqian/recharge"
 
 	"github.com/QOSGroup/qstars/x/jianqian/article"
@@ -44,6 +45,11 @@ var _ baseapp.BaseXTransaction = advertisers.AdvertisersStub{}
 var _ baseapp.BaseXTransaction = auction.AuctionStub{}
 var _ baseapp.BaseXTransaction = recharge.RechargeStub{}
 
+var _ baseapp.BaseXTransaction = comm.JianQianStub{}
+
+
+
+
 func init() {
 	registerType((*bank.BankStub)(nil))
 	registerType((*kvstore.KVStub)(nil))
@@ -54,6 +60,8 @@ func init() {
 	registerType((*advertisers.AdvertisersStub)(nil))
 	registerType((*auction.AuctionStub)(nil))
 	registerType((*recharge.RechargeStub)(nil))
+	registerType((*comm.JianQianStub)(nil))
+
 }
 
 /**
