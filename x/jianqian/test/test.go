@@ -11,18 +11,32 @@ import (
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 )
 
-
 func main(){
-	addrs:="address1y9r4pjjnvkmpvw46de8tmwunw4nx4qnz2ax5ux1"
-	path := fmt.Sprintf("/store/%s/%s", "aoeaccount", "key")
-	output,err := Query(path,[]byte(addrs))
-	if err!=nil{
-		fmt.Println(err.Error())
-	}else {
+	//addrs:="address1y9r4pjjnvkmpvw46de8tmwunw4nx4qnz2ax5ux1"
+	//path := fmt.Sprintf("/store/%s/%s", "aoeaccount", "key")
+	//output,err := Query(path,[]byte(addrs))
+	//if err!=nil{
+	//	fmt.Println(err.Error())
+	//}else {
+	//
+	//	a,_:=json.Marshal(output)
+	//	fmt.Println(string(a))
+	//}
 
-		a,_:=json.Marshal(output)
-		fmt.Println(string(a))
-	}
+
+	str:="[\"a\",\"b\",\"c\",\"d\"]"
+
+	var args []string
+
+	json.Unmarshal([]byte(str),&args)
+
+
+
+fmt.Println(args)
+
+
+
+
 }
 
 func Query(path string, key common.HexBytes) (res *types.BaseCoins, err error) {

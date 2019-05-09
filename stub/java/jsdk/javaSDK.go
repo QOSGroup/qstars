@@ -10,6 +10,7 @@ import (
 	"github.com/QOSGroup/qstars/x/jianqian/auction"
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
+	"github.com/QOSGroup/qstars/x/jianqian/comm"
 	"github.com/QOSGroup/qstars/x/jianqian/recharge"
 	"strconv"
 
@@ -211,4 +212,13 @@ type ResultInvest struct {
 	Hash   string          `json:"hash,omitempty"`
 	Reason string          `json:"reason,omitempty"`
 	Result json.RawMessage `json:"result,omitempty"`
+}
+
+
+//通用链码通道
+//funcName             //方法名
+//privatekey       //签名私钥
+//args             //参数数组 格式为：["a","b","c","d"]
+func CommHandler(  funcName, privatekey, args string) string {
+	return comm.CommHandler(CDC,funcName,privatekey,args)
 }

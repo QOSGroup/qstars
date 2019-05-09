@@ -166,3 +166,11 @@ func main() {
 	//trc := slim.TransferRecordsQuery("address1l7d3dc26adk9gwzp777s3a9p5tprn7m43p99cg", "AOE")
 	//fmt.Println(trc)
 }
+
+
+
+//export CommHandler
+func CommHandler(funcName, privatekey, args *C.char) *C.char {
+	output := jsdk.CommHandler(C.GoString(funcName), C.GoString(privatekey), C.GoString(args))
+	return C.CString(output)
+}

@@ -1,6 +1,7 @@
 package comm
 
 import (
+	"encoding/json"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
 	qosaccount "github.com/QOSGroup/qos/types"
@@ -14,11 +15,16 @@ import (
 	"github.com/QOSGroup/qbase/types"
 )
 
-func CommHandler(cdc *wire.Codec, funcName, privatekey string, args []string) string {
-	var result common.Result
-	result.Code = common.ResultCodeSuccess
-	tx, berr := commHandler(cdc, funcName, privatekey, args)
+func CommHandler(cdc *wire.Codec, funcName, privatekey string, argstr string) string {
+	//var result common.Result
+	//result.Code = common.ResultCodeSuccess
 
+	var args []string
+	err:=json.Unmarshal([]byte(argstr),&args)
+	if err!=nil{
+		return common.NewErrorResult(common.ResultCodeInternalError, 0, "", err.Error()).Marshal()
+	}
+	tx, berr := commHandler(cdc, funcName, privatekey, args)
 	if berr != "" {
 		return berr
 	}
