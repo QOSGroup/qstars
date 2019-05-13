@@ -5,8 +5,6 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
-	qstarstypes "github.com/QOSGroup/qstars/types"
-
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"log"
 	"strconv"
@@ -88,15 +86,15 @@ func (tx *AuctionTx) Exec(ctx context.Context) (result types.Result, crossTxQcps
 
 
 
-func (tx *AuctionTx) NewTx(args []string) error {
+func (tx *AuctionTx) NewTx(args []string,address types.Address) error {
 	args_len := len(args)
 	if args_len != para_len_4 {
 		return errors.New("AdvertisersTx args len error want " + strconv.Itoa(para_len_4) + " got " + strconv.Itoa(args_len))
 	}
-	address, err := qstarstypes.AccAddressFromBech32(args[0])
-	if err != nil {
-		return err
-	}
+	//address, err := qstarstypes.AccAddressFromBech32(args[0])
+	//if err != nil {
+	//	return err
+	//}
 	coins, ok := types.NewIntFromString(args[1])
 	if !ok {
 		return errors.New("amount format error")

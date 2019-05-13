@@ -5,8 +5,6 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qstars/types"
-
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"strconv"
 	"strings"
@@ -77,16 +75,16 @@ func (tx *ArticleTx) Exec(ctx context.Context) (result qbasetypes.Result, crossT
 	return
 }
 
-func (tx *ArticleTx) NewTx(args []string) error {
+func (tx *ArticleTx) NewTx(args []string,address qbasetypes.Address) error {
 	args_len := len(args)
 	if args_len != para_len_10 {
 		return errors.New("AdvertisersTx args len error want " + strconv.Itoa(para_len_10) + " got " + strconv.Itoa(args_len))
 	}
 
-	address, err := types.AccAddressFromBech32(args[0])
-	if err != nil {
-		return err
-	}
+	//address, err := types.AccAddressFromBech32(args[0])
+	//if err != nil {
+	//	return err
+	//}
 
 	articleType, err := strconv.Atoi(args[1])
 	if err != nil {

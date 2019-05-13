@@ -48,15 +48,15 @@ func (tx *AOETx) Exec(ctx context.Context) (result types.Result, crossTxQcp *txs
 	return
 }
 
-func (tx *AOETx) NewTx(args []string) error {
+func (tx *AOETx) NewTx(args []string,address types.Address) error {
 	args_len := len(args)
 	if args_len != para_len_3 {
 		return errors.New("AdvertisersTx args len error want " + strconv.Itoa(para_len_3) + " got " + strconv.Itoa(args_len))
 	}
-	address, err := qstarstypes.AccAddressFromBech32(args[0])
-	if err != nil {
-		return err
-	}
+	//address, err := qstarstypes.AccAddressFromBech32(args[0])
+	//if err != nil {
+	//	return err
+	//}
 	toAddress := args[1]
 	tocoins := args[2]
 	addrs := strings.Split(toAddress, "|")

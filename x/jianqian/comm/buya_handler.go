@@ -102,15 +102,15 @@ func (it *BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcp
 	buyMapper.SetBuyer(it.ArticleHash, *buyer)
 	return
 }
-func (tx *BuyTx) NewTx(args []string) error {
+func (tx *BuyTx) NewTx(args []string,address qbasetypes.Address) error {
 	args_len := len(args)
 	if args_len != para_len_2 {
 		return errors.New("AdvertisersTx args len error want " + strconv.Itoa(para_len_2) + " got " + strconv.Itoa(args_len))
 	}
-	address, err := types.AccAddressFromBech32(args[0])
-	if err != nil {
-		return err
-	}
+	//address, err := types.AccAddressFromBech32(args[0])
+	//if err != nil {
+	//	return err
+	//}
 
 	tx.Addreess = address
 	tx.ArticleHash = []byte(args[1])

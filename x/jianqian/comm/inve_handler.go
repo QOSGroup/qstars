@@ -7,7 +7,6 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	"github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"log"
 	"strconv"
@@ -86,15 +85,15 @@ func (it *InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTx
 	return
 }
 
-func (tx *InvestTx) NewTx(args []string) error {
+func (tx *InvestTx) NewTx(args []string,address qbasetypes.Address) error {
 	args_len := len(args)
 	if args_len != para_len_4 {
 		return errors.New("AdvertisersTx args len error want " + strconv.Itoa(para_len_4) + " got " + strconv.Itoa(args_len))
 	}
-	address, err := types.AccAddressFromBech32(args[0])
-	if err != nil {
-		return err
-	}
+	//address, err := types.AccAddressFromBech32(args[0])
+	//if err != nil {
+	//	return err
+	//}
 
 	amount, ok := qbasetypes.NewIntFromString(args[1])
 	if !ok {

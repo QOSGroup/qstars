@@ -80,12 +80,12 @@ func (tx *AdvertisersTx) Exec(ctx context.Context) (result types.Result, crossTx
 
 }
 
-func (tx *AdvertisersTx) NewTx(args []string) error {
+func (tx *AdvertisersTx) NewTx(args []string,address types.Address) error {
 	args_len := len(args)
 	if args_len != para_len_4 {
 		return errors.New("AdvertisersTx args len error want " + strconv.Itoa(para_len_4) + " got " + strconv.Itoa(args_len))
 	}
-	coinsTx, err := GetCoins(args[0], args[1], args[2], args[3])
+	coinsTx, err := GetCoins(address, args[1], args[2], args[3])
 	if err != nil {
 		return err
 	}

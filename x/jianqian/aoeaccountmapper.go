@@ -9,8 +9,8 @@ import (
 
 const (
 	AoeAccountMapperName = "aoeaccount"
-	CHANGE_TYPE_PLUS="1"
-	CHANGE_TYPE_MINUS="2"
+	CHANGE_TYPE_PLUS="0"
+	CHANGE_TYPE_MINUS="1"
 )
 
 type AoeAccountMapper struct {

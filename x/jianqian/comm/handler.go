@@ -32,7 +32,7 @@ var _ txs.ITx = (*JianQianTx)(nil)
 
 func (it JianQianTx) ValidateData(ctx context.Context) error {
 	funcName := it.FuncName
-	routerTx, err := getStruct(funcName, it.Args)
+	routerTx, err := getStruct(funcName, it.Args,it.Address[0])
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (it JianQianTx) ValidateData(ctx context.Context) error {
 
 func (it JianQianTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps *txs.TxQcp) {
 	funcName := it.FuncName
-	routerTx, err := getStruct(funcName, it.Args)
+	routerTx, err := getStruct(funcName, it.Args,it.Address[0])
 	if err != nil {
 		return
 	}
