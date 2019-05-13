@@ -15,10 +15,7 @@ import (
 	"github.com/QOSGroup/qbase/types"
 )
 
-func CommHandler(cdc *wire.Codec, funcName, privatekey string, argstr string) string {
-	//var result common.Result
-	//result.Code = common.ResultCodeSuccess
-
+func CommHandler(cdc *wire.Codec, funcName, privatekey , argstr string) string {
 	var args []string
 	err:=json.Unmarshal([]byte(argstr),&args)
 	if err!=nil{

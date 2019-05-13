@@ -24,6 +24,16 @@ func main(){
 	//}
 
 
+	aaa:=[]string{"11","22","333","444"}
+
+
+	bbb,_:=json.Marshal(aaa)
+
+
+	fmt.Println(string(bbb))
+
+
+
 	str:="[\"a\",\"b\",\"c\",\"d\"]"
 
 	var args []string

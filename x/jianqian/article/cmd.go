@@ -1,9 +1,11 @@
 package article
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/x/jianqian/comm"
+	"github.com/QOSGroup/qstars/x/jianqian/tx"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -38,7 +40,6 @@ func NewArticleCmd(cdc *wire.Codec) *cobra.Command {
 
 
 			authorAddress := viper.GetString(flag_authoraddress)
-			//authorOtherAddress := viper.GetString(flag_authorotheraddress)
 			articleType := viper.GetString(flag_articletype)
 			articleHash := viper.GetString(flag_articleHash)
 			shareAuthor := viper.GetString(flag_shareAuthor)
@@ -52,9 +53,24 @@ func NewArticleCmd(cdc *wire.Codec) *cobra.Command {
 
 			fmt.Println(authorAddress,articleType,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,shareInvestor,endInvestDate,endBuyDate,coinType)
 
+			privkey := tx.GetConfig().Dappowner
+			argss:=[]string{authorAddress,articleType,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,shareInvestor,endInvestDate,endBuyDate,coinType}
 
-			result := NewArticle(cdc,config.GetCLIContext().Config,authorAddress,articleType,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,
-				shareInvestor,endInvestDate,endBuyDate,coinType)
+
+
+			argstr,_:=json.Marshal(argss)
+
+			fmt.Println("args",string(argstr))
+
+
+			result:=comm.CommHandler(cdc,comm.ArticleTxFlag,privkey,string(argstr))
+
+
+
+
+
+			//result := NewArticle(cdc,config.GetCLIContext().Config,authorAddress,articleType,articleHash,shareAuthor,shareOriginalAuthor,shareCommunity,
+			//	shareInvestor,endInvestDate,endBuyDate,coinType)
 			fmt.Println(result)
 			return nil
 		},

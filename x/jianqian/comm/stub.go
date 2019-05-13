@@ -13,7 +13,7 @@ import (
 type JianQianStub struct {
 }
 
-func NewRechargeStub() JianQianStub {
+func NewJianQianStub() JianQianStub {
 	return JianQianStub{}
 }
 
