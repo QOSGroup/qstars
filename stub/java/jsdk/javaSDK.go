@@ -73,7 +73,7 @@ func AcutionAdBackground(txb string) string {
 
 //查询当前最高出价
 //txHash 广告位标识
-func QueryMaxAcution(txHash string) string {
+func QueryMaxAuction(txHash string) string {
 	result := auction.QueryMaxAcution(CDC,  txHash)
 
 	return result
@@ -81,7 +81,7 @@ func QueryMaxAcution(txHash string) string {
 
 //查询全部竞拍信息
 //txHash 广告位标识
-func QueryAllAcution(txHash string) string {
+func QueryAllAuction(txHash string) string {
 	result := auction.QueryAllAcution(CDC, txHash)
 	return result
 }
