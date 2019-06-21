@@ -93,6 +93,9 @@ func main() {
 			coins.QueryTxCmd(cdc),
 			recharge.RechargeCmd(cdc),
 			auction.NewAuctionCmd(cdc),
+			auction.QueryMaxAuctionCMD(cdc),
+			auction.QueryAllAuctionCMD(cdc),
+
 			advertisers.AdvertisersCmd(cdc),
 		)...)
 

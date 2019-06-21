@@ -85,10 +85,10 @@ func NewAuctionCmd(cdc *wire.Codec) *cobra.Command {
 	return cmd
 }
 
-func QueryMaxAcutionCMD(cdc *wire.Codec) *cobra.Command {
+func QueryMaxAuctionCMD(cdc *wire.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryMaxAcution",
-		Short: "query  max acution",
+		Use:   "QueryMaxAuction",
+		Short: "query  max auction",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer func() {
 				if r := recover(); r != nil {
@@ -111,10 +111,10 @@ func QueryMaxAcutionCMD(cdc *wire.Codec) *cobra.Command {
 
 	return cmd
 }
-func QueryAllAcutionCMD(cdc *wire.Codec) *cobra.Command {
+func QueryAllAuctionCMD(cdc *wire.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryAllAcution",
-		Short: "query  all acution",
+		Use:   "QueryAllAuction",
+		Short: "query  all auction",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer func() {
 				if r := recover(); r != nil {

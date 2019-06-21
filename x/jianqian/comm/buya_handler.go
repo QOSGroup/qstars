@@ -15,6 +15,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type BuyTx struct {
@@ -53,12 +54,26 @@ func check(ctx context.Context, articleKey []byte) error {
 	}
 
 	log.Printf("--- checkArticle: EndBuyDate:%+v, blockheader:%+v", a.EndBuyDate, ctx.BlockHeader())
-	if err := checkArticleBase(a, ctx.BlockHeader().Time); err != nil {
+	if err := checkArticl(a, ctx.BlockHeader().Time); err != nil {
 		return err
 	}
 
 	return nil
 }
+
+
+func checkArticl(article *jianqian.Articles, now time.Time) error {
+	log.Printf("checkArticleBase EndInvestDate:%+v, EndBuyDate:%+v, now:%+v", article.EndInvestDate, article.EndBuyDate, now)
+	if article.EndInvestDate.After(now) {
+		return errors.New("投资还没结束")
+	}
+	if article.EndBuyDate.After(now) {
+		return errors.New("竞拍未结束")
+	}
+
+	return nil
+}
+
 
 func (it *BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps *txs.TxQcp) {
 	buyMapper := ctx.Mapper(jianqian.BuyMapperName).(*jianqian.BuyMapper)

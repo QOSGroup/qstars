@@ -59,7 +59,7 @@ func getStruct(funcName string, args []string,address qbasetypes.Address) (route
 	return
 }
 
-func GetCoins(address qbasetypes.Address, cointype, changetype, amount string) (*jianqian.CoinsTx, error) {
+func GetCoins(address qbasetypes.Address, cointype,  amount,changetype string) (*jianqian.CoinsTx, error) {
 	coinsTx := &jianqian.CoinsTx{}
 	//address, err := types.AccAddressFromBech32(addr)
 	//if err != nil {
