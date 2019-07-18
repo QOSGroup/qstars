@@ -88,7 +88,7 @@ func QueryTx(cdc *amino.Codec, ctx *context.CLIContext, txstring string) string 
 		return string(resp)
 	}
 
-	resp, _ := cdc.MarshalJSON(tx.ITx)
+	resp, _ := cdc.MarshalJSON(tx.ITxs)
 	err = json.Unmarshal(resp, &result)
 	if err != nil {
 		result.Error = err.Error()

@@ -341,7 +341,8 @@ func MultiSendViaQStars(cdc *wire.Codec, fromstrs []string, tos []qbasetypes.Add
 func genStdSendMultiWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey []ed25519.PrivKeyEd25519, fromchainid string, tochainid string, qosnonce []int64, qscnonce []int64) *txs.TxStd {
 	stx := genStdSendMultiTx(cdc, sendTx, priKey, fromchainid, tochainid, qosnonce)
 	tx2 := txs.NewTxStd(nil, fromchainid, stx.MaxGas)
-	tx2.ITx = NewWrapperSendTx(stx)
+	//tx2.ITx = NewWrapperSendTx(stx)
+	tx2.ITxs = []txs.ITx{NewWrapperSendTx(stx)}
 
 	for i := 0; i < len(qscnonce); i++ {
 		qscn := qscnonce[i]

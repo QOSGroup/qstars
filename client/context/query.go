@@ -2,7 +2,7 @@ package context
 
 import (
 	"fmt"
-	"github.com/QOSGroup/qbase/store"
+	"github.com/QOSGroup/qbase/store/rootmulti"
 	account "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/wire"
 	"io"
@@ -296,7 +296,7 @@ func isQueryStoreWithProof(path string) bool {
 		return false
 	case paths[0] != "store":
 		return false
-	case store.RequireProof("/" + paths[2]):
+	case rootmulti.RequireProof("/" + paths[2]):
 		return true
 	}
 

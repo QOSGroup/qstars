@@ -2,8 +2,8 @@ module github.com/QOSGroup/qstars
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/QOSGroup/qbase v0.2.0
-	github.com/QOSGroup/qos v0.0.4
+	github.com/QOSGroup/qbase v0.2.1
+	github.com/QOSGroup/qos v0.0.6-0.20190702065552-056d86731230
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.6.2
