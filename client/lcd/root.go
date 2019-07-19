@@ -37,10 +37,10 @@ func ServeCommand(cdc *wire.Codec) *cobra.Command {
 			maxOpen := viper.GetInt(flagMaxOpenConnections)
 			listener, err := rpcserver.Listen(
 				listenAddr,
-				rpcserver.Config{MaxOpenConnections: maxOpen},
+				&rpcserver.Config{MaxOpenConnections: maxOpen},
 			)
 			err = tmserver.StartHTTPServer(
-				listener, handler, logger)
+				listener, handler, logger,&rpcserver.Config{MaxOpenConnections: maxOpen})
 			if err != nil {
 				return err
 			}
@@ -48,7 +48,7 @@ func ServeCommand(cdc *wire.Codec) *cobra.Command {
 			logger.Info("REST server started")
 
 			// wait forever and cleanup
-			cmn.TrapSignal(func() {
+			cmn.TrapSignal(logger,func() {
 				err := listener.Close()
 				logger.Error("error closing listener", "err", err)
 			})

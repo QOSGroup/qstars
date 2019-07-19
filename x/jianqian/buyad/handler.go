@@ -118,7 +118,8 @@ func (it BuyTx) ValidateData(ctx context.Context) error {
 		return errors.New("已被购买")
 	}
 
-	transferTx, ok := it.Std.ITx.(*qostxs.TxTransfer)
+	transferTx, ok := it.Std.ITxs[0].(*qostxs.TxTransfer)
+
 	if !ok {
 		return errors.New("std类型不支持")
 	}
@@ -150,7 +151,7 @@ func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps
 	}
 	//set for qos result
 	buyMapper := ctx.Mapper(jianqian.BuyMapperName).(*jianqian.BuyMapper)
-	transferTx, _ := it.Std.ITx.(*qostxs.TxTransfer)
+	transferTx, _ := it.Std.ITxs[0].(*qostxs.TxTransfer)
 	if len(transferTx.Senders) != 1 {
 		result.Code = qbasetypes.CodeInternal
 		return result, nil
@@ -188,19 +189,19 @@ func (it BuyTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQcps
 }
 
 func (it BuyTx) GetSigner() []qbasetypes.Address {
-	return it.Std.ITx.GetSigner()
+	return it.Std.ITxs[0].GetSigner()
 }
 
 func (it BuyTx) CalcGas() qbasetypes.BigInt {
-	return it.Std.ITx.CalcGas()
+	return it.Std.ITxs[0].CalcGas()
 }
 
 func (it BuyTx) GetGasPayer() qbasetypes.Address {
-	return it.Std.ITx.GetGasPayer()
+	return it.Std.ITxs[0].GetGasPayer()
 }
 
 func (it BuyTx) GetSignData() []byte {
-	sd := it.Std.ITx.GetSignData()
+	sd := it.Std.ITxs[0].GetSignData()
 
 	return append(sd, it.ArticleHash...)
 }
