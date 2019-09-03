@@ -3,11 +3,16 @@
 package jianqian
 
 import (
+	"encoding/hex"
+	//"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qstars/client/context"
 	"github.com/tendermint/go-amino"
 	"log"
+	"strings"
 )
 
 func QueryArticle(cdc *amino.Codec, ctx *context.CLIContext, hash string) (article *Articles, err error) {
@@ -21,6 +26,18 @@ func QueryArticle(cdc *amino.Codec, ctx *context.CLIContext, hash string) (artic
 	return
 }
 
+func QueryAllAcution(cdc *amino.Codec, ctx *context.CLIContext, hash string) (auction AuctionMap, err error) {
+	res, err := ctx.QueryStore([]byte(hash), AuctionMapperName)
+	if err != nil {
+		return nil, err
+	}
+	result := string(res)
+	first := strings.Index(result, "{")
+	res = res[first:]
+	err = json.Unmarshal(res, &auction)
+	return
+}
+
 func QueryCoins(cdc *amino.Codec, ctx *context.CLIContext, tx string) (coins *Coins, err error) {
 	fmt.Println("tx=", tx)
 	res, err := ctx.QueryStore([]byte(tx), CoinsMapperName)
@@ -29,6 +46,58 @@ func QueryCoins(cdc *amino.Codec, ctx *context.CLIContext, tx string) (coins *Co
 	}
 	err = cdc.UnmarshalBinaryBare(res, &coins)
 	return
+}
+
+func QueryBlance(cdc *amino.Codec, ctx *context.CLIContext, tx string) (acc *AOETokens, err error) {
+	fmt.Println("tx=", tx)
+	res, err := ctx.QueryStore([]byte(tx), AoeAccountMapperName)
+	if err != nil {
+		return nil, err
+	}
+	err = cdc.UnmarshalBinaryBare(res, &acc)
+	return
+}
+
+type Result struct {
+	Type  string
+	Value interface{}
+	Error string
+}
+
+func QueryTx(cdc *amino.Codec, ctx *context.CLIContext, txstring string) string {
+	result := Result{}
+	hash, err := hex.DecodeString(txstring)
+	if err != nil {
+		result.Error = err.Error()
+		resp, _ := json.Marshal(result)
+		return string(resp)
+	}
+	//
+	resTx, err := ctx.Client.Tx(hash, !ctx.TrustNode)
+	if err != nil {
+		result.Error = err.Error()
+		resp, _ := json.Marshal(result)
+		return string(resp)
+	}
+	//parse Tx
+	var tx *txs.TxStd
+	err = cdc.UnmarshalBinaryBare(resTx.Tx, &tx)
+	if err != nil {
+		result.Error = err.Error()
+		resp, _ := json.Marshal(result)
+		return string(resp)
+	}
+
+	resp, _ := cdc.MarshalJSON(tx.ITxs)
+	err = json.Unmarshal(resp, &result)
+	if err != nil {
+		result.Error = err.Error()
+		resp, _ :=json.Marshal(result)
+		return string(resp)
+	}
+	result.Error = ""
+	temp, _ := json.Marshal(result)
+	return string(temp)
 }
 
 func ListInvestors(ctx *context.CLIContext, cdc *amino.Codec, articleHash string) (Investors, error) {

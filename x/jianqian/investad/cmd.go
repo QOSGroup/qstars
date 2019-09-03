@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
-	qosaccount "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/x/common"
+	qosaccount "github.com/QOSGroup/qos/types"
 
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/types"
@@ -23,7 +23,7 @@ const (
 	flagInvestor    = "investor"
 	flagCoins       = "coins"
 	flagArticleHash = "articleHash"
-	flagChainid     = "chainid"
+	flagOtherAddr = "otheraddr"
 )
 
 // InvestadCmd will create a send tx and sign it with the given key.
@@ -61,9 +61,9 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 			}()
 
 			articleHash := viper.GetString(flagArticleHash)
-			chainid := viper.GetString(flagChainid)
 			investor := viper.GetString(flagInvestor) //Teddy changes
 			coins := viper.GetString(flagCoins)
+			otheraddr := viper.GetString(flagOtherAddr)
 
 			_, addrben32, _ := utility.PubAddrRetrievalFromAmino(investor, cdc)
 			from, err := types.AccAddressFromBech32(addrben32)
@@ -71,19 +71,15 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			qosacc, err := getQOSAcc(key, cdc)
-			if err != nil {
-				return err
-			}
-			qosnonce := int64(qosacc.Nonce)
-
+			var qscnonce int64 = 0
 			qscacc, err := getQSCAcc(key, cdc)
 			if err != nil {
-				return err
+				qscnonce = 0
+			} else {
+				qscnonce = int64(qscacc.Nonce)
 			}
-			qscnonce := int64(qscacc.Nonce)
 
-			tx := InvestAd(cdc, chainid, articleHash, coins, investor, qosnonce, qscnonce)
+			tx := InvestAd(cdc, articleHash, coins, investor, otheraddr, qscnonce)
 			fmt.Printf("InvestAd:%s\n", tx)
 			var ri common.Result
 			if err := json.Unmarshal([]byte(tx), &ri); err != nil {
@@ -103,7 +99,7 @@ func investadCmd(cdc *wire.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagArticleHash, "", "articleHash")
-	cmd.Flags().String(flagChainid, "", "Chainid")
+	cmd.Flags().String(flagOtherAddr, "", "otheraddr")
 	cmd.Flags().String(flagInvestor, "", "investor private key")
 	cmd.Flags().String(flagCoins, "", "coins 1AOE")
 

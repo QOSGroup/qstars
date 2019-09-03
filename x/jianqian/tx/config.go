@@ -29,9 +29,11 @@ var (
 
 
 func InitConfig() (err error) {
-	rootDir := 	config.GetCLIContext().Config.RootDir
-	configFilePath := filepath.Join(rootDir, "config/config.toml")
 
+	rootDir := 	config.DefaultConfig().RootDir
+	fmt.Println("rootDir===",rootDir)
+
+	configFilePath := filepath.Join(rootDir, "config/config.toml")
 	Conf = NewConfig()
 	viper.SetConfigName("config") // 配置文件的名字
 	viper.SetConfigType("toml") // 配置文件的类型
