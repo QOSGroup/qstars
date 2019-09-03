@@ -1,31 +1,26 @@
-package star
+package common
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/QOSGroup/qbase/baseabci"
 	"github.com/QOSGroup/qstars/baseapp"
-	"github.com/QOSGroup/qstars/config"
+	qstarstypes "github.com/QOSGroup/qstars/types"
+	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
 	"github.com/QOSGroup/qstars/x/bank"
 	"github.com/QOSGroup/qstars/x/jianqian/advertisers"
-	"github.com/QOSGroup/qstars/x/jianqian/auction"
-	"github.com/QOSGroup/qstars/x/jianqian/comm"
-	"github.com/QOSGroup/qstars/x/quzhuan/common"
-
-	"github.com/QOSGroup/qstars/x/jianqian/recharge"
-
 	"github.com/QOSGroup/qstars/x/jianqian/article"
+	"github.com/QOSGroup/qstars/x/jianqian/auction"
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
+	"github.com/QOSGroup/qstars/x/jianqian/comm"
 	"github.com/QOSGroup/qstars/x/jianqian/investad"
-
+	"github.com/QOSGroup/qstars/x/jianqian/recharge"
 	"github.com/QOSGroup/qstars/x/kvstore"
-	"io"
-	"os"
 	"reflect"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-	dbm "github.com/tendermint/tendermint/libs/db"
-	"github.com/tendermint/tendermint/libs/log"
+	"testing"
 )
 
 /**
@@ -48,7 +43,7 @@ var _ baseapp.BaseXTransaction = auction.AuctionStub{}
 var _ baseapp.BaseXTransaction = recharge.RechargeStub{}
 
 var _ baseapp.BaseXTransaction = comm.JianQianStub{}
-var _ baseapp.BaseXTransaction = common.QuZhuanStub{}
+var _ baseapp.BaseXTransaction = QuZhuanStub{}
 
 
 
@@ -64,62 +59,12 @@ func init() {
 	registerType((*auction.AuctionStub)(nil))
 	registerType((*recharge.RechargeStub)(nil))
 	registerType((*comm.JianQianStub)(nil))
-	registerType((*common.QuZhuanStub)(nil))
+	registerType((*QuZhuanStub)(nil))
 
 
 }
 
-/**
-startup a qstar chain instance
-*/
-func NewApp(logger log.Logger, db dbm.DB, io io.Writer) abci.Application {
-	//cfg := ctx.Config
-	//rootDir := cfg.RootDir
-	rootDir := os.ExpandEnv("$HOME/.qstarsd")
-	sconf, err := config.Init(rootDir+"/config/qstarsconf.toml", rootDir)
-	if err != nil {
-		logger.Error(err.Error())
-		return nil
-	}
-	app, err := baseapp.NewAPP(sconf, MakeCodec())
-	if err != nil {
-		logger.Error(err.Error())
-		return nil
-	}
-	//TODO
-	for k, _ := range typeRegistry {
-		txs, _ := newStruct(k)
-		t := txs.(baseapp.BaseXTransaction)
-		app.Register(t)
-	}
-	//app.Register(kvstore.NewKVStub())
-	//app.Register(bank.NewBankStub())
 
-	err = app.Start()
-	if err != nil {
-		logger.Error(err.Error())
-		return nil
-	}
-	return app.Baseapp
-}
-
-/*
-Both client and server can get a well-setting cdc via the funcation
-*/
-func MakeCodec() *wire.Codec {
-	cdc := baseabci.MakeQBaseCodec()
-	for k, _ := range typeRegistry {
-		txs, err := newStruct(k)
-		if err == false {
-			panic("reflect transaction is error.")
-		}
-		t := txs.(baseapp.BaseXTransaction)
-		t.RegisterCdc(cdc)
-	}
-	//kvstore.NewKVStub().RegisterKVCdc(cdc)
-	//bank.NewBankStub().RegisterKVCdc(cdc)
-	return cdc
-}
 
 //---------------------------------------------------------------------------
 var typeRegistry = make(map[string]reflect.Type)
@@ -135,4 +80,71 @@ func newStruct(name string) (interface{}, bool) {
 		return nil, false
 	}
 	return reflect.New(elem).Elem().Interface(), true
+}
+
+func MakeCodec() *wire.Codec {
+	cdc := baseabci.MakeQBaseCodec()
+	for k, _ := range typeRegistry {
+		txs, err := newStruct(k)
+		if err == false {
+			panic("reflect transaction is error.")
+		}
+		t := txs.(baseapp.BaseXTransaction)
+		t.RegisterCdc(cdc)
+	}
+	//kvstore.NewKVStub().RegisterKVCdc(cdc)
+	//bank.NewBankStub().RegisterKVCdc(cdc)
+	return cdc
+}
+
+func TestCommHandler(m *testing.T) {
+	cdc := MakeCodec()
+
+	url:="localhost:26657"
+	chainid:="test-chain-GEbNwW"
+	funcNanme:="scenesReward"
+	privateKey:="hATXd/o2bP1ZHkrb3JgYPeMA4EyYT3jKcMoft4mNVJsh5/u3xJUnYnAddKpeuDWsEbzuG16qOJms/h1IZMoLhw=="
+	parameter:=ttt("{\"ScenesId\":\"001\",\"Rewards\":[{\"UserId\":\"13388888888\",\"Amount\":\"888\"},{\"UserId\":\"13399999999\",\"Amount\":\"999\"}]}")
+	aaaa:=CommHandler(cdc,url,chainid,funcNanme,privateKey,parameter)
+
+
+	//BroadcastTransferTxToQSC(cdc,aaaa,url)
+
+
+
+
+
+	fmt.Println(aaaa)
+	//
+	//m.Run()
+}
+
+
+func ttt(parameter string) string {
+	strs:=[]string{parameter}
+	result,_:=json.Marshal(strs)
+	return string(result)
+}
+
+
+
+
+func TestRpcQueryAccount(m *testing.T){
+	cdc := MakeCodec()
+	_, addrben32, _ := utility.PubAddrRetrievalFromAmino("hATXd/o2bP1ZHkrb3JgYPeMA4EyYT3jKcMoft4mNVJsh5/u3xJUnYnAddKpeuDWsEbzuG16qOJms/h1IZMoLhw==", cdc)
+	from, _ := qstarstypes.AccAddressFromBech32(addrben32)
+
+	account,err:=RpcQueryAccount(cdc,"localhost:26657",from)
+
+	if err!=nil{
+		fmt.Println(err)
+	}
+
+	if account==nil{
+		fmt.Println("account is nul")
+	}else {
+
+		fmt.Println(account.Nonce)
+	}
+
 }
