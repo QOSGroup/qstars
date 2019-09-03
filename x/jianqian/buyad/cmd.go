@@ -1,22 +1,14 @@
 package buyad
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/QOSGroup/qbase/account"
-	qosaccount "github.com/QOSGroup/qos/types"
 	"github.com/QOSGroup/qstars/config"
-	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/wire"
-	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
-	"time"
-
-	"github.com/QOSGroup/qstars/types"
 )
 
 const (
@@ -41,13 +33,13 @@ func BuyadCmd(cdc *wire.Codec) *cobra.Command {
 	return cmd
 }
 
-func getQOSAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
-	return config.GetCLIContext().QOSCliContext.GetAccount(address, cdc)
-}
-
-func getQSCAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
-	return config.GetCLIContext().QSCCliContext.GetAccount(address, cdc)
-}
+//func getQOSAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
+//	return config.GetCLIContext().QOSCliContext.GetAccount(address, cdc)
+//}
+//
+//func getQSCAcc(address []byte, cdc *wire.Codec) (*qosaccount.QOSAccount, error) {
+//	return config.GetCLIContext().QSCCliContext.GetAccount(address, cdc)
+//}
 
 func buyadCmd(cdc *wire.Codec) *cobra.Command {
 	cmd := &cobra.Command{
@@ -61,41 +53,9 @@ func buyadCmd(cdc *wire.Codec) *cobra.Command {
 			}()
 
 			articleHash := viper.GetString(flagArticleHash)
-			chainid := viper.GetString(flagChainid)
-			buyer := viper.GetString(flagBuyer) //Teddy changes
-			coins := viper.GetString(flagCoins)
 
-			_, addrben32, _ := utility.PubAddrRetrievalFromAmino(buyer, cdc)
-			from, err := types.AccAddressFromBech32(addrben32)
-			key := account.AddressStoreKey(from)
-			if err != nil {
-				return err
-			}
-			qosacc, err := getQOSAcc(key, cdc)
-			if err != nil {
-				return err
-			}
-			qosnonce := int64(qosacc.Nonce)
+			result := BuyAd(cdc, articleHash)
 
-			qscacc, err := getQSCAcc(key, cdc)
-			if err != nil {
-				return err
-			}
-			qscnonce := int64(qscacc.Nonce)
-
-			tx := BuyAd(cdc, chainid, articleHash, coins, buyer, qosnonce, qscnonce)
-			log.Printf("BuyAd tx:%+v", tx)
-
-			var rb common.Result
-			if err := json.Unmarshal([]byte(tx), &rb); err != nil {
-				return fmt.Errorf("Unmarshal tx error:%s ", err.Error())
-			}
-
-			if rb.Code != "0" {
-				return fmt.Errorf("InvestAd tx error:%s ", rb.Reason)
-			}
-
-			result := BuyAdBackground(cdc, string(rb.Result), time.Second*60)
 			log.Printf(result)
 
 			return nil

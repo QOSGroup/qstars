@@ -1,21 +1,19 @@
 package investad
 
 import (
-	"github.com/QOSGroup/qbase/baseabci"
 	"github.com/QOSGroup/qbase/context"
 	ctx "github.com/QOSGroup/qbase/context"
-	"github.com/QOSGroup/qbase/txs"
 	"github.com/QOSGroup/qbase/types"
 	"github.com/QOSGroup/qstars/baseapp"
-	"github.com/QOSGroup/qstars/x/common"
 	"github.com/QOSGroup/qstars/x/jianqian"
 	go_amino "github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"log"
-	"strconv"
 )
 
 type InvestadStub struct {
+
+
 }
 
 func NewStub() InvestadStub {
@@ -26,8 +24,8 @@ func (s InvestadStub) StartX(base *baseapp.QstarsBaseApp) error {
 	var investMapper = jianqian.NewInvestMapper(jianqian.InvestMapperName)
 	base.Baseapp.RegisterMapper(investMapper)
 
-	var investUncheckedMapper = jianqian.NewInvestUncheckedMapper(jianqian.InvestUncheckedMapperName)
-	base.Baseapp.RegisterMapper(investUncheckedMapper)
+	//var investUncheckedMapper = jianqian.NewInvestUncheckedMapper(jianqian.InvestUncheckedMapperName)
+	//base.Baseapp.RegisterMapper(investUncheckedMapper)
 
 	return nil
 }
@@ -37,76 +35,7 @@ func (s InvestadStub) RegisterCdc(cdc *go_amino.Codec) {
 }
 
 func (s InvestadStub) ResultNotify(ctx context.Context, txQcpResult interface{}) *types.Result {
-	result := &types.Result{}
-	result.Code = types.CodeOK
-
-	in := txQcpResult.(*txs.QcpTxResult)
-	log.Printf("investad.InvestadStub ResultNotify QcpOriginalSequence:%s, result:%+v", string(in.QcpOriginalSequence), txQcpResult)
-	qcpTxResult, ok := baseabci.ConvertTxQcpResult(txQcpResult)
-	if ok == false {
-		log.Printf("investad.InvestadStub ResultNotify ConvertTxQcpResult error.")
-		return result
-	} else {
-		key := in.QcpOriginalExtends //orginalTx.abc
-
-		kvMapper := ctx.Mapper(common.QSCResultMapperName).(*common.KvMapper)
-		initValue := ""
-		kvMapper.Get([]byte(key), &initValue)
-		log.Printf("investad.InvestadStub kvMapper-1 key:[%s], value:[%s]", key, initValue)
-		if initValue != s.Name() {
-			log.Printf("investad.InvestadStub This is not my response.")
-			return result
-		}
-		c := strconv.FormatInt((int64)(qcpTxResult.Result.Code), 10)
-		c = c + " " + qcpTxResult.Result.Log
-		log.Printf("investad.InvestadStub kvMapper-2 key:[%s], value:[%s]", key, c)
-
-		kvMapper.Set([]byte(key), c)
-
-		if qcpTxResult.Result.IsOK() {
-			log.Printf("investad.InvestadStub ResultNotify update status")
-
-			investUncheckedMapper := ctx.Mapper(jianqian.InvestUncheckedMapperName).(*jianqian.InvestUncheckedMapper)
-			log.Printf("investad.InvestadStub investUncheckedMapper :%+v", investUncheckedMapper)
-
-			investUncheckeds, ok := investUncheckedMapper.GetInvestUncheckeds([]byte(key))
-			if !ok || investUncheckeds == nil {
-				log.Printf("investad.InvestadStub This is not my response.")
-				return result
-			}
-
-			investMapper := ctx.Mapper(jianqian.InvestMapperName).(*jianqian.InvestMapper)
-			log.Printf("investad.InvestadStub investMapper :%+v", investMapper)
-
-			for k, v := range investUncheckeds {
-				log.Printf("investad.InvestadStub investUncheckeds k:%+v, v:%+v\n", k, v)
-				if !v.IsChecked {
-					key := jianqian.GetInvestKey(v.Article, v.Address, jianqian.InvestorTypeCommonInvestor)
-					investor, ok := investMapper.GetInvestor(key)
-					if ok {
-						investor.Invest = investor.Invest.Add(v.Invest)
-						investor.InvestTime = v.InvestTime
-						log.Printf("investad.InvestadStub investor update %+v\n", investor)
-						investMapper.SetInvestor(key, investor)
-					} else {
-						investor = jianqian.Investor{
-							InvestorType: jianqian.InvestorTypeCommonInvestor,
-							Address:      v.Address,
-							InvestTime:   v.InvestTime,
-							Invest:       v.Invest,
-						}
-						log.Printf("investad.InvestadStub investor create %+v\n", investor)
-
-						investMapper.SetInvestor(key, investor)
-					}
-					investUncheckeds[k].IsChecked = true
-				}
-			}
-			investUncheckedMapper.SetInvestUncheckeds([]byte(key), investUncheckeds)
-		}
-	}
-
-	return result
+	return nil
 }
 
 func (s InvestadStub) EndBlockNotify(ctx context.Context) {

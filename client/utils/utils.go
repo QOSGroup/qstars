@@ -17,7 +17,7 @@ import (
 func SendTx(cliCtx context.CLIContext, cdc *wire.Codec, txStd *txs.TxStd) (string, *ctypes.ResultBroadcastTxCommit, error) {
 
 	fmt.Printf("[SendTx] txStd:%+v\n", txStd)
-	fmt.Printf("[SendTx] txStd.ITx:%+v\n", txStd.ITx)
+	fmt.Printf("[SendTx] txStd.ITx:%+v\n", txStd.ITxs)
 
 	txBytes, err := cdc.MarshalBinaryBare(txStd)
 	if err != nil {
