@@ -2,46 +2,98 @@ package jsdk
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qstars/config"
-	"github.com/QOSGroup/qstars/types"
-	"github.com/QOSGroup/qstars/utility"
 	"github.com/QOSGroup/qstars/x/common"
+	"github.com/QOSGroup/qstars/x/jianqian"
+	"github.com/QOSGroup/qstars/x/jianqian/advertisers"
 	"github.com/QOSGroup/qstars/x/jianqian/article"
+	"github.com/QOSGroup/qstars/x/jianqian/auction"
 	"github.com/QOSGroup/qstars/x/jianqian/buyad"
 	"github.com/QOSGroup/qstars/x/jianqian/coins"
+	"github.com/QOSGroup/qstars/x/jianqian/comm"
+	"github.com/QOSGroup/qstars/x/jianqian/recharge"
+	"strconv"
+
 	"github.com/QOSGroup/qstars/x/jianqian/investad"
 	"time"
 )
 
+//发放活动奖励 aoe
+//addrs        奖励地址
+//cns          数额
+//causecodes   活动类型编号
+//causestrings 活动描述
 func DispatchCoins(addrs, cns, causecodes, causestrings, gas string) string {
 	result := coins.DispatchAOE(CDC, CONF, addrs, cns, causecodes, causestrings, gas)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
 	return result
 }
 
-func NewArticle(authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate string) string {
-	result := article.NewArticle(CDC, CONF, authorAddress, originAuthor, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
+//创建文章
+//AuthorAddr                   //作者地址(必填)
+//ArticleType                  //是否原创 0原创 1转载
+//ArticleHash                  //作品唯一标识hash
+//ShareAuthor                  //作者收入比例(必填)
+//ShareOriginalAuthor          //原创收入比例(转载作品必填)
+//ShareCommunity               //社区收入比例(必填)
+//ShareInvestor                //投资者收入比例(必填)
+//InvestHours                  //可供投资的小时数(必填)
+//BuyHours                     //可供购买广告位的小时数(必填)
+//CoinType                     //币种
+func NewArticle(authorAddress, articleType, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate, cointype string) string {
+	result := article.NewArticle(CDC, CONF, authorAddress, articleType, articleHash, shareAuthor, shareOriginAuthor, shareCommunity, shareInvestor, endInvestDate, endBuyDate, cointype)
 	return result
 }
 
-//for investAdbckaground testing
-type ResultInvest struct {
-	Code   string          `json:"code"`
-	Height int64           `json:"height"`
-	Hash   string          `json:"hash,omitempty"`
-	Reason string          `json:"reason,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
+//竞拍广告
+//articleHash             //广告唯一标识
+//privatekey              //竞拍者私钥
+//coinsType               //竞拍者使用币种
+//coinAmount              //竞拍数额
+//qscnonce                //
+//qosnonce                //
+func AcutionAd(articleHash, privatekey,  coinsType, coinAmount, qscnonce string) string {
+	qsc, _ := strconv.ParseInt(qscnonce, 10, 64)
+	return auction.AcutionAd(CDC,articleHash, privatekey,  coinsType, coinAmount,qsc)
 }
 
+
+
+//竞拍广告上链
+func AcutionAdBackground(txb string) string {
+	timeout := time.Second * 60
+	var ri ResultInvest
+	err := json.Unmarshal([]byte(txb), &ri)
+	if err != nil {
+		return err.Error()
+	}
+	Txresult := string(ri.Result)
+	result := auction.AcutionAdBackground(CDC, Txresult, timeout)
+	return result
+}
+
+//查询当前最高出价
+//txHash 广告位标识
+func QueryMaxAuction(txHash string) string {
+	result := auction.QueryMaxAcution(CDC,  txHash)
+
+	return result
+}
+
+//查询全部竞拍信息
+//txHash 广告位标识
+func QueryAllAuction(txHash string) string {
+	result := auction.QueryAllAcution(CDC, txHash)
+	return result
+}
+
+//分配利润 竞拍期过后分配出价最高者分配  竞拍失败部分原路退回
+//txHash 广告位标识
+func Distribution(txHash string) string {
+	result:=buyad.BuyAd(CDC,txHash)
+	return result
+}
+
+//投资上链
 func InvestAdBackground(txb string) string {
 	timeout := time.Second * 60
 	var ri ResultInvest
@@ -52,91 +104,89 @@ func InvestAdBackground(txb string) string {
 	Txresult := string(ri.Result)
 	result := investad.InvestAdBackground(CDC, Txresult, timeout)
 	return result
-
 }
 
-type ResultBuy struct {
-	Code   string          `json:"code"`
-	Reason string          `json:"reason,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
+//查询投资信息
+func RetrieveInvestors(articleHash string) string {
+	result := investad.RetrieveInvestors(CDC, articleHash)
+	return result
 }
 
-func BuyAd(articleHash, coins, buyer string) string {
-	chainid := config.GetCLIContext().Config.QSCChainID
-	if len(buyer) == 0 {
-		buyer = config.GetCLIContext().Config.Adbuyermock
-	}
-	_, addrben32, _ := utility.PubAddrRetrievalFromAmino(buyer, CDC)
-	from, err := types.AccAddressFromBech32(addrben32)
-	key := account.AddressStoreKey(from)
+//查询文章信息
+func QueryArticle(articleHash string) string {
+	result := article.GetArticle(CDC, articleHash)
+	return result
+}
 
-	qosacc, err1 := config.GetCLIContext().QOSCliContext.GetAccount(key, CDC)
-	if err1 != nil {
-		return err1.Error()
-	}
-	qosnonce := int64(qosacc.Nonce)
+//查询用户余额信息
+func QueryBlance(txHash string) string {
+	result := coins.GetBlance(CDC, config.GetCLIContext().QSCCliContext, txHash)
+	return result
+}
 
-	qscacc, err2 := config.GetCLIContext().QSCCliContext.GetAccount(key, CDC)
-	var qscnonce int64
-	if err2 != nil {
-		qscnonce = int64(1)
-	}
-	qscnonce = int64(qscacc.Nonce)
-	tx := buyad.BuyAd(CDC, chainid, articleHash, coins, buyer, qosnonce, qscnonce)
 
-	var rb ResultInvest
-	if err := json.Unmarshal([]byte(tx), &rb); err != nil {
-		return fmt.Sprintf("Unmarshal tx error:%s ", err.Error())
-	}
 
-	if rb.Code != "0" {
-		return tx
-	}
 
+//成为广告商
+//privatekey             //用户私钥
+//coinsType              //押金币种
+//coinAmount             //押金数量
+//qscnonce               //nonce
+func AdvertisersTrue( privatekey,  coinsType, coinAmount, qscnonce string) string {
+	qsc, _ := strconv.ParseInt(qscnonce, 10, 64)
+	return advertisers.Advertisers(CDC,coinAmount,privatekey,coinsType,jianqian.CHANGE_TYPE_MINUS,qsc)
+}
+
+//成为非广告商 赎回押金
+//privatekey             //用户私钥
+//coinsType              //押金币种
+//coinAmount             //押金数量
+//qscnonce               //nonce
+func AdvertisersFalse( privatekey,  coinsType, coinAmount, qscnonce string) string {
+	qsc, _ := strconv.ParseInt(qscnonce, 10, 64)
+	return advertisers.Advertisers(CDC,coinAmount,privatekey,coinsType,jianqian.CHANGE_TYPE_PLUS,qsc)
+}
+
+//广告商上链
+func AdvertisersBackground(txb string) string {
 	timeout := time.Second * 60
-	result := buyad.BuyAdBackground(CDC, string(rb.Result), timeout)
-	//output, err := CDC.MarshalJSON(result)
+	var ri ResultInvest
+	err := json.Unmarshal([]byte(txb), &ri)
 	if err != nil {
 		return err.Error()
 	}
+	Txresult := string(ri.Result)
+	result := advertisers.AdvertisersBackground(CDC, Txresult, timeout)
 	return result
 }
 
-func RetrieveInvestors(articleHash string) string {
-	result := investad.RetrieveInvestors(CDC, articleHash)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
-	return result
+//充值
+//privatekey             //签名私钥
+//address                //充值账户
+//coinsType              //押金币种
+//coinAmount             //押金数量
+//qscnonce               //nonce
+func Recharge( privatekey, address, coinsType, coinAmount string) string {
+	return recharge.Recharge(CDC,coinAmount,privatekey,address,coinsType,jianqian.CHANGE_TYPE_PLUS)
 }
 
-func RetrieveBuyer(articleHash string) string {
-	result := buyad.RetrieveBuyer(CDC, articleHash)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
-	return result
+//提现
+//privatekey             //签名私钥
+//address                //充值账户
+//coinsType              //押金币种
+//coinAmount             //押金数量
+//qscnonce               //nonce
+func Extract( privatekey, address, coinsType, coinAmount string) string {
+	return recharge.Recharge(CDC,coinAmount,privatekey,address,coinsType,jianqian.CHANGE_TYPE_MINUS)
 }
 
-func QueryArticle(articleHash string) string {
-	result := article.GetArticle(CDC, articleHash)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
-	return result
+
+
+//查询Tx
+func QueryTx( tx string) string {
+	return jianqian.QueryTx(CDC, config.GetCLIContext().QSCCliContext,tx)
 }
 
-func QueryCoins(txHash string) string {
-	result := coins.GetCoins(CDC, config.GetCLIContext().QSCCliContext, txHash)
-	//output, err := CDC.MarshalJSON(result)
-	//if err != nil {
-	//	return err.Error()
-	//}
-	return result
-}
 
 func QSCCommitResultCheck(txhash, height string) string {
 	qstarskey := "heigth:" + height + ",hash:" + txhash
@@ -153,4 +203,22 @@ func QSCCommitResultCheck(txhash, height string) string {
 		return err.Error()
 	}
 	return string(res)
+}
+
+//for investAdbckaground testing
+type ResultInvest struct {
+	Code   string          `json:"code"`
+	Height int64           `json:"height"`
+	Hash   string          `json:"hash,omitempty"`
+	Reason string          `json:"reason,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
+}
+
+
+//通用链码通道
+//funcName             //方法名
+//privatekey       //签名私钥
+//args             //参数数组 格式为：["a","b","c","d"]
+func CommHandler(  funcName, privatekey, args string) string {
+	return comm.CommHandler(CDC,funcName,privatekey,args)
 }
