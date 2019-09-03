@@ -7,7 +7,7 @@ import (
 	"github.com/QOSGroup/qbase/context"
 	"github.com/QOSGroup/qbase/txs"
 	qbasetypes "github.com/QOSGroup/qbase/types"
-	qostxs "github.com/QOSGroup/qos/module/transfer"
+	qostxs "github.com/QOSGroup/qos/module/bank/txs"
 	"github.com/QOSGroup/qstars/x/common"
 	"log"
 
@@ -46,7 +46,7 @@ func (it InvestTx) ValidateData(ctx context.Context) error {
 		return err
 	}
 
-	transferTx, ok := it.Std.ITx.(*qostxs.TxTransfer)
+	transferTx, ok := it.Std.ITxs[0].(*qostxs.TxTransfer)
 	if !ok {
 		return errors.New("std类型不支持")
 	}
@@ -89,7 +89,7 @@ func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQ
 	tx1 := (tmcommon.HexBytes)(tmhash.Sum(ctx.TxBytes()))
 	key := "heigth:" + heigth1 + ",hash:" + tx1.String()
 
-	transferTx, _ := it.Std.ITx.(*qostxs.TxTransfer)
+	transferTx, _ := it.Std.ITxs[0].(*qostxs.TxTransfer)
 	var values jianqian.InvestUncheckeds
 	for _, v := range transferTx.Senders {
 		values = append(values, jianqian.InvestUnchecked{
@@ -116,19 +116,19 @@ func (it InvestTx) Exec(ctx context.Context) (result qbasetypes.Result, crossTxQ
 }
 
 func (it InvestTx) GetSigner() []qbasetypes.Address {
-	return it.Std.ITx.GetSigner()
+	return it.Std.ITxs[0].GetSigner()
 }
 
 func (it InvestTx) CalcGas() qbasetypes.BigInt {
-	return it.Std.ITx.CalcGas()
+	return it.Std.ITxs[0].CalcGas()
 }
 
 func (it InvestTx) GetGasPayer() qbasetypes.Address {
-	return it.Std.ITx.GetGasPayer()
+	return it.Std.ITxs[0].GetGasPayer()
 }
 
 func (it InvestTx) GetSignData() []byte {
-	sd := it.Std.ITx.GetSignData()
+	sd := it.Std.ITxs[0].GetSignData()
 	return append(sd, it.ArticleHash...)
 }
 

@@ -80,7 +80,7 @@ func (tx DispatchAOETx) GetGasPayer() types.Address {
 	return types.Address{}
 }
 func (tx DispatchAOETx) GetSignData() (ret []byte) {
-	ret = append(ret, tx.Wrapper.ITx.GetSignData()...)
+	ret = append(ret, tx.Wrapper.ITxs[0].GetSignData()...)
 	ret = append(ret, []byte(tx.From)...)
 	for i, _ := range tx.Address {
 		ret = append(ret, tx.Address[i]...)
