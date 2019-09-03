@@ -3,7 +3,7 @@ package context
 import (
 	"bytes"
 	"fmt"
-	"github.com/QOSGroup/qbase/store"
+	"github.com/QOSGroup/qbase/store/rootmulti"
 	"github.com/pkg/errors"
 	"github.com/tendermint/tendermint/libs/cli"
 	"io"
@@ -18,11 +18,9 @@ import (
 
 	tmlite "github.com/tendermint/tendermint/lite"
 
-
-
-	"github.com/tendermint/tendermint/libs/log"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
+	"github.com/tendermint/tendermint/libs/log"
 	tmliteErr "github.com/tendermint/tendermint/lite/errors"
 	tmliteProxy "github.com/tendermint/tendermint/lite/proxy"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
@@ -196,7 +194,7 @@ func (ctx CLIContext) verifyProof(queryPath string, resp abci.ResponseQuery) err
 	}
 
 	// TODO: Instead of reconstructing, stash on CLIContext field?
-	prt := store.DefaultProofRuntime()
+	prt := rootmulti.DefaultProofRuntime()
 
 	// TODO: Better convention for path?
 	storeName, err := parseQueryStorePath(queryPath)
@@ -247,4 +245,3 @@ func (ctx CLIContext) Verify(height int64) (tmtypes.SignedHeader, error) {
 
 	return check, nil
 }
-
