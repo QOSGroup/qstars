@@ -62,7 +62,7 @@ func (tx WrapperSendTx) Exec(ctx context.Context) (result btypes.Result, crossTx
 }
 
 func (tx WrapperSendTx) GetSigner() []btypes.Address {
-	return tx.Wrapper.ITx.GetSigner()
+	return tx.Wrapper.ITxs[0].GetSigner()
 }
 
 func (tx WrapperSendTx) CalcGas() btypes.BigInt {
@@ -70,11 +70,11 @@ func (tx WrapperSendTx) CalcGas() btypes.BigInt {
 }
 
 func (tx WrapperSendTx) GetGasPayer() btypes.Address {
-	return tx.Wrapper.ITx.GetGasPayer()
+	return tx.Wrapper.ITxs[0].GetGasPayer()
 }
 
 func (tx WrapperSendTx) GetSignData() []byte {
-	return tx.Wrapper.ITx.GetSignData()
+	return tx.Wrapper.ITxs[0].GetSignData()
 }
 
 func (tx WrapperSendTx) Name() string {

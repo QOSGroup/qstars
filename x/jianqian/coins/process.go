@@ -1,35 +1,28 @@
 package coins
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/QOSGroup/qbase/account"
 	"github.com/QOSGroup/qbase/txs"
-	"github.com/QOSGroup/qstars/client/context"
-	"github.com/QOSGroup/qstars/x/common"
-	"github.com/QOSGroup/qstars/x/jianqian"
-	"log"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/QOSGroup/qbase/types"
+	"github.com/QOSGroup/qstars/client/context"
 	"github.com/QOSGroup/qstars/client/utils"
 	"github.com/QOSGroup/qstars/config"
 	qstartypes "github.com/QOSGroup/qstars/types"
 	"github.com/QOSGroup/qstars/utility"
+	"log"
+	"time"
+
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/x/common"
+	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/QOSGroup/qstars/x/jianqian/tx"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"strings"
 )
 
-//type SendResult struct {
-//	Hash   string `json:"hash"`
-//	Error  string `json:"error"`
-//	Code   string `json:"code"`
-//	Result string `json:"result"`
-//	Heigth string `json:"heigth"`
-//}
 const (
 	COINS_PARA_LEN_ERR     = "101" //参数长度不一致
 	COINS_PRIV_ERR         = "102" //私钥获取地址错误
@@ -52,74 +45,44 @@ func DispatchSend(cdc *wire.Codec, ctx *config.CLIConfig, privkey string, to []t
 		return common.NewErrorResult(COINS_PRIV_ERR, 0, "", err.Error()).Marshal()
 	}
 	key := account.AddressStoreKey(from)
-	var qosnonce int64 = 0
-	acc, err := config.GetCLIContext().QOSCliContext.GetAccount(key, cdc)
+	var qscnonce int64 = 0
+	acc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
 	if err != nil {
-		qosnonce = 0
+		qscnonce = 0
 	} else {
-		qosnonce = int64(acc.Nonce)
+		qscnonce = int64(acc.Nonce)
 	}
-	qosnonce++
-	fmt.Println("qosnonce", qosnonce)
+	qscnonce++
+	fmt.Println("qosnonce", qscnonce)
 
-	var ccs []types.BaseCoin
-	for _, coin := range amount {
-		ccs = append(ccs, types.BaseCoin{
-			Name:   COINNAME,
-			Amount: types.NewInt(coin.Int64()),
-		})
-	}
-
-	//合并接收地址
-	addmap := make(map[string]types.BaseCoin)
-	for i, addv := range to {
-		if v, ok := addmap[addv.String()]; ok {
-			v.Amount.Add(ccs[i].Amount)
+	addmap := make(map[string]Recipient)
+	for i, coin := range amount {
+		if v, ok := addmap[to[i].String()]; ok {
+			v.Amount.Add(coin)
 		} else {
-			addmap[addv.String()] = ccs[i]
+			recipient := Recipient{
+				Address: to[i].String(),
+				Amount:  coin,
+			}
+			addmap[to[i].String()] = recipient
 		}
 	}
-
-	var newto []types.Address
-	var newccs []types.BaseCoin
-	for k, v := range addmap {
-		addres, _ := qstartypes.AccAddressFromBech32(k)
-		newto = append(newto, addres)
+	var newccs []Recipient
+	for _, v := range addmap {
 		newccs = append(newccs, v)
 	}
-
-	transtx := tx.NewTransfer([]types.Address{from}, newto, newccs)
-	directTOQOS := config.GetCLIContext().Config.DirectTOQOS
+	transtx := AOETx{from, newccs}
 	var msg *txs.TxStd
-
-	if directTOQOS == true {
-		//直接连接公链
-		msg = genStdSendTx(cdc, transtx, priv, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QOSChainID, qosnonce)
-
-	} else {
-		//走跨链
-		var qscnonce int64 = 0
-		qscacc, err := config.GetCLIContext().QSCCliContext.GetAccount(key, cdc)
-		if err != nil {
-			qscnonce = 0
-		} else {
-			qscnonce = int64(qscacc.Nonce)
-		}
-		qscnonce++
-		fmt.Println("qscnonce", qscnonce)
-
-		msg = genStdWrapTx(cdc, transtx, priv, qosnonce, qscnonce, from, to, amount, causecode, causeStr)
-	}
-	//	chainid := ctx.QOSChainID
-	//chainid := config.GetCLIContext().Config.QSCChainID
-	return wrapperResult(cdc, msg, directTOQOS)
+	msg = genStdSendTx(cdc, transtx, priv, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID, qscnonce)
+	cliCtx := *config.GetCLIContext().QSCCliContext
+	hash, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
+	return common.NewSuccessResult(cdc, commitresult.Height, hash, hash).Marshal()
 }
 
 //封装公链交易信息
 func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid, fromchainid string, nonce int64) *txs.TxStd {
-	gas := types.NewInt(int64(config.MaxGas))
+	gas := types.NewInt(int64(200000))
 	stx := txs.NewTxStd(sendTx, tochainid, gas)
-
 	signature, _ := stx.SignTx(priKey, nonce, fromchainid, tochainid)
 	stx.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),
@@ -127,62 +90,6 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 		Nonce:     nonce,
 	}}
 	return stx
-}
-
-//封装奖励发放跨链交易信息
-func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, qosnonce, qscnonce int64, from types.Address, to []types.Address, amount []types.BigInt, causecode []string, causeStr []string) *txs.TxStd {
-	stx := genStdSendTx(cdc, sendTx, priKey, config.GetCLIContext().Config.QOSChainID, config.GetCLIContext().Config.QSCChainID, qosnonce)
-	//tx2 := txs.NewTxStd(sendTx, config.GetCLIContext().Config.QSCChainID, stx.MaxGas)
-	dispatchTx := NewDispatchAOE(stx, from, to, amount, causecode, causeStr, types.ZeroInt())
-	return genStdSendTx(cdc, dispatchTx, priKey, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID, qscnonce)
-}
-
-func wrapperResult(cdc *wire.Codec, msg *txs.TxStd, directTOQOS bool) string {
-	var cliCtx context.CLIContext
-	if directTOQOS == true {
-		cliCtx = *config.GetCLIContext().QOSCliContext
-	} else {
-		cliCtx = *config.GetCLIContext().QSCCliContext
-	}
-	hash, commitresult, err := utils.SendTx(cliCtx, cdc, msg)
-	if err != nil {
-		return common.NewErrorResult(COINS_SENDTX_ERR, 0, "", err.Error()).Marshal()
-	}
-	height := strconv.FormatInt(commitresult.Height, 10)
-	waittime, err := strconv.Atoi(config.GetCLIContext().Config.WaitingForQosResult)
-	if err != nil {
-		waittime = 30
-	}
-	if directTOQOS == false {
-		counter := 0
-		for {
-			if counter >= waittime {
-				log.Println("time out")
-				return common.ResultQOSTimeoutError(commitresult.Height, commitresult.Hash.String()).Marshal()
-			}
-			resultstr, err := fetchResult(cdc, height, commitresult.Hash.String())
-			log.Printf("fetchResult result:%s, err:%+v\n", resultstr, err)
-			if err != nil {
-				log.Printf("fetchResult error:%s\n", err.Error())
-				return common.NewErrorResult(COINS_FETCH_RESULT_ERR, commitresult.Height, commitresult.Hash.String(), err.Error()).Marshal()
-			}
-
-			if resultstr != "" && resultstr != (CoinsStub{}).Name() {
-				log.Printf("fetchResult result:[%+v]\n", resultstr)
-				rs := []rune(resultstr)
-				index1 := strings.Index(resultstr, " ")
-				reason := string(rs[index1+1:])
-				code := string(rs[:index1])
-				result := common.NewErrorResult(code, commitresult.Height, commitresult.Hash.String(), reason)
-				result.Hash = hash
-				result.Height = commitresult.Height
-				return result.Marshal()
-			}
-			time.Sleep(500 * time.Millisecond)
-			counter++
-		}
-	}
-	return common.NewSuccessResult(cdc, commitresult.Height, hash, hash).Marshal()
 }
 
 //活动奖励发放
@@ -194,7 +101,6 @@ func wrapperResult(cdc *wire.Codec, msg *txs.TxStd, directTOQOS bool) string {
 func DispatchAOE(cdc *wire.Codec, ctx *config.CLIConfig, address, coins, causecodes, causestrings, gas string) string {
 	if address == "" || coins == "" || causecodes == "" || causestrings == "" {
 		return common.NewErrorResult(COINS_PARA_LEN_ERR, 0, "", "Dispatch AOE parameters must not empty").Marshal()
-		//return "{Code:\"1\",Reason:\"Parameter cannot be empty \"}"
 	}
 	addrs := strings.Split(address, "|")
 	addlen := len(addrs)
@@ -226,38 +132,73 @@ func DispatchAOE(cdc *wire.Codec, ctx *config.CLIConfig, address, coins, causeco
 	return DispatchSend(cdc, ctx, privkey, toaddrss, amounts, codes, cstrs)
 }
 
-func fetchResult(cdc *wire.Codec, heigth1 string, tx1 string) (string, error) {
-	// TODO qbase还没实现
-	//qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
-	qstarskey := GetResultKey(heigth1, tx1)
-	d, err := config.GetCLIContext().QSCCliContext.QueryStore([]byte(qstarskey), common.QSCResultMapperName)
-	log.Printf("QueryStore: %+v, %+v\n", d, err)
-	if err != nil {
-		return "", err
-	}
-	if d == nil {
-		return "", nil
-	}
-	var res []byte
-	err = cdc.UnmarshalBinaryBare(d, &res)
-	if err != nil {
-		return "", err
-	}
-	return string(res), err
-}
-
-func GetResultKey(heigth1 string, tx1 string) string {
-	qstarskey := "heigth:" + heigth1 + ",hash:" + tx1
-	return qstarskey
-}
-
-func GetCoins(cdc *wire.Codec, ctx *context.CLIContext, tx string) string {
-	coins, err := jianqian.QueryCoins(cdc, ctx, tx)
+func GetBlance(cdc *wire.Codec, ctx *context.CLIContext, tx string) string {
+	coins, err := jianqian.QueryBlance(cdc, ctx, tx)
 	if err != nil {
 		return common.NewErrorResult(COINS_QUERY_ERR, 0, "", err.Error()).Marshal()
 	}
-	if coins == nil || coins.Tx == "" {
-		return common.NewErrorResult(COINS_QUERY_ERR, 0, "", fmt.Sprintf("query dispatch coins failure,%s not exist", tx)).Marshal()
+	if coins == nil {
+		return common.NewErrorResult(COINS_QUERY_ERR, 0, "", fmt.Sprintf("query blance failure,%s not exist", tx)).Marshal()
 	}
 	return common.NewSuccessResult(cdc, 0, "", coins).Marshal()
+}
+
+// 余额变动交易 提交到链上
+func TransferBackground(cdc *wire.Codec, txb string, timeout time.Duration) string {
+	ts := new(txs.TxStd)
+	err := cdc.UnmarshalJSON([]byte(txb), ts)
+	if err != nil {
+		return common.InternalError(err.Error()).Marshal()
+	}
+	cliCtx := *config.GetCLIContext().QSCCliContext
+	_, commitresult, err := utils.SendTx(cliCtx, cdc, ts)
+	if err != nil {
+		return common.NewErrorResult(common.ResultCodeInternalError, 0, "", err.Error()).Marshal()
+	}
+	return common.NewSuccessResult(cdc, commitresult.Height, commitresult.Hash.String(), "").Marshal()
+}
+
+//广告商押金或赎回
+func Transfer(cdc *wire.Codec, amount, privatekey, to,cointype string, qscnonce int64) string {
+	var result common.Result
+	result.Code = common.ResultCodeSuccess
+	tx, berr := transfer(cdc, amount, privatekey, to,cointype, qscnonce)
+	if berr != "" {
+		return berr
+	}
+	js, err := cdc.MarshalJSON(tx)
+	if err != nil {
+		log.Printf("CoinsChange err:%s", err.Error())
+		result.Code = common.ResultCodeInternalError
+		result.Reason = err.Error()
+		return result.Marshal()
+	}
+	result.Result = json.RawMessage(js)
+	return result.Marshal()
+}
+
+// 转账
+func transfer(cdc *wire.Codec, coins, privatekey, to,cointype string, qscnonce int64) (*txs.TxStd, string) {
+	amount, ok := types.NewIntFromString(coins)
+	if !ok {
+		return nil, common.NewErrorResult(COINS_PARA_LEN_ERR, 0, "", "amount format error").Marshal()
+	}
+	_, addrben32, priv := utility.PubAddrRetrievalFromAmino(privatekey, cdc)
+	from, _ := qstartypes.AccAddressFromBech32(addrben32)
+	gas := types.NewInt(int64(0))
+	qscnonce += 1
+	it := &CoinsTx{}
+	it.From=from
+	it.CoinType=cointype
+	recipient:=Recipient{to,amount}
+	it.To=[]Recipient{recipient}
+	fmt.Println(it,to,cointype, amount)
+	tx2 := txs.NewTxStd(it, config.GetCLIContext().Config.QSCChainID, gas)
+	signature2, _ := tx2.SignTx(priv, qscnonce, config.GetCLIContext().Config.QSCChainID, config.GetCLIContext().Config.QSCChainID)
+	tx2.Signature = []txs.Signature{txs.Signature{
+		Pubkey:    priv.PubKey(),
+		Signature: signature2,
+		Nonce:     qscnonce,
+	}}
+	return tx2, ""
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/QOSGroup/qstars/config"
 	"github.com/QOSGroup/qstars/wire"
+	"github.com/QOSGroup/qstars/x/jianqian"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	)
@@ -57,10 +58,10 @@ func QueryCoinsCmd(cdc *wire.Codec) *cobra.Command {
 				}
 			}()
 
-			tx := viper.GetString(flag_tx)
-			result:= GetCoins(cdc,config.GetCLIContext().QSCCliContext,tx)
-
-			fmt.Println(result)
+			//tx := viper.GetString(flag_tx)
+			//result:= GetCoins(cdc,config.GetCLIContext().QSCCliContext,tx)
+			//
+			//fmt.Println(result)
 
 			return nil
 		},
@@ -70,3 +71,58 @@ func QueryCoinsCmd(cdc *wire.Codec) *cobra.Command {
 
 	return cmd
 }
+
+func QueryBlanceCmd(cdc *wire.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryBlance",
+		Short: "query  blance ",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Println(r)
+				}
+			}()
+
+			tx := viper.GetString(flag_address)
+			result:= GetBlance(cdc,config.GetCLIContext().QSCCliContext,tx)
+
+			fmt.Println(result)
+
+			return nil
+		},
+	}
+
+	cmd.Flags().String(flag_address, "", "query coins by tx")
+
+	return cmd
+}
+
+
+func QueryTxCmd(cdc *wire.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryTx",
+		Short: "query  tx ",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Println(r)
+				}
+			}()
+
+			tx := viper.GetString(flag_tx)
+
+			result:= jianqian.QueryTx(cdc,config.GetCLIContext().QSCCliContext,tx)
+
+			fmt.Println("result",result)
+
+			return nil
+		},
+	}
+
+	cmd.Flags().String(flag_tx, "", "query  tx")
+
+	return cmd
+}
+
+
+

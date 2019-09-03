@@ -438,7 +438,7 @@ func genStdSendTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd2551
 func genStdWrapTx(cdc *amino.Codec, sendTx txs.ITx, priKey ed25519.PrivKeyEd25519, tochainid string, fromchainid string, qosnonce int64, qscnonce int64) *txs.TxStd {
 	stx := genStdSendTx(cdc, sendTx, priKey, tochainid, fromchainid, qosnonce)
 	tx2 := txs.NewTxStd(nil, fromchainid, stx.MaxGas)
-	tx2.ITx = NewWrapperSendTx(stx)
+	tx2.ITxs = []txs.ITx{NewWrapperSendTx(stx)}
 	signature, _ := tx2.SignTx(priKey, qscnonce, fromchainid, fromchainid)
 	tx2.Signature = []txs.Signature{txs.Signature{
 		Pubkey:    priKey.PubKey(),

@@ -12,17 +12,19 @@ type ArticlesMapper struct {
 }
 
 type Articles struct {
-	Authoraddress       types.Address   //作者地址(必填)
-	OriginalAuthor      types.Address   //原创作者地址(为空表示原创)
-	ArticleHash         string   //作品唯一标识hash
-	ShareAuthor         int   //作者收入比例(必填)
-	ShareOriginalAuthor int   //原创收入比例(转载作品必填)
-	ShareCommunity      int   //社区收入比例(必填)
-	ShareInvestor       int   //投资者收入比例(必填)
-	InvestDays          int   //可供投资的天数(必填)
-	EndInvestDate       time.Time   //投资结束时间(必填)
-	BuyDays             int          //可供购买广告位的天数(必填)
-	EndBuyDate          time.Time   //广告位购买结果时间(必填)
+	AuthorAddr          types.Address  //作者地址(必填) 0qos 1cosmos
+	//AuthorOtherAddr     string         //作者其他帐户地址
+	ArticleType         int            //是否原创 0原创 1转载
+	ArticleHash         string         //作品唯一标识hash
+	ShareAuthor         int            //作者收入比例(必填)
+	ShareOriginalAuthor int            //原创收入比例(转载作品必填)
+	ShareCommunity      int            //社区收入比例(必填)
+	ShareInvestor       int            //投资者收入比例(必填)
+	InvestDays          int            //可供投资的天数(必填)
+	EndInvestDate       time.Time      //投资结束时间(必填)
+	BuyDays             int            //可供购买广告位的天数(必填)
+	EndBuyDate          time.Time      //广告位购买结果时间(必填)
+	CoinType            string         //币种
 	Gas                 types.BigInt
 }
 
