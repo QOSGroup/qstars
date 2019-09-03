@@ -44,13 +44,13 @@ func AcutionAd(articleHash, address, coinsType, coinAmount, qscnonce *C.char) *C
 	return C.CString(output)
 }
 
-//export QueryMaxAcution
+//export QueryMaxAuction
 func QueryMaxAuction(txb *C.char) *C.char {
 	output := jsdk.QueryMaxAuction(C.GoString(txb))
 	return C.CString(output)
 }
 
-//export QueryAllAcution
+//export QueryAllAuction
 func QueryAllAuction(txb *C.char) *C.char {
 	output := jsdk.QueryAllAuction(C.GoString(txb))
 	return C.CString(output)
