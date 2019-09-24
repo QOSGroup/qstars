@@ -93,3 +93,5 @@ func (astub OrderStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 ```go
 	registerType((*supply.Stub)(nil))
 ```
+
+[cmd.go    命令行方式与链码交互入口](cmd.md)
