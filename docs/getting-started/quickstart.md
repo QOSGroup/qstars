@@ -16,5 +16,5 @@ qstars 是QOS双层链架构中的业务链框架。不同的场景可以通过q
 
 - [代币发行](create-qsc.md)	
 - [业务应用实现](example/start.md)
-- [跨链中继cassin部署](https://github.com/QOSGroup/cassini/blob/master/docs/quick_start.md)
-- [执行交易](/execute.md)
+- [联盟链部署](deploy.md)
+- [执行交易](execute.md)

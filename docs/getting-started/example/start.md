@@ -3,7 +3,7 @@
 ---
 
 现在一切就绪我们就可以开始创建合约了，在qstars工程中的x包下新建一个example示例目录
-然后在example眼浅上新建supply目录.这就是存放本次合约示例的目录了
+然后在example目录下新建supply目录.这就是存放本次合约示例的目录了
 在supply中创建 cmd.go handler.go mapper.go process.go stub.go 五个文件 
 目录结构如下
 
