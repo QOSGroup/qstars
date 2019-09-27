@@ -4,7 +4,7 @@
 
 stub中是启动本次示例合约的入口 注册在qstars后,由qstars启动时自动调用
 
-##定义OrderStub对象
+###定义OrderStub对象
 
 ```go
 type OrderStub struct {
@@ -24,7 +24,7 @@ type BaseXTransaction interface {
 }
 ```
 
-##注册mapper
+###注册mapper
 
 StartX中注册mapper 否则自定义mapper将不可调用
 ```go
@@ -34,7 +34,7 @@ func (astub OrderStub) StartX(base *baseapp.QstarsBaseApp) error {
 	return nil
 }
 ```
-##注册交易结构体
+###注册交易结构体
 将自定义的交易结构体序列化信息注册 这是交易由发起经传输后被识别的前提
 ```go
 func (astub OrderStub) RegisterCdc(cdc *go_amino.Codec) {
@@ -43,7 +43,7 @@ func (astub OrderStub) RegisterCdc(cdc *go_amino.Codec) {
 ```
 
 
-##处理跨链结果
+###处理跨链结果
 跨链执行的交易会回调此方法 将执行结果返回进行下一步处理 在本示例中,跨链执行前将order用in.QcpOriginalExtends 存到了mapper中 在这里可以用此字段直接将order对象取出进行下一步处理
 当跨链交易执行成功时  则删除以块高度+交易Hash组成的key保存的order 重新将order以订单id存储.
 
@@ -87,7 +87,7 @@ func (astub OrderStub) ResultNotify(ctx context.Context, txQcpResult interface{}
 }
 ```
 
-##注册到qstars
+###注册到qstars
 打开qstars/star/app.go 在init方法中添加
 
 ```go

@@ -10,4 +10,4 @@
 
 [部署cassin跨链中继](https://github.com/QOSGroup/cassini/blob/master/docs/quick_start.md)
 
-[启动QStars](qstars-start.md)
+[启动QStars](start-qstars.md)
